@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Lock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
 
 export default function LoginPage() {
@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -30,8 +31,43 @@ export default function LoginPage() {
     console.log('Submitted login:', { email, password })
   }
 
+  useEffect(() => {
+    if (password.length === 0) {
+      setPasswordError('')
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.')
+    } else {
+      setPasswordError('')
+    }
+  }, [password])
+
   const sharedInputClass =
     'w-full px-4 py-2 rounded-[10px] bg-zinc-100 text-sm shadow-inner border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
+
+  const renderPasswordField = () => (
+    <div className="space-y-2">
+      <div className="relative">
+        <input
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={`${sharedInputClass} pr-10`}
+          required
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+      {passwordError && (
+        <p className="text-sm text-red-500 text-center">{passwordError}</p>
+      )}
+    </div>
+  )
 
   return (
     <AuthShell
@@ -80,23 +116,11 @@ export default function LoginPage() {
         </form>
       ) : (
         <form onSubmit={handlePasswordSubmit} className="space-y-4 w-full">
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-              setPasswordError('')
-            }}
-            className={sharedInputClass}
-            required
-          />
-          {passwordError && (
-            <p className="text-sm text-red-500 text-center">{passwordError}</p>
-          )}
+          {renderPasswordField()}
           <button
             type="submit"
             className="w-full mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+            disabled={passwordError !== ''}
           >
             Continue
           </button>
