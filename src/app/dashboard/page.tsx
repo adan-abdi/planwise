@@ -43,18 +43,30 @@ function Placeholder({ label }: { label: string }) {
 
 export default function DashboardPage() {
   const [active, setActive] = useState("clients");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
 
   return (
     <div className="h-screen bg-zinc-50 flex flex-col relative">
-      <div className="absolute left-64 top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none" />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
       <div className="w-full bg-white border-b-2 border-zinc-200 relative">
         <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-white">
           <div className="w-64 flex-shrink-0 flex items-center h-full bg-white">
+            <button
+              className="ml-4 mr-2 p-2 rounded-[12px] hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              onClick={() => setSidebarCollapsed((c) => !c)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="7" x2="19" y2="7" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <line x1="5" y1="17" x2="19" y2="17" />
+              </svg>
+            </button>
             <span className="font-bold text-2xl px-8 tracking-tight text-zinc-900">PlanWise</span>
           </div>
-          <div className="flex-1 flex items-center h-full pl-8 bg-white">
-            <div className="text-2xl font-bold text-zinc-900">{activeSection?.label}</div>
+          <div className={`flex-1 flex items-center h-full bg-white ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
+            <div className={`text-2xl font-bold text-zinc-900 transition-all duration-200 ${sidebarCollapsed ? '-ml-12' : ''}`}>{activeSection?.label}</div>
           </div>
           <div className="flex items-center gap-6">
             <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">
@@ -73,10 +85,10 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="flex flex-1 min-h-0">
-        <aside className="w-64 bg-white flex flex-col select-none z-10 pl-8">
+        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-8'} bg-white flex flex-col select-none z-10 transition-all duration-200`}>
           <nav className="flex-1 flex flex-col gap-8">
             <div>
-              <div className="text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8">GENERAL</div>
+              <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8 transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>GENERAL</div>
               <ul className="space-y-1">
                 {sections.map((section) => (
                   <li
@@ -87,26 +99,28 @@ export default function DashboardPage() {
                     {active === section.key && (
                       <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 rounded-xl -z-10" aria-hidden="true" />
                     )}
-                    <div className="flex items-center gap-3 py-2 w-full cursor-pointer font-medium">
+                    <div className={`flex items-center gap-3 py-2 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
                       {React.cloneElement(section.icon, {
                         className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`
                       })}
-                      <span>{section.label}</span>
+                      <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <div className="text-xs font-semibold text-zinc-400 mb-2 tracking-widest">SUPPORT</div>
+            <div className="mt-8">
+              <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>SUPPORT</div>
               <ul className="space-y-1">
                 {supportSections.map((section) => (
                   <li
                     key={section.key}
-                    className="flex items-center gap-3 py-2 rounded-[14px] text-zinc-700 hover:bg-zinc-100 cursor-pointer font-medium items-center"
+                    className={`flex items-center gap-3 py-2 rounded-[14px] text-zinc-700 hover:bg-zinc-100 cursor-pointer font-medium items-center${sidebarCollapsed ? ' justify-center' : ''}`}
                   >
-                    {section.icon}
-                    <span>{section.label}</span>
+                    {React.cloneElement(section.icon, {
+                      className: `${iconClass} text-zinc-400`,
+                    })}
+                    <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
                   </li>
                 ))}
               </ul>
