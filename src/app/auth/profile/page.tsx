@@ -4,11 +4,13 @@ import { useRef, useState } from 'react'
 import { Pencil, User } from 'lucide-react'
 import AuthShell from '../authShell'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 export default function ProfilePage() {
   const [name, setName] = useState('')
   const [profilePreview, setProfilePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const router = useRouter()
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Profile saved:', { name, profilePreview })
+    router.push('/dashboard')
   }
 
   return (
@@ -98,6 +101,7 @@ export default function ProfilePage() {
             className="font-semibold text-black"
             onClick={() => {
               console.log('Skip for now clicked')
+              router.push('/dashboard')
             }}
           >
             Skip for now

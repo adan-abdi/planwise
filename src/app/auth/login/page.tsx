@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [step, setStep] = useState<'login' | 'password'>('login')
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+
+  const router = useRouter()
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -29,6 +32,7 @@ export default function LoginPage() {
     }
 
     console.log('Submitted login:', { email, password })
+    router.push('/dashboard')
   }
 
   useEffect(() => {
