@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react'
 import AuthShell from '../authShell'
-import { Lock, Eye, EyeOff } from 'lucide-react'
+import { Lock, Eye, EyeOff, KeyRound } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email')
@@ -17,6 +18,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const otpRefs = useRef<HTMLInputElement[]>([])
+  const router = useRouter()
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -57,23 +59,25 @@ export default function SignupPage() {
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    let valid = true
+
     if (password.length < 6) {
       setPasswordError('Password must be at least 6 characters.')
+      valid = false
     } else {
       setPasswordError('')
     }
 
     if (confirmPassword !== password) {
       setConfirmPasswordError("Passwords don't match.")
+      valid = false
     } else {
       setConfirmPasswordError('')
     }
 
-    if (
-      password.length >= 6 &&
-      confirmPassword === password
-    ) {
+    if (valid) {
       console.log('Signup complete:', { email, password })
+      router.push('/auth/profile')
     }
   }
 
@@ -135,7 +139,7 @@ export default function SignupPage() {
           Continue
         </button>
       ) : (
-        <p className="text-xs text-center text-black font-semibold">
+        <p className="text-xs text-center text-black">
           Didn’t receive any code? <span className="font-bold">Resend it</span>
         </p>
       )}
@@ -164,9 +168,7 @@ export default function SignupPage() {
           placeholder={placeholder}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className={
-            sharedInputClass + ' pr-10'
-          }
+          className={sharedInputClass + ' pr-10'}
           required
         />
         <button
@@ -182,7 +184,6 @@ export default function SignupPage() {
       )}
     </div>
   )
-
 
   const renderPasswordStep = () => (
     <form onSubmit={handlePasswordSubmit} className="space-y-6 w-full">
@@ -225,6 +226,24 @@ export default function SignupPage() {
     </form>
   )
 
+  const getHeaderIcon = () => {
+    if (step === 'otp') {
+      return (
+        <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
+          <KeyRound className="w-5 h-5" />
+        </div>
+      )
+    }
+    if (step === 'password') {
+      return (
+        <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
+          <Lock className="w-5 h-5" />
+        </div>
+      )
+    }
+    return undefined
+  }
+
   return (
     <AuthShell
       showBackButton={step !== 'email'}
@@ -241,13 +260,7 @@ export default function SignupPage() {
           setConfirmPasswordError('')
         }
       }}
-      headerNode={
-        step === 'password' ? (
-          <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
-            <Lock className="w-5 h-5" />
-          </div>
-        ) : undefined
-      }
+      headerNode={getHeaderIcon()}
       title={
         step === 'otp'
           ? 'Enter Code'
