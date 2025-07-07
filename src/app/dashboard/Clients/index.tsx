@@ -45,8 +45,8 @@ export default function Clients() {
             <path d="M8 7V5a4 4 0 018 0v2" />
           </svg>
         </div>
-        <div className="text-lg font-semibold text-zinc-900 mb-1">No bets placed yet</div>
-        <div className="text-zinc-400 text-sm mb-6">Once users start placing bets, they&apos;ll appear here in real time.</div>
+        <div className="text-lg font-semibold text-zinc-900 mb-1">No clients on record</div>
+        <div className="text-zinc-400 text-sm mb-6">Once you add a client a list of them will appear here in real time.</div>
         <button onClick={handleOpenModal} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-medium shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           Create new client
         </button>

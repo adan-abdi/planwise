@@ -41,7 +41,7 @@ export default function AuthShell({
           {headerNode ? (
             <div className="flex justify-center">{headerNode}</div>
           ) : (
-            <h1 className="text-center text-3xl font-semibold tracking-tight">PlanWise</h1>
+            <div className="flex justify-center"><img src="/logo.svg" alt="PlanWise Logo" className="h-12 w-auto" /></div>
           )}
 
           {(title || subtitle) && (

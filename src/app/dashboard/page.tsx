@@ -63,10 +63,10 @@ export default function DashboardPage() {
                 <line x1="5" y1="17" x2="19" y2="17" />
               </svg>
             </button>
-            <span className="font-bold text-2xl px-8 tracking-tight text-zinc-900">PlanWise</span>
+            <img src="/logo.svg" alt="PlanWise Logo" className="h-10 w-auto px-8" />
           </div>
           <div className={`flex-1 flex items-center h-full bg-white ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
-            <div className={`text-2xl font-bold text-zinc-900 transition-all duration-200 ${sidebarCollapsed ? '-ml-12' : ''}`}>{activeSection?.label}</div>
+            <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'DM Serif Display', serif" }}>{activeSection?.label}</div>
           </div>
           <div className="flex items-center gap-6">
             <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">

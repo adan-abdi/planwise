@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'PlanWise',
-  description: 'Minimal Auth UI',
+  description: 'AI-Driven Paraplanning',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
