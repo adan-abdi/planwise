@@ -7,6 +7,7 @@ export default function Home() {
       <Link href="/auth/login" className="text-blue-600 underline">Login</Link>
       <Link href="/auth/signup" className="text-blue-600 underline block">Signup</Link>
       <Link href="/auth/profile" className="text-blue-600 underline block">Profile</Link>
+      <Link href="/dashboard" className="text-blue-600 underline block">Dashboard</Link>
     </main>
   )
 }
