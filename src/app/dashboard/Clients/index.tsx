@@ -1,8 +1,20 @@
 import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown } from "lucide-react";
+import React, { useState } from "react";
+import ClientModal from "./ClientModal";
 
 export default function Clients() {
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
+  const handleSubmit = () => {
+    // TODO: handle client creation logic here
+    setModalOpen(false);
+  };
+
   return (
     <>
+      <ClientModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
       <div className="flex items-center justify-between pl-8 pr-8 py-4 border-b-1 border-zinc-200 min-h-[64px] bg-white">
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
@@ -15,7 +27,7 @@ export default function Clients() {
           </button>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+          <button onClick={handleOpenModal} className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
             <UserPlus className="w-4 h-4" />
             Add new client
           </button>
@@ -35,7 +47,7 @@ export default function Clients() {
         </div>
         <div className="text-lg font-semibold text-zinc-900 mb-1">No bets placed yet</div>
         <div className="text-zinc-400 text-sm mb-6">Once users start placing bets, they&apos;ll appear here in real time.</div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-medium shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <button onClick={handleOpenModal} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-medium shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           Create new client
         </button>
       </div>
