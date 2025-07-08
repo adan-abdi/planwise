@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Home, Users, Layers, ShieldCheck, FileText, List, Users2, Settings } from "lucide-react";
+import Image from "next/image";
 
 const iconClass = "w-5 h-5";
 const sections = [
@@ -34,7 +35,7 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex items-center justify-between p-4 border-b border-zinc-100">
-          <img src="/logo.svg" alt="PlanWise Logo" className="h-8 w-auto" />
+          <Image src="/logo.svg" alt="PlanWise Logo" width={80} height={32} className="h-8 w-auto" />
           <button onClick={onClose} aria-label="Close sidebar">
             <X className="w-7 h-7 text-zinc-400" />
           </button>

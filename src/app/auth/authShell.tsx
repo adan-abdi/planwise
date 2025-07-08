@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import Image from "next/image";
 
 interface AuthShellProps {
   children: ReactNode
@@ -41,7 +42,7 @@ export default function AuthShell({
           {headerNode ? (
             <div className="flex justify-center">{headerNode}</div>
           ) : (
-            <div className="flex justify-center"><img src="/logo.svg" alt="PlanWise Logo" className="h-12 w-auto" /></div>
+            <div className="flex justify-center"><Image src="/logo.svg" alt="PlanWise Logo" width={120} height={48} className="h-12 w-auto" /></div>
           )}
 
           {(title || subtitle) && (

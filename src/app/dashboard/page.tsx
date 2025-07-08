@@ -11,10 +11,13 @@ import {
   LayoutDashboard,
   SquareUserRound,
   SquareKanban,
-  Logs
+  Logs,
+  ArrowLeft,
+  ChevronRight,
 } from "lucide-react";
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
+import Image from "next/image";
 
 const iconClass = "w-5 h-5";
 
@@ -48,7 +51,18 @@ export default function DashboardPage() {
   const [active, setActive] = useState("clients");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
+  const [selectedClientTab, setSelectedClientTab] = useState<string>('details');
+
+  const handleBackToClients = () => setClientDetailsOpen(false);
+
+  const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
+  const handleClientDetailsChange = (open: boolean, name?: string, tab?: string) => {
+    setClientDetailsOpen(open);
+    setSelectedClientName(open && name ? name : null);
+    setSelectedClientTab(tab || 'details');
+  };
 
   return (
     <div className="h-screen bg-zinc-50 flex flex-col relative">
@@ -84,17 +98,44 @@ export default function DashboardPage() {
                 <PanelRightClose className="w-7 h-7 text-zinc-500" />
               )}
             </button>
-            <img src="/logo.svg" alt="PlanWise Logo" className="h-10 w-auto px-8" />
+            <Image src="/logo.svg" alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
           </div>
           <div className={`flex-1 flex items-center h-full bg-white ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
-            <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+            {active === "clients" && clientDetailsOpen ? (
+              <div className="flex items-center gap-2 py-2">
+                <button
+                  onClick={handleBackToClients}
+                  className="p-1 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
+                  aria-label="Back to client list"
+                >
+                  <ArrowLeft className="w-5 h-5 text-black" />
+                </button>
+                <span className="h-6 w-px bg-zinc-200" />
+                <SquareUserRound className="w-4 h-4 text-zinc-400" />
+                <span className="text-zinc-400 text-base font-medium">Clients</span>
+                <ChevronRight className="w-3 h-3 text-zinc-300" />
+                <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
+                <ChevronRight className="w-3 h-3 text-zinc-300" />
+                {selectedClientTab.startsWith('transfers/') ? (
+                  <>
+                    <span className="text-zinc-400 text-base font-medium">Transfers</span>
+                    <ChevronRight className="w-3 h-3 text-zinc-300" />
+                    <span className="text-zinc-900 text-base font-semibold">{selectedClientTab.replace('transfers/', '')}</span>
+                  </>
+                ) : (
+                  <span className="text-zinc-900 text-base font-semibold">{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
+                )}
+              </div>
+            ) : (
+              <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+            )}
           </div>
           <div className="flex items-center gap-6">
             <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">
               <svg className="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </button>
             <div className="h-8 border-l-2 border-zinc-200" />
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Robert Fox" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow" />
+            <Image src="https://randomuser.me/api/portraits/men/32.jpg" alt="Robert Fox" width={40} height={40} className="w-10 h-10 rounded-full object-cover border-2 border-white shadow" />
             <div className="flex flex-col items-start ml-2">
               <span className="text-xs text-zinc-400 leading-none">Super admin</span>
               <span className="text-sm font-semibold text-zinc-900 leading-none">Robert Fox</span>
@@ -150,7 +191,7 @@ export default function DashboardPage() {
         </aside>
         <div className="flex-1 flex flex-col bg-white">
           {active === "clients" ? (
-            <Clients />
+            <Clients detailsViewOpen={clientDetailsOpen} onDetailsViewChange={handleClientDetailsChange} />
           ) : active === "dashboard" ? (
             <Placeholder label="Dashboard" />
           ) : active === "plans" ? (

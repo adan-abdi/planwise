@@ -33,6 +33,16 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
   const [retirementAge, setRetirementAge] = React.useState("");
   const [atr, setAtr] = React.useState("");
 
+  const resetForm = () => {
+    setClientName("");
+    setPartnerName("");
+    setPensionTransfer(0);
+    setIsaTransfer(0);
+    setDob(null);
+    setRetirementAge("");
+    setAtr("");
+  };
+
   if (!open) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,14 +58,18 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
         atr,
       });
     }
+    resetForm();
+    onClose();
+  };
+
+  const handleCancel = () => {
+    resetForm();
     onClose();
   };
 
   const isFormValid =
     clientName.trim() !== '' &&
     partnerName.trim() !== '' &&
-    pensionTransfer !== null &&
-    isaTransfer !== null &&
     dob !== null &&
     retirementAge.trim() !== '' &&
     atr.trim() !== '';
@@ -121,14 +135,15 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
               placeholderText="DD / MM / YYYY"
               calendarClassName="rounded-xl shadow-lg border border-zinc-200 bg-white"
               popperPlacement="bottom"
+              wrapperClassName="w-full"
               customInput={
-                <div className="relative w-full">
+                <div className="relative w-full min-w-0">
                   <input
                     type="text"
                     value={dob ? dob.toLocaleDateString('en-GB') : ''}
                     readOnly
                     placeholder="DD / MM / YYYY"
-                    className="w-full border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder-zinc-400 pr-10"
+                    className="w-full min-w-0 border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder-zinc-400 pr-10"
                     style={{ fontFamily: 'inherit' }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
@@ -178,8 +193,8 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
               className="w-full border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-zinc-50 text-zinc-400 cursor-not-allowed"
             />
           </div>
-          <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-200 rounded-b-2xl bg-white">
-            <button type="button" onClick={onClose} className="px-5 py-2 rounded-lg text-base font-medium text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition">Cancel</button>
+          <div className="flex justify-end gap-3 px-6 py-4 rounded-b-2xl bg-white">
+            <button type="button" onClick={handleCancel} className="px-5 py-2 rounded-lg text-base font-medium text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition">Cancel</button>
             <button
               type="submit"
               className={`px-5 py-2 rounded-lg text-base font-medium text-white transition ${isFormValid ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer' : 'bg-blue-100 cursor-not-allowed'}`}
