@@ -2,29 +2,32 @@
 
 import React, { useState } from "react";
 import {
-  Home,
-  Users,
-  Layers,
   ShieldCheck,
   FileText,
-  List,
   Users2,
-  Settings
+  Settings,
+  PanelRightClose,
+  PanelRightOpen,
+  LayoutDashboard,
+  SquareUserRound,
+  SquareKanban,
+  Logs
 } from "lucide-react";
 import Clients from "./Clients";
+import MobileSidebarDrawer from "./MobileSidebarDrawer";
 
 const iconClass = "w-5 h-5";
 
 const sections = [
-  { key: "dashboard", label: "Dashboard", icon: <Home className={iconClass} /> },
-  { key: "clients", label: "Clients", icon: <Users className={iconClass} /> },
-  { key: "plans", label: "Plans", icon: <Layers className={iconClass} /> },
+  { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className={iconClass} /> },
+  { key: "clients", label: "Clients", icon: <SquareUserRound className={iconClass} /> },
+  { key: "plans", label: "Plans", icon: <SquareKanban className={iconClass} /> },
   { key: "compliance", label: "Compliance", icon: <ShieldCheck className={iconClass} /> },
 ];
 
 const supportSections = [
   { key: "templates", label: "Templates", icon: <FileText className={iconClass} /> },
-  { key: "auditlog", label: "Audit log", icon: <List className={iconClass} /> },
+  { key: "auditlog", label: "Audit log", icon: <Logs className={iconClass} /> },
   { key: "teammembers", label: "Team members", icon: <Users2 className={iconClass} /> },
   { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
@@ -44,18 +47,25 @@ function Placeholder({ label }: { label: string }) {
 export default function DashboardPage() {
   const [active, setActive] = useState("clients");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
 
   return (
     <div className="h-screen bg-zinc-50 flex flex-col relative">
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
+      <MobileSidebarDrawer
+        open={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+        onSectionSelect={setActive}
+        activeSectionKey={active}
+      />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
       <div className="w-full bg-white border-b-2 border-zinc-200 relative">
         <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-white">
           <div className="w-64 flex-shrink-0 flex items-center h-full bg-white">
             <button
-              className="ml-4 mr-2 p-2 rounded-[12px] hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10"
-              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              onClick={() => setSidebarCollapsed((c) => !c)}
+              className="ml-4 mr-2 p-2 rounded-[12px] hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10 sm:hidden"
+              aria-label="Open sidebar"
+              onClick={() => setMobileSidebarOpen(true)}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="7" x2="19" y2="7" />
@@ -63,10 +73,21 @@ export default function DashboardPage() {
                 <line x1="5" y1="17" x2="19" y2="17" />
               </svg>
             </button>
+            <button
+              className="ml-4 mr-2 p-2 rounded-xl hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10 border border-zinc-200 bg-white"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              onClick={() => setSidebarCollapsed((c) => !c)}
+            >
+              {sidebarCollapsed ? (
+                <PanelRightOpen className="w-7 h-7 text-zinc-500" />
+              ) : (
+                <PanelRightClose className="w-7 h-7 text-zinc-500" />
+              )}
+            </button>
             <img src="/logo.svg" alt="PlanWise Logo" className="h-10 w-auto px-8" />
           </div>
           <div className={`flex-1 flex items-center h-full bg-white ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
-            <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'DM Serif Display', serif" }}>{activeSection?.label}</div>
+            <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
           </div>
           <div className="flex items-center gap-6">
             <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">
@@ -85,7 +106,7 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="flex flex-1 min-h-0">
-        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-8'} bg-white flex flex-col select-none z-10 transition-all duration-200`}>
+        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-8'} bg-white flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
           <nav className="flex-1 flex flex-col gap-8">
             <div>
               <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8 transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>GENERAL</div>

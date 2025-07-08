@@ -1,4 +1,7 @@
 import React from "react";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { Calendar } from 'lucide-react';
 
 export interface ClientFormData {
   clientName: string;
@@ -26,7 +29,7 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
   const [partnerName, setPartnerName] = React.useState("");
   const [pensionTransfer, setPensionTransfer] = React.useState(0);
   const [isaTransfer, setIsaTransfer] = React.useState(0);
-  const [dob, setDob] = React.useState("");
+  const [dob, setDob] = React.useState<Date | null>(null);
   const [retirementAge, setRetirementAge] = React.useState("");
   const [atr, setAtr] = React.useState("");
 
@@ -35,10 +38,27 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSubmit) {
-      onSubmit({ clientName, partnerName, pensionTransfer, isaTransfer, dob, retirementAge, atr });
+      onSubmit({
+        clientName,
+        partnerName,
+        pensionTransfer,
+        isaTransfer,
+        dob: dob ? dob.toISOString().split('T')[0] : '',
+        retirementAge,
+        atr,
+      });
     }
     onClose();
   };
+
+  const isFormValid =
+    clientName.trim() !== '' &&
+    partnerName.trim() !== '' &&
+    pensionTransfer !== null &&
+    isaTransfer !== null &&
+    dob !== null &&
+    retirementAge.trim() !== '' &&
+    atr.trim() !== '';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm transition-all">
@@ -87,20 +107,36 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
               </div>
             </div>
           </div>
-          <div className="mb-4">
+
+          <div className="mb-4 w-full">
             <label className="block text-sm font-medium text-zinc-900 mb-1">Date of Birth</label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="DD / MM / YYYY"
-                value={dob}
-                onChange={e => setDob(e.target.value)}
-                className="w-full border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder-zinc-400 pr-10"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-              </span>
-            </div>
+            <DatePicker
+              selected={dob}
+              onChange={date => setDob(date)}
+              dateFormat="dd/MM/yyyy"
+              maxDate={new Date()}
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+              placeholderText="DD / MM / YYYY"
+              calendarClassName="rounded-xl shadow-lg border border-zinc-200 bg-white"
+              popperPlacement="bottom"
+              customInput={
+                <div className="relative w-full">
+                  <input
+                    type="text"
+                    value={dob ? dob.toLocaleDateString('en-GB') : ''}
+                    readOnly
+                    placeholder="DD / MM / YYYY"
+                    className="w-full border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder-zinc-400 pr-10"
+                    style={{ fontFamily: 'inherit' }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none">
+                    <Calendar className="w-5 h-5" />
+                  </span>
+                </div>
+              }
+            />
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-zinc-900 mb-1">Retirement age</label>
@@ -142,11 +178,17 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
               className="w-full border border-zinc-200 rounded-[16px] px-4 py-2.5 text-base bg-zinc-50 text-zinc-400 cursor-not-allowed"
             />
           </div>
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-200 rounded-b-2xl bg-white">
+            <button type="button" onClick={onClose} className="px-5 py-2 rounded-lg text-base font-medium text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition">Cancel</button>
+            <button
+              type="submit"
+              className={`px-5 py-2 rounded-lg text-base font-medium text-white transition ${isFormValid ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer' : 'bg-blue-100 cursor-not-allowed'}`}
+              disabled={!isFormValid}
+            >
+              Create new client
+            </button>
+          </div>
         </form>
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-200 rounded-b-2xl bg-white">
-          <button type="button" onClick={onClose} className="px-5 py-2 rounded-lg text-base font-medium text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition">Cancel</button>
-          <button type="submit" form="" className="px-5 py-2 rounded-lg text-base font-medium text-white bg-blue-100 hover:bg-blue-200 transition cursor-not-allowed" disabled>Create new client</button>
-        </div>
       </div>
     </div>
   );
