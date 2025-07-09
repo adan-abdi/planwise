@@ -150,11 +150,11 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
     onChecklistChange(clientIdx, newChecklist);
   };
   return (
-    <div className="overflow-x-auto w-full px-0 pt-4 sm:pt-0 scrollbar-thin" style={{marginTop: 0, marginBottom: 0}}>
+    <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-200 rounded-lg bg-white" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
         <thead className="text-zinc-700 font-semibold bg-zinc-50 border-b border-zinc-200 shadow-xs rounded-t-md">
           <tr className="h-8 sm:h-10">
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">{/* select all */}
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100">{/* select all */}
               <button
                 type="button"
                 onClick={handleSelectAll}
@@ -164,20 +164,20 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                 {allSelected && <Check className="w-3 h-3 text-green-500" />}
               </button>
             </th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left">Advisor Name</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 text-left">Client Name</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left">Date Received</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">Type of Case</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">CFR Uploaded?</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left">Number of Plans</th>
-            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 text-left">Checklists Status</th>
-            <th className="p-0.5 sm:p-2 align-middle text-left">Actions</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left">Advisor Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left">Client Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left">Date Received</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">CFR Uploaded?</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left">Number of Plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left">Checklists Status</th>
+            <th className="p-2 sm:p-2 align-middle text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           {clients.map((c, idx) => (
             <tr key={idx} className="border-b border-zinc-100 bg-white h-7 sm:h-9">
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100">
                 <button
                   type="button"
                   onClick={() => handleSelectRow(idx)}
@@ -187,8 +187,8 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                   {selectedRows[idx] && <Check className="w-3 h-3 text-green-500" />}
                 </button>
               </td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell truncate max-w-[60px]">{c.advisor}</td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 truncate max-w-[80px]">
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 truncate max-w-[60px]">{c.advisor}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100">
                 <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>
                   <span className="relative w-5 h-5 inline-block align-middle" style={{ verticalAlign: 'middle' }}>
                     <Image
@@ -201,11 +201,12 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                   <span className="font-medium truncate max-w-[60px] ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
                 </span>
               </td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap">{c.date}</td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[50px]">{c.type}</td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[40px]">{c.cfr}</td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[30px]">{c.plans}</td>
-              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap">{c.date}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[50px]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[40px]">{c.cfr}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[30px]">{c.plans}</td>
+              {/* Checklist Status only on desktop */}
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
                     checked={checklistStates[idx] || [false, false, false, false]}
@@ -216,7 +217,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                   </span>
                 </span>
               </td>
-              <td className="p-0.5 sm:p-2 align-middle">
+              <td className="p-2 sm:p-2 align-middle">
                 <span style={{ display: 'inline-block', textAlign: 'center', width: '100%' }}>
                   <button
                     type="button"

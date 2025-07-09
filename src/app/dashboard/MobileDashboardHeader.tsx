@@ -95,23 +95,44 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
               aria-label="Back"
               type="button"
             >
-              <ArrowLeft className="w-5 h-5 text-zinc-400" />
+              <ArrowLeft className="w-5 h-5 text-black" />
             </button>
           )}
-          {breadcrumb.map((item, idx) => (
-            <React.Fragment key={idx}>
-              {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
-              <button
-                className={`flex items-center gap-1 ${item.isActive ? 'text-zinc-900 font-semibold' : 'text-zinc-400 font-medium'} bg-transparent border-none p-0 m-0`}
-                onClick={item.onClick}
-                disabled={!item.onClick}
-                style={{ cursor: item.onClick ? 'pointer' : 'default' }}
-              >
-                {item.icon && <span>{item.icon}</span>}
-                <span>{item.label}</span>
-              </button>
-            </React.Fragment>
-          ))}
+          {breadcrumb.map((item, idx) => {
+            // If label contains slashes, render as chevron-separated segments
+            if (item.label.includes('/')) {
+              const segments = item.label.split('/');
+              return segments.map((seg, segIdx) => (
+                <React.Fragment key={seg + segIdx}>
+                  {(idx > 0 || segIdx > 0) && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                  <button
+                    className={`flex items-center gap-1 ${idx === breadcrumb.length - 1 && segIdx === segments.length - 1 ? 'text-zinc-900 font-semibold' : 'text-zinc-400 font-medium'} bg-transparent border-none p-0 m-0`}
+                    onClick={item.onClick}
+                    disabled={!item.onClick}
+                    style={{ cursor: item.onClick ? 'pointer' : 'default' }}
+                  >
+                    {item.icon && segIdx === 0 && <span>{item.icon}</span>}
+                    <span>{seg}</span>
+                  </button>
+                </React.Fragment>
+              ));
+            }
+            // Otherwise, render as before
+            return (
+              <React.Fragment key={idx}>
+                {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                <button
+                  className={`flex items-center gap-1 ${item.isActive ? 'text-zinc-900 font-semibold' : 'text-zinc-400 font-medium'} bg-transparent border-none p-0 m-0`}
+                  onClick={item.onClick}
+                  disabled={!item.onClick}
+                  style={{ cursor: item.onClick ? 'pointer' : 'default' }}
+                >
+                  {item.icon && <span>{item.icon}</span>}
+                  <span>{item.label}</span>
+                </button>
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
     </div>

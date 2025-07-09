@@ -129,22 +129,32 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
           />
         ) : (
           <>
-            <div className="flex items-center justify-between sm:pl-8 sm:pr-8 border-b-1 border-zinc-200 min-h-[64px] bg-white flex-wrap gap-2">
-              <div className="flex gap-2 sm:hidden w-full justify-between mb-1">
-                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Sort">
-                  <ArrowUpDown className="w-5 h-5 text-zinc-500" />
-                </button>
-                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Filter">
-                  <FilterIcon className="w-5 h-5 text-zinc-500" />
-                </button>
-                <button onClick={handleOpenModal} className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Add new client">
-                  <UserPlus className="w-5 h-5 text-zinc-500" />
-                </button>
-                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Import/Export">
-                  <Download className="w-5 h-5 text-zinc-500" />
-                </button>
+            <div className="w-full bg-white flex-wrap gap-2 min-h-[64px] relative">
+              {/* Edge-to-edge border for mobile only */}
+              <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200" />
+              <div className="flex sm:hidden mb-1 pt-4 pb-4 justify-between w-full">
+                <div className="flex gap-2">
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Sort">
+                    <ArrowUpDown className="w-4 h-4 text-zinc-500" />
+                    <span>Sort</span>
+                  </button>
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Filter">
+                    <FilterIcon className="w-4 h-4 text-zinc-500" />
+                    <span>Filter</span>
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleOpenModal} className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Add new client">
+                    <UserPlus className="w-4 h-4 text-zinc-500" />
+                    <span>Add Client</span>
+                  </button>
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Import/Export">
+                    <Download className="w-4 h-4 text-zinc-500" />
+                    <span>Import/Export</span>
+                  </button>
+                </div>
               </div>
-              <div className="hidden sm:flex w-full items-center justify-between">
+              <div className="hidden sm:flex w-full items-center justify-between border-b border-zinc-200 px-8 py-4">
                 <div className="flex items-center gap-2">
                   <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
                     <ArrowUpDown className="w-4 h-4" />

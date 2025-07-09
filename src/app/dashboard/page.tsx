@@ -19,6 +19,7 @@ import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
 import Image from "next/image";
 import MobileDashboardHeader from "./MobileDashboardHeader";
+import DashboardHeaderUserSection from "./DashboardHeaderUserSection";
 
 const iconClass = "w-5 h-5";
 
@@ -157,37 +158,42 @@ export default function DashboardPage() {
                 <span className="h-6 w-px bg-zinc-200" />
                 <SquareUserRound className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-base font-medium">Clients</span>
-                <ChevronRight className="w-3 h-3 text-zinc-300" />
-                <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
-                <ChevronRight className="w-3 h-3 text-zinc-300" />
-                {selectedClientTab.startsWith('transfers/') ? (
-                  <>
-                    <span className="text-zinc-400 text-base font-medium">Transfers</span>
-                    <ChevronRight className="w-3 h-3 text-zinc-300" />
-                    <span className="text-zinc-900 text-base font-semibold">{selectedClientTab.replace('transfers/', '')}</span>
-                  </>
-                ) : (
-                  <span className="text-zinc-900 text-base font-semibold">{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
-                )}
+                {/* Render chevron-based breadcrumb for client/transfer path */}
+                {(() => {
+                  // Parse the selectedClientTab for transfer path
+                  let path: string[] = [];
+                  if (selectedClientTab && selectedClientTab.startsWith('transfers/')) {
+                    path = selectedClientTab.replace('transfers/', '').split('/');
+                  }
+                  return (
+                    <>
+                      <ChevronRight className="w-3 h-3 text-zinc-300" />
+                      <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
+                      {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, idx) => (
+                        <React.Fragment key={folder + idx}>
+                          <ChevronRight className="w-3 h-3 text-zinc-300" />
+                          <span className={`text-base font-medium ${idx === path.length - 1 ? 'text-zinc-900 font-semibold' : 'text-zinc-400'}`}>{folder}</span>
+                        </React.Fragment>
+                      ))}
+                      {selectedClientTab && !selectedClientTab.startsWith('transfers/') && (
+                        <>
+                          <ChevronRight className="w-3 h-3 text-zinc-300" />
+                          <span className="text-zinc-900 text-base font-semibold">{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             ) :
               <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
             }
           </div>
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">
-              <svg className="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            </button>
-            <div className="h-8 border-l-2 border-zinc-200" />
-            <Image src="https://randomuser.me/api/portraits/men/32.jpg" alt="Robert Fox" width={40} height={40} className="w-10 h-10 rounded-full object-cover border-2 border-white shadow" />
-            <div className="flex flex-col items-start ml-2">
-              <span className="text-xs text-zinc-400 leading-none">Super admin</span>
-              <span className="text-sm font-semibold text-zinc-900 leading-none">Robert Fox</span>
-            </div>
-            <button className="ml-2 p-2 rounded-full hover:bg-zinc-100 transition flex items-center justify-center">
-              <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-          </div>
+          <DashboardHeaderUserSection
+            userName="Robert Fox"
+            userRole="Super admin"
+            avatarUrl="https://randomuser.me/api/portraits/men/32.jpg"
+          />
         </div>
       </div>
       <MobileSidebarDrawer

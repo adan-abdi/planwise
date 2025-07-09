@@ -17,6 +17,8 @@ import {
   FolderTree,
   Edit2,
   FolderClosed,
+  X,
+  Check,
 } from "lucide-react";
 import UploadModal from "./UploadModal";
 import ReviewChecklistModal from "./ReviewChecklistModal";
@@ -192,20 +194,24 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         <div className="flex gap-1 sm:gap-2 ml-auto flex-shrink-0">
           {hasUnsavedChanges && (
             <button
-              className="px-2 sm:px-4 py-1 text-sm sm:text-base font-medium text-zinc-700 bg-white hover:bg-zinc-100 transition flex items-center justify-center border border-zinc-200 rounded-[6px] h-8 sm:h-[32px] min-w-[60px] sm:min-w-[80px] font-sans shadow-none"
+              className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-normal bg-white hover:bg-red-50 transition"
               onClick={handleCancel}
               type="button"
+              aria-label="Cancel"
             >
-              Cancel
+              <X className="w-4 h-4 text-red-600" />
+              <span className="text-red-600">Cancel</span>
             </button>
           )}
           {hasUnsavedChanges && (
             <button
-              className="px-2 sm:px-4 py-1 text-sm sm:text-base font-medium transition flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 rounded-[6px] h-8 sm:h-[32px] min-w-[80px] sm:min-w-[110px] font-sans shadow-none"
+              className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-normal bg-white hover:bg-green-50 transition"
               onClick={handleSave}
               type="button"
+              aria-label="Save Changes"
             >
-              Save Changes
+              <Check className="w-4 h-4 text-green-600" />
+              <span className="text-green-600">Save</span>
             </button>
           )}
         </div>
@@ -301,8 +307,8 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
             </div>
           ) : (
             <div className="w-full">
-              <div className="flex items-center mb-6">
-                {(transferPath.length > 1 || transferPath.length === 1) && (
+              <div className="flex items-center mb-6 gap-1 flex-wrap">
+                {(transferPath.length > 0) && (
                   <button
                     onClick={transferPath.length === 1 ? () => handleOpenTransfer(null) : handleBackFolder}
                     className="mr-2 p-1 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
@@ -311,7 +317,28 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     <svg width="20" height="20" fill="none" stroke="#222" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
                   </button>
                 )}
-                <div className="text-xl font-semibold text-zinc-900">{transferPath[transferPath.length-1]}</div>
+                {/* Breadcrumb chevron navigation */}
+                {transferPath.map((folder, idx) => (
+                  <React.Fragment key={folder + idx}>
+                    {idx > 0 && (
+                      <svg className="w-3 h-3 text-zinc-300 mx-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    )}
+                    <button
+                      className={`text-base font-medium ${idx === transferPath.length - 1 ? 'text-zinc-900 font-semibold' : 'text-zinc-400'} bg-transparent border-none p-0 m-0 hover:underline`}
+                      onClick={() => {
+                        if (idx !== transferPath.length - 1) {
+                          setTransferPath(transferPath.slice(0, idx + 1));
+                          if (onTabChange) onTabChange(`transfers/${transferPath.slice(0, idx + 1).join("/")}`);
+                        }
+                      }}
+                      disabled={idx === transferPath.length - 1}
+                      style={{ cursor: idx === transferPath.length - 1 ? 'default' : 'pointer' }}
+                      type="button"
+                    >
+                      {folder}
+                    </button>
+                  </React.Fragment>
+                ))}
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-4 w-full">
                 {getFolderContents(transferPath).map((item) => (
