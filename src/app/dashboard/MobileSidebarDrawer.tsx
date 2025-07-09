@@ -29,28 +29,28 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
         onClick={onClose}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-72 max-w-full bg-white z-50 shadow-2xl transform transition-transform duration-300 sm:hidden
+        className={`fixed top-0 left-0 h-full w-72 max-w-full bg-white dark:bg-[var(--background)] z-50 shadow-2xl transform transition-transform duration-300 sm:hidden
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-zinc-100">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-[var(--border)]">
           <Image src="/logo.svg" alt="PlanWise Logo" width={80} height={32} className="h-8 w-auto" />
           <button onClick={onClose} aria-label="Close sidebar">
-            <X className="w-7 h-7 text-zinc-400" />
+            <X className="w-7 h-7 text-zinc-400 dark:text-[var(--foreground)]" />
           </button>
         </div>
         <nav className="flex-1 flex flex-col gap-8 overflow-y-auto p-4">
           <div>
-            <div className="text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-4">GENERAL</div>
+            <div className="text-xs font-semibold text-zinc-400 dark:text-[var(--foreground)] mb-2 tracking-widest pt-4">GENERAL</div>
             <ul className="space-y-1">
               {sections.map((section) => (
                 <li
                   key={section.key}
-                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50' : ''}`}
+                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50 dark:bg-[var(--muted)]' : ''}`}
                   onClick={() => { onSectionSelect(section.key); onClose(); }}
                 >
-                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-700'}`}>
+                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-[var(--foreground)]'}`}>
                     {React.cloneElement(section.icon, {
-                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-[var(--foreground)]'}`
                     })}
                     <span>{section.label}</span>
                   </div>
@@ -59,17 +59,17 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
             </ul>
           </div>
           <div>
-            <div className="text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-4">SUPPORT</div>
+            <div className="text-xs font-semibold text-zinc-400 dark:text-[var(--foreground)] mb-2 tracking-widest pt-4">SUPPORT</div>
             <ul className="space-y-1">
               {supportSections.map((section) => (
                 <li
                   key={section.key}
-                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50' : ''}`}
+                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50 dark:bg-[var(--muted)]' : ''}`}
                   onClick={() => { onSectionSelect(section.key); onClose(); }}
                 >
-                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-700'}`}>
+                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-[var(--foreground)]'}`}>
                     {React.cloneElement(section.icon, {
-                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-[var(--foreground)]'}`
                     })}
                     <span>{section.label}</span>
                   </div>

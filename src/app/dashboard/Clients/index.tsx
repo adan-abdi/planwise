@@ -91,7 +91,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
     clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
-      <div className="p-0 px-0 sm:p-8">
+      <div className="sm:px-8 sm:pt-4">
         <ClientList
           clients={clients}
           onViewDetails={handleViewDetails}
@@ -129,48 +129,48 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
           />
         ) : (
           <>
-            <div className="w-full bg-white flex-wrap gap-2 min-h-[64px] relative">
+            <div className="w-full bg-white dark:bg-[var(--background)] flex-wrap gap-2 min-h-[64px] relative">
               {/* Edge-to-edge border for mobile only */}
-              <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200" />
+              <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
               <div className="flex sm:hidden mb-1 pt-4 pb-4 justify-between w-full">
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Sort">
-                    <ArrowUpDown className="w-4 h-4 text-zinc-500" />
-                    <span>Sort</span>
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)]" aria-label="Sort">
+                    <ArrowUpDown className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    <span className="dark:text-[var(--foreground)]">Sort</span>
                   </button>
-                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Filter">
-                    <FilterIcon className="w-4 h-4 text-zinc-500" />
-                    <span>Filter</span>
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)]" aria-label="Filter">
+                    <FilterIcon className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    <span className="dark:text-[var(--foreground)]">Filter</span>
                   </button>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={handleOpenModal} className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Add new client">
-                    <UserPlus className="w-4 h-4 text-zinc-500" />
-                    <span>Add Client</span>
+                  <button onClick={handleOpenModal} className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)]" aria-label="Add new client">
+                    <UserPlus className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    <span className="dark:text-[var(--foreground)]">Add Client</span>
                   </button>
-                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 bg-white hover:bg-zinc-100 text-[11px] font-medium" aria-label="Import/Export">
-                    <Download className="w-4 h-4 text-zinc-500" />
-                    <span>Import/Export</span>
+                  <button className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)]" aria-label="Import/Export">
+                    <Download className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    <span className="dark:text-[var(--foreground)]">Import/Export</span>
                   </button>
                 </div>
               </div>
-              <div className="hidden sm:flex w-full items-center justify-between border-b border-zinc-200 px-8 py-4">
+              <div className="hidden sm:flex w-full items-center justify-between border-b border-zinc-200 dark:border-[var(--border)] px-8 py-4 bg-white dark:bg-[var(--background)]">
                 <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                  <button className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] hover:!bg-zinc-50 dark:hover:!bg-[#444]">
                     <ArrowUpDown className="w-4 h-4" />
                     Sort
                   </button>
-                  <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                  <button className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] hover:!bg-zinc-50 dark:hover:!bg-[#444]">
                     <FilterIcon className="w-4 h-4" />
                     Filter
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={handleOpenModal} className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                  <button onClick={handleOpenModal} className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] hover:!bg-zinc-50 dark:hover:!bg-[#444]">
                     <UserPlus className="w-4 h-4" />
                     Add client
                   </button>
-                  <button className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                  <button className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] hover:!bg-zinc-50 dark:hover:!bg-[#444]">
                     <Download className="w-4 h-4" />
                     Import/Export
                     <ChevronDown className="w-4 h-4 ml-1" />
@@ -178,7 +178,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
                 </div>
               </div>
             </div>
-            <div className="w-full px-0 sm:px-8 pt-0 pb-0 flex-1 flex flex-col min-h-0">{clientContent}</div>
+            <div className="w-full pt-0 pb-0 flex-1 flex flex-col min-h-0">{clientContent}</div>
           </>
         )}
         {/* UploadModal and ReviewChecklistModal coordination */}

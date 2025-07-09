@@ -177,7 +177,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
 
   return (
     <div className="bg-white min-h-full">
-      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 min-h-[56px] bg-white w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap">
+      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 min-h-[56px] bg-white dark:bg-[var(--muted)] w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="relative w-8 h-8 sm:w-10 sm:h-10">
             <Image

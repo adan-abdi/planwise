@@ -1,7 +1,7 @@
 import { Check, MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
-import { useState, useEffect } from 'react';
-import { useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useTheme } from '../../../theme-context';
 
 export interface ClientItem {
   advisor: string;
@@ -121,6 +121,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
   const [selectedRows, setSelectedRows] = useState<boolean[]>(clients.map(() => false));
   const [openMenuIdx, setOpenMenuIdx] = useState<number | null>(null);
   const menuButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const { darkMode } = useTheme();
 
   useEffect(() => {
     setSelectedRows((prev) => {
@@ -149,7 +150,9 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
     const newChecklist = current.map((v, j) => (j === checklistIdx ? !v : v));
     onChecklistChange(clientIdx, newChecklist);
   };
-  return (
+
+  // Light mode table
+  const renderLightTable = () => (
     <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-200 rounded-lg bg-white" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
         <thead className="text-zinc-700 font-semibold bg-zinc-50 border-b border-zinc-200 shadow-xs rounded-t-md">
@@ -205,7 +208,6 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[50px]">{c.type}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[40px]">{c.cfr}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[30px]">{c.plans}</td>
-              {/* Checklist Status only on desktop */}
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
@@ -243,5 +245,103 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
         </tbody>
       </table>
     </div>
-  )
+  );
+
+  // Dark mode table
+  const renderDarkTable = () => (
+    <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-700 rounded-lg bg-[var(--background)]" style={{marginBottom: 0}}>
+      <table className="w-full text-[10px] sm:text-xs text-left border-collapse text-[var(--foreground)]">
+        <thead className="text-[var(--foreground)] font-semibold bg-[var(--muted)] border-b border-zinc-700 shadow-xs rounded-t-md">
+          <tr className="h-8 sm:h-10">
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600">{/* select all */}
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-800 flex items-center justify-center shadow-none ${allSelected ? 'border-green-400 bg-green-900/20' : 'border-[var(--border)] bg-[var(--background)]'}`}
+                style={{ outline: 'none' }}
+              >
+                {allSelected && <Check className="w-3 h-3 text-green-400" />}
+              </button>
+            </th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left">Advisor Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left">Client Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-left">Date Received</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left">Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left">CFR Uploaded?</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell text-left">Number of Plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell text-left">Checklists Status</th>
+            <th className="p-2 sm:p-2 align-middle text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {clients.map((c, idx) => (
+            <tr key={idx} className="border-b border-zinc-700 bg-[var(--background)] h-7 sm:h-9">
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600">
+                <button
+                  type="button"
+                  onClick={() => handleSelectRow(idx)}
+                  className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-800 flex items-center justify-center shadow-none ${selectedRows[idx] ? 'border-green-400 bg-green-900/20' : 'border-[var(--border)] bg-[var(--background)]'}`}
+                  style={{ outline: 'none' }}
+                >
+                  {selectedRows[idx] && <Check className="w-3 h-3 text-green-400" />}
+                </button>
+              </td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 truncate max-w-[60px] text-[var(--foreground)]">{c.advisor}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600">
+                <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                  <span className="relative w-5 h-5 inline-block align-middle" style={{ verticalAlign: 'middle' }}>
+                    <Image
+                      src={c.avatar}
+                      alt={c.client}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </span>
+                  <span className="font-medium truncate max-w-[60px] ml-1 align-middle inline-block text-[var(--foreground)]" style={{ verticalAlign: 'middle' }}>{c.client}</span>
+                </span>
+              </td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-[var(--foreground)]">{c.date}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[50px] text-[var(--foreground)]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[40px] text-[var(--foreground)]">{c.cfr}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell truncate max-w-[30px] text-[var(--foreground)]">{c.plans}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell">
+                <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
+                  <ChecklistIcons
+                    checked={checklistStates[idx] || [false, false, false, false]}
+                    onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
+                  />
+                  <span className="text-gray-500 text-[9px] sm:text-xs whitespace-nowrap ml-1">
+                    {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed
+                  </span>
+                </span>
+              </td>
+              <td className="p-2 sm:p-2 align-middle">
+                <span style={{ display: 'inline-block', textAlign: 'center', width: '100%' }}>
+                  <button
+                    type="button"
+                    ref={el => { if (el) menuButtonRefs.current[idx] = el; }}
+                    onClick={() => setOpenMenuIdx(openMenuIdx === idx ? null : idx)}
+                    className="appearance-none w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--muted)] transition-colors focus:ring-2 focus:ring-blue-800 focus:outline-none"
+                    aria-label="Open actions menu"
+                  >
+                    <MoreHorizontal className="w-3 h-3 text-gray-400" />
+                  </button>
+                  {openMenuIdx === idx && menuButtonRefs.current[idx] && (
+                    <ClientActionsMenu
+                      onClose={() => setOpenMenuIdx(null)}
+                      onViewDetails={() => onViewDetails && onViewDetails(c)}
+                      onDelete={() => {/* TODO: handle delete */}}
+                      anchorRef={{ current: menuButtonRefs.current[idx]! }}
+                    />
+                  )}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  return darkMode ? renderDarkTable() : renderLightTable();
 }

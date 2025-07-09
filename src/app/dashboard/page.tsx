@@ -20,6 +20,13 @@ import MobileSidebarDrawer from "./MobileSidebarDrawer";
 import Image from "next/image";
 import MobileDashboardHeader from "./MobileDashboardHeader";
 import DashboardHeaderUserSection from "./DashboardHeaderUserSection";
+import Dashboard from './Dashboard';
+import Plans from './Plans';
+import Compliance from './Compliance';
+import Templates from './Templates';
+import Auditlog from './Auditlog';
+import Teammembers from './Teammembers';
+import SettingsSection from './Settings';
 
 const iconClass = "w-5 h-5";
 
@@ -36,18 +43,6 @@ const supportSections = [
   { key: "teammembers", label: "Team members", icon: <Users2 className={iconClass} /> },
   { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
-
-function Placeholder({ label }: { label: string }) {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center text-zinc-400 py-24">
-      <div className="w-24 h-24 bg-blue-50 rounded-[14px] flex items-center justify-center mb-8 shadow-sm">
-        <svg width="64" height="64" fill="none" stroke="#b0b0b0" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/></svg>
-      </div>
-      <div className="text-xl font-semibold text-zinc-900 mb-2">{label} Section</div>
-      <div className="text-zinc-400 text-base mb-8">This is a placeholder for the {label} section.</div>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const [active, setActive] = useState("clients");
@@ -68,7 +63,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-zinc-50 flex flex-col relative w-full max-w-full">
+    <div className="h-screen bg-[var(--background)] flex flex-col relative w-full max-w-full">
       <MobileDashboardHeader
         onOpenSidebar={() => setMobileSidebarOpen(true)}
         sectionTitle={(() => {
@@ -118,11 +113,11 @@ export default function DashboardPage() {
         userName={"Robert Fox"}
         userRole={"Super admin"}
       />
-      <div className="w-full bg-white border-b-2 border-zinc-200 relative hidden sm:block">
-        <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-white">
-          <div className="w-64 flex-shrink-0 flex items-center h-full bg-white">
+      <div className="w-full bg-[var(--background)] border-b-2 border-[var(--border)] relative hidden sm:block">
+        <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-[var(--background)]">
+          <div className="w-64 flex-shrink-0 flex items-center h-full bg-[var(--background)]">
             <button
-              className="ml-4 mr-2 p-2 rounded-[12px] hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10 sm:hidden"
+              className="ml-4 mr-2 p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] transition flex items-center justify-center w-10 h-10 sm:hidden"
               aria-label="Open sidebar"
               onClick={() => setMobileSidebarOpen(true)}
             >
@@ -133,7 +128,7 @@ export default function DashboardPage() {
               </svg>
             </button>
             <button
-              className="ml-4 mr-2 p-2 rounded-xl hover:bg-zinc-100 transition flex items-center justify-center w-10 h-10 border border-zinc-200 bg-white"
+              className="ml-4 mr-2 p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] transition flex items-center justify-center w-10 h-10"
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               onClick={() => setSidebarCollapsed((c) => !c)}
             >
@@ -145,17 +140,17 @@ export default function DashboardPage() {
             </button>
             <Image src="/logo.svg" alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
           </div>
-          <div className={`flex-1 flex items-center h-full bg-white ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
+          <div className={`flex-1 flex items-center h-full bg-[var(--background)] ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
             {active === "clients" && clientDetailsOpen ? (
               <div className="flex items-center gap-2 py-2">
                 <button
                   onClick={handleBackToClients}
-                  className="p-1 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
+                  className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
                   aria-label="Back to client list"
                 >
-                  <ArrowLeft className="w-5 h-5 text-black" />
+                  <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
                 </button>
-                <span className="h-6 w-px bg-zinc-200" />
+                <span className="h-6 w-px bg-[var(--border)]" />
                 <SquareUserRound className="w-4 h-4 text-zinc-400" />
                 <span className="text-zinc-400 text-base font-medium">Clients</span>
                 {/* Render chevron-based breadcrumb for client/transfer path */}
@@ -186,7 +181,7 @@ export default function DashboardPage() {
                 })()}
               </div>
             ) :
-              <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
+              <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
             }
           </div>
           <DashboardHeaderUserSection
@@ -202,9 +197,9 @@ export default function DashboardPage() {
         onSectionSelect={setActive}
         activeSectionKey={active}
       />
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-[var(--border)] z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
       <div className="flex flex-1 min-h-0">
-        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-white flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
+        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-[var(--background)] flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
           <nav className="flex-1 flex flex-col gap-8">
             <div>
               <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8 transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>GENERAL</div>
@@ -216,7 +211,7 @@ export default function DashboardPage() {
                     onClick={() => setActive(section.key)}
                   >
                     {active === section.key && (
-                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 rounded-xl -z-10" aria-hidden="true" />
+                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 dark:bg-[var(--muted)] rounded-xl -z-10" aria-hidden="true" />
                     )}
                     <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
                       {React.cloneElement(section.icon, {
@@ -238,7 +233,7 @@ export default function DashboardPage() {
                     onClick={() => setActive(section.key)}
                   >
                     {active === section.key && (
-                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 rounded-xl -z-10" aria-hidden="true" />
+                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 dark:bg-[var(--muted)] rounded-xl -z-10" aria-hidden="true" />
                     )}
                     <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
                       {React.cloneElement(section.icon, {
@@ -252,15 +247,23 @@ export default function DashboardPage() {
             </div>
           </nav>
         </aside>
-        <div className="flex-1 flex flex-col bg-white w-full px-4 sm:px-0">
+        <div className="flex-1 flex flex-col bg-[var(--background)] w-full px-4 sm:px-0">
           {active === "clients" ? (
             <Clients detailsViewOpen={clientDetailsOpen} onDetailsViewChange={handleClientDetailsChange} />
           ) : active === "dashboard" ? (
-            <Placeholder label="Dashboard" />
+            <Dashboard />
           ) : active === "plans" ? (
-            <Placeholder label="Plans" />
+            <Plans />
           ) : active === "compliance" ? (
-            <Placeholder label="Compliance" />
+            <Compliance />
+          ) : active === "templates" ? (
+            <Templates />
+          ) : active === "auditlog" ? (
+            <Auditlog />
+          ) : active === "teammembers" ? (
+            <Teammembers />
+          ) : active === "settings" ? (
+            <SettingsSection />
           ) : null}
         </div>
       </div>
