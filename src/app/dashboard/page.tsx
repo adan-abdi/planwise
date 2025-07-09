@@ -18,6 +18,7 @@ import {
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
 import Image from "next/image";
+import MobileDashboardHeader from "./MobileDashboardHeader";
 
 const iconClass = "w-5 h-5";
 
@@ -53,6 +54,7 @@ export default function DashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
+  const activeSupportSection = supportSections.find((s) => s.key === active);
   const [selectedClientTab, setSelectedClientTab] = useState<string>('details');
 
   const handleBackToClients = () => setClientDetailsOpen(false);
@@ -65,15 +67,57 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-zinc-50 flex flex-col relative">
-      <MobileSidebarDrawer
-        open={mobileSidebarOpen}
-        onClose={() => setMobileSidebarOpen(false)}
-        onSectionSelect={setActive}
-        activeSectionKey={active}
+    <div className="h-screen bg-zinc-50 flex flex-col relative w-full max-w-full">
+      <MobileDashboardHeader
+        onOpenSidebar={() => setMobileSidebarOpen(true)}
+        sectionTitle={(() => {
+          if (active === "clients" && clientDetailsOpen) return '';
+          return activeSection?.label || activeSupportSection?.label || '';
+        })()}
+        breadcrumb={(() => {
+          if (active === "clients" && clientDetailsOpen) {
+            const items = [];
+            items.push({
+              label: "Clients",
+              icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />,
+              onClick: handleBackToClients,
+              isActive: false,
+            });
+            if (selectedClientName) {
+              items.push({
+                label: selectedClientName,
+                isActive: !selectedClientTab.startsWith('transfers/'),
+              });
+            } else if (!selectedClientName) {
+              items.push({
+                label: "Client",
+                isActive: !selectedClientTab.startsWith('transfers/'),
+              });
+            }
+            if (selectedClientTab.startsWith('transfers/')) {
+              items.push({
+                label: "Transfers",
+                isActive: false,
+              });
+              items.push({
+                label: selectedClientTab.replace('transfers/', ''),
+                isActive: true,
+              });
+            } else {
+              items.push({
+                label: selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1),
+                isActive: true,
+              });
+            }
+            return items;
+          }
+          return [];
+        })()}
+        avatarUrl={"https://randomuser.me/api/portraits/men/32.jpg"}
+        userName={"Robert Fox"}
+        userRole={"Super admin"}
       />
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
-      <div className="w-full bg-white border-b-2 border-zinc-200 relative">
+      <div className="w-full bg-white border-b-2 border-zinc-200 relative hidden sm:block">
         <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-white">
           <div className="w-64 flex-shrink-0 flex items-center h-full bg-white">
             <button
@@ -126,9 +170,9 @@ export default function DashboardPage() {
                   <span className="text-zinc-900 text-base font-semibold">{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
                 )}
               </div>
-            ) : (
-              <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
-            )}
+            ) :
+              <div className={`text-3xl text-zinc-900 transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
+            }
           </div>
           <div className="flex items-center gap-6">
             <button className="relative p-2 rounded-full hover:bg-zinc-100 transition">
@@ -146,8 +190,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <MobileSidebarDrawer
+        open={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+        onSectionSelect={setActive}
+        activeSectionKey={active}
+      />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-zinc-200 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
       <div className="flex flex-1 min-h-0">
-        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-8'} bg-white flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
+        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-white flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
           <nav className="flex-1 flex flex-col gap-8">
             <div>
               <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8 transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>GENERAL</div>
@@ -161,7 +212,7 @@ export default function DashboardPage() {
                     {active === section.key && (
                       <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 rounded-xl -z-10" aria-hidden="true" />
                     )}
-                    <div className={`flex items-center gap-3 py-2 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
+                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
                       {React.cloneElement(section.icon, {
                         className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`
                       })}
@@ -177,19 +228,25 @@ export default function DashboardPage() {
                 {supportSections.map((section) => (
                   <li
                     key={section.key}
-                    className={`flex items-center gap-3 py-2 rounded-[14px] text-zinc-700 hover:bg-zinc-100 cursor-pointer font-medium items-center${sidebarCollapsed ? ' justify-center' : ''}`}
+                    className="w-full relative"
+                    onClick={() => setActive(section.key)}
                   >
-                    {React.cloneElement(section.icon, {
-                      className: `${iconClass} text-zinc-400`,
-                    })}
-                    <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
+                    {active === section.key && (
+                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 rounded-xl -z-10" aria-hidden="true" />
+                    )}
+                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
+                      {React.cloneElement(section.icon, {
+                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                      })}
+                      <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           </nav>
         </aside>
-        <div className="flex-1 flex flex-col bg-white">
+        <div className="flex-1 flex flex-col bg-white w-full px-4 sm:px-0">
           {active === "clients" ? (
             <Clients detailsViewOpen={clientDetailsOpen} onDetailsViewChange={handleClientDetailsChange} />
           ) : active === "dashboard" ? (

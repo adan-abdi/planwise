@@ -24,12 +24,10 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
 }) {
   return (
     <>
-      {/* Overlay */}
       <div
         className={`fixed inset-0 z-50 bg-black/30 transition-opacity duration-200 sm:hidden ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
-      {/* Drawer */}
       <aside
         className={`fixed top-0 left-0 h-full w-72 max-w-full bg-white z-50 shadow-2xl transform transition-transform duration-300 sm:hidden
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
@@ -66,12 +64,15 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
               {supportSections.map((section) => (
                 <li
                   key={section.key}
-                  className="flex items-center gap-3 py-2 px-3 rounded-lg text-zinc-700 hover:bg-zinc-100 cursor-pointer font-medium"
+                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50' : ''}`}
+                  onClick={() => { onSectionSelect(section.key); onClose(); }}
                 >
-                  {React.cloneElement(section.icon, {
-                    className: `${iconClass} text-zinc-400`,
-                  })}
-                  <span>{section.label}</span>
+                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-700'}`}>
+                    {React.cloneElement(section.icon, {
+                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                    })}
+                    <span>{section.label}</span>
+                  </div>
                 </li>
               ))}
             </ul>

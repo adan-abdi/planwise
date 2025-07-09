@@ -38,7 +38,6 @@ export default function ProfilePage() {
       }
     >
       <form onSubmit={handleSubmit} className="space-y-6 w-full">
-        {/* Profile Pic Box */}
         <div className="w-full bg-gray-100 border border-gray-200 rounded-xl px-6 py-5">
           <div className="flex justify-center relative">
             <div
@@ -86,7 +85,6 @@ export default function ProfilePage() {
           required
         />
 
-        {/* Continue Button */}
         <button
           type="submit"
           className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"

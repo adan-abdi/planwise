@@ -19,6 +19,7 @@ import {
   FolderClosed,
 } from "lucide-react";
 import UploadModal from "./UploadModal";
+import ReviewChecklistModal from "./ReviewChecklistModal";
 
 interface ClientDetailsProps {
   client: ClientItem;
@@ -77,10 +78,18 @@ function getFolderContents(path: string[]): TransferFolderItem[] {
 
 const finderCardBase =
   "flex items-center gap-4 w-full max-w-xs min-w-[220px] px-4 py-3 border border-zinc-200 rounded-lg bg-white cursor-pointer transition-all duration-150 hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30 focus:bg-blue-50/50 focus:border-blue-300 outline-none";
-const finderIconFolder = "w-10 h-10 text-blue-400";
-const finderIconFile = "w-10 h-10 text-blue-400";
-const finderName = "text-base font-semibold text-zinc-900 truncate";
-const finderHint = "text-xs text-zinc-400 ml-2";
+
+function detectTouchDevice() {
+  if (typeof window !== 'undefined') {
+    return (
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      // @ts-expect-error: msMaxTouchPoints is only present in some browsers
+      navigator.msMaxTouchPoints > 0
+    );
+  }
+  return false;
+}
 
 export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange }: ClientDetailsProps) {
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('details');
@@ -157,11 +166,18 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
+  const [showReviewChecklist, setShowReviewChecklist] = useState(false);
+
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch(detectTouchDevice());
+  }, []);
+
   return (
     <div className="bg-white min-h-full">
-      <div className="flex items-center justify-between pl-8 pr-8 py-4 border-b-1 border-zinc-200 min-h-[64px] bg-white w-full mb-4">
-        <div className="flex items-center gap-4">
-          <div className="relative w-10 h-10">
+      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 min-h-[56px] bg-white w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10">
             <Image
               src={editValues.avatar}
               alt={editValues.client}
@@ -169,22 +185,14 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
               className="rounded-full object-cover"
             />
           </div>
-          <div>
-            <div className="text-2xl font-semibold text-zinc-900">{editValues.client}</div>
+          <div className="min-w-0">
+            <div className="text-lg sm:text-2xl font-semibold text-zinc-900 truncate">{editValues.client}</div>
           </div>
         </div>
-        <div className="flex gap-2 ml-auto">
+        <div className="flex gap-1 sm:gap-2 ml-auto flex-shrink-0">
           {hasUnsavedChanges && (
             <button
-              className="px-4 py-1.5 text-base font-medium text-zinc-700 bg-white hover:bg-zinc-100 transition flex items-center justify-center"
-              style={{
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                height: '32px',
-                minWidth: '80px',
-                fontFamily: 'system-ui, sans-serif',
-                boxShadow: 'none',
-              }}
+              className="px-2 sm:px-4 py-1 text-sm sm:text-base font-medium text-zinc-700 bg-white hover:bg-zinc-100 transition flex items-center justify-center border border-zinc-200 rounded-[6px] h-8 sm:h-[32px] min-w-[60px] sm:min-w-[80px] font-sans shadow-none"
               onClick={handleCancel}
               type="button"
             >
@@ -193,15 +201,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           )}
           {hasUnsavedChanges && (
             <button
-              className={`px-4 py-1.5 text-base font-medium transition flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white`}
-              style={{
-                borderRadius: '6px',
-                border: '1px solid #2563eb',
-                height: '32px',
-                minWidth: '110px',
-                fontFamily: 'system-ui, sans-serif',
-                boxShadow: 'none',
-              }}
+              className="px-2 sm:px-4 py-1 text-sm sm:text-base font-medium transition flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 rounded-[6px] h-8 sm:h-[32px] min-w-[80px] sm:min-w-[110px] font-sans shadow-none"
               onClick={handleSave}
               type="button"
             >
@@ -210,23 +210,23 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           )}
         </div>
       </div>
-      <div className="flex items-center border-b pb-4 border-zinc-200 gap-2 px-8 mb-8">
+      <div className="flex items-center border-b pb-4 border-zinc-200 gap-2 px-2 sm:px-8 mb-8 flex-nowrap overflow-x-auto">
         <button
-          className={`px-3 py-1.5 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 ${activeTab === 'details' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'details' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
           onClick={() => setActiveTab('details')}
         >
           <FileText className="w-4 h-4 mr-1" />
           Client details
         </button>
         <button
-          className={`px-3 py-1.5 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 ${activeTab === 'transfers' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'transfers' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
           onClick={() => setActiveTab('transfers')}
         >
           <FolderTree className="w-4 h-4 mr-1" />
           Transfers
         </button>
         <button
-          className={`px-3 py-1.5 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 ${activeTab === 'activity' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'activity' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
           onClick={() => setActiveTab('activity')}
         >
           <ActivitySquare className="w-4 h-4 mr-1" />
@@ -234,7 +234,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         </button>
       </div>
       {activeTab === 'details' && (
-        <div className="max-w-2xl px-12">
+        <div className="max-w-2xl px-4 sm:px-12">
           <div className="flex flex-col gap-4">
             <DetailRowVertical icon={<User className="w-5 h-5 text-zinc-400" />} label="Profile picture">
               <div className="relative w-8 h-8">
@@ -272,30 +272,30 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         </div>
       )}
       {activeTab === 'transfers' && (
-        <div className="max-w-4xl px-12">
+        <div className="max-w-4xl px-2 sm:px-12">
           <div className="text-xl font-semibold text-zinc-900 mb-6">Transfers</div>
           {openedTransfer === null ? (
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 w-full">
               <div
-                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-6 py-5 min-w-[220px] max-w-xs cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
-                onClick={() => handleOpenTransfer("pension")}
+                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-2 py-2 sm:px-4 sm:py-4 w-full sm:w-auto mb-2 sm:mb-0 cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
+                onClick={() => handleOpenTransfer('pension')}
                 tabIndex={0}
                 role="button"
                 aria-label="Open Pension Transfer"
               >
-                <FolderClosed className="w-12 h-12 mb-2 text-zinc-400" />
-                <div className="text-lg font-semibold text-zinc-900 mb-1">Pension Transfer</div>
+                <FolderClosed className="w-8 h-8 mb-1 text-zinc-400" />
+                <div className="text-base font-semibold text-zinc-900 mb-0.5">Pension Transfer</div>
                 <div className="text-xs text-zinc-400">No. of transfers <span className="inline-block ml-1 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">2</span></div>
               </div>
               <div
-                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-6 py-5 min-w-[220px] max-w-xs cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
-                onClick={() => handleOpenTransfer("isa")}
+                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-2 py-2 sm:px-4 sm:py-4 w-full sm:w-auto cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
+                onClick={() => handleOpenTransfer('isa')}
                 tabIndex={0}
                 role="button"
                 aria-label="Open ISA Transfer"
               >
-                <FolderClosed className="w-12 h-12 mb-2 text-zinc-400" />
-                <div className="text-lg font-semibold text-zinc-900 mb-1">ISA Transfer</div>
+                <FolderClosed className="w-8 h-8 mb-1 text-zinc-400" />
+                <div className="text-base font-semibold text-zinc-900 mb-0.5">ISA Transfer</div>
                 <div className="text-xs text-zinc-400">No. of transfers <span className="inline-block ml-1 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">1</span></div>
               </div>
             </div>
@@ -313,23 +313,28 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                 )}
                 <div className="text-xl font-semibold text-zinc-900">{transferPath[transferPath.length-1]}</div>
               </div>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-2 sm:gap-4 w-full">
                 {getFolderContents(transferPath).map((item) => (
                   <div
                     key={item.name}
-                    className={finderCardBase}
-                    onClick={() => item.type === "folder" ? handleEnterFolder(item.name) : undefined}
-                    onDoubleClick={handleUploadModal}
+                    className={finderCardBase + ' w-full sm:w-auto px-2 py-2 sm:px-4 sm:py-4'}
+                    onClick={item.type === 'folder' ? () => handleEnterFolder(item.name) : undefined}
                     tabIndex={0}
                     role="button"
-                    aria-label={item.type === "folder" ? `Open ${item.name}` : `Open file ${item.name}`}
+                    aria-label={item.type === 'folder' ? `Open ${item.name}` : `Open file ${item.name}`}
                   >
-                    {item.type === "folder"
-                      ? <FolderClosed className={finderIconFolder} />
-                      : <FileText className={finderIconFile} />}
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <span className={finderName}>{item.name}</span>
-                      <span className={finderHint}>* Double-Click to upload {item.type === "folder" ? "docs" : "file"}</span>
+                    {item.type === 'folder'
+                      ? <FolderClosed className="w-8 h-8 text-zinc-400" />
+                      : <FileText className="w-8 h-8 text-zinc-400" />}
+                    <div className="flex flex-col flex-1 min-w-0 items-start">
+                      <span className="text-base font-semibold text-zinc-900 truncate">{item.name}</span>
+                      <button
+                        type="button"
+                        className="text-xs text-blue-600 hover:underline mt-0.5 ml-0 p-0 bg-transparent border-none cursor-pointer focus:outline-none"
+                        onClick={e => { e.stopPropagation(); handleUploadModal(); }}
+                      >
+                        {isTouch ? 'Tap to upload' : 'Double click to upload'} {item.type === 'folder' ? 'docs' : 'file'}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -338,8 +343,32 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           )}
         </div>
       )}
-      {/* Placeholder for other tabs */}
-      <UploadModal open={uploadModalOpen} onClose={handleCloseUploadModal} />
+      <UploadModal
+        open={uploadModalOpen && !showReviewChecklist}
+        onClose={handleCloseUploadModal}
+        onNoPersonalisedChecklist={() => {
+          setUploadModalOpen(false);
+          setShowReviewChecklist(true);
+        }}
+        onShowReviewChecklist={() => {
+          setUploadModalOpen(false);
+          setShowReviewChecklist(true);
+        }}
+      />
+      <ReviewChecklistModal
+        open={showReviewChecklist}
+        onCancel={() => setShowReviewChecklist(false)}
+        onContinue={() => setShowReviewChecklist(false)}
+        checklistItems={[
+          "Partner",
+          "Client name",
+          "Client DOB",
+          "SJP SRA",
+          "Recommended Fund Choice",
+          "Checklist completed by",
+          "Provider"
+        ]}
+      />
     </div>
   );
 }

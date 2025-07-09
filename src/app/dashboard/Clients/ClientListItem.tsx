@@ -64,13 +64,25 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef }: {
   useEffect(() => {
     if (anchorRef.current && menuRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
-      setStyle({
-        position: 'fixed',
-        top: rect.bottom + 8,
-        left: rect.left - 24,
-        zIndex: 1000,
-        minWidth: 260,
-      });
+      if (typeof window !== 'undefined' && window.innerWidth < 640) {
+        setStyle({
+          position: 'fixed',
+          top: rect.bottom + 8,
+          left: 8,
+          right: 8,
+          minWidth: undefined,
+          width: 'calc(100vw - 16px)',
+          zIndex: 1000,
+        });
+      } else {
+        setStyle({
+          position: 'fixed',
+          top: rect.bottom + 8,
+          left: rect.left - 24,
+          zIndex: 1000,
+          minWidth: 260,
+        });
+      }
     }
   }, [anchorRef]);
 
@@ -138,86 +150,92 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
     onChecklistChange(clientIdx, newChecklist);
   };
   return (
-    <div className="overflow-x-auto w-full">
-      <table className="w-full text-sm text-left">
-        <thead className="text-gray-500 bg-white">
-          <tr>
-            <th className="p-2">
+    <div className="overflow-x-auto w-full px-0 pt-4 sm:pt-0 scrollbar-thin" style={{marginTop: 0, marginBottom: 0}}>
+      <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
+        <thead className="text-zinc-700 font-semibold bg-zinc-50 border-b border-zinc-200 shadow-xs rounded-t-md">
+          <tr className="h-8 sm:h-10">
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">{/* select all */}
               <button
                 type="button"
                 onClick={handleSelectAll}
-                className={`appearance-none w-5 h-5 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${allSelected ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
+                className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${allSelected ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
                 style={{ outline: 'none' }}
               >
-                {allSelected && <Check className="w-4 h-4 text-green-500" />}
+                {allSelected && <Check className="w-3 h-3 text-green-500" />}
               </button>
             </th>
-            <th className="p-2 font-normal">Advisor Name</th>
-            <th className="p-2 font-normal">Client Name</th>
-            <th className="p-2 font-normal">Date Received</th>
-            <th className="p-2 font-normal">Type of Case</th>
-            <th className="p-2 font-normal">CFR Uploaded?</th>
-            <th className="p-2 font-normal">Number of Plans</th>
-            <th className="p-2 font-normal">Checklists Status</th>
-            <th className="p-2 font-normal">Actions</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left">Advisor Name</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 text-left">Client Name</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left">Date Received</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">Type of Case</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">CFR Uploaded?</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left">Number of Plans</th>
+            <th className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 text-left">Checklists Status</th>
+            <th className="p-0.5 sm:p-2 align-middle text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           {clients.map((c, idx) => (
-            <tr key={idx} className={`border-t ${selectedRows[idx] ? 'border-gray-200 bg-gray-50' : 'border-gray-100'} hover:bg-gray-50`}>
-              <td className="p-2">
+            <tr key={idx} className="border-b border-zinc-100 bg-white h-7 sm:h-9">
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">
                 <button
                   type="button"
                   onClick={() => handleSelectRow(idx)}
-                  className={`appearance-none w-5 h-5 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${selectedRows[idx] ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
+                  className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${selectedRows[idx] ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
                   style={{ outline: 'none' }}
                 >
-                  {selectedRows[idx] && <Check className="w-4 h-4 text-green-500" />}
+                  {selectedRows[idx] && <Check className="w-3 h-3 text-green-500" />}
                 </button>
               </td>
-              <td className="p-2">{c.advisor}</td>
-              <td className="p-2 flex items-center gap-2">
-                <div className="relative w-6 h-6">
-                  <Image
-                    src={c.avatar}
-                    alt={c.client}
-                    fill
-                    className="rounded-full object-cover"
-                  />
-                </div>
-                {c.client}
-              </td>
-              <td className="p-2">on {c.date}</td>
-              <td className="p-2">{c.type}</td>
-              <td className="p-2">{c.cfr}</td>
-              <td className="p-2">{c.plans}</td>
-              <td className="p-2 flex items-center gap-2">
-                <ChecklistIcons
-                  checked={checklistStates[idx] || [false, false, false, false]}
-                  onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
-                />
-                <span className="text-gray-500 text-xs whitespace-nowrap">
-                  {(checklistStates[idx] || []).filter(Boolean).length}/4 completed
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell truncate max-w-[60px]">{c.advisor}</td>
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 truncate max-w-[80px]">
+                <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                  <span className="relative w-5 h-5 inline-block align-middle" style={{ verticalAlign: 'middle' }}>
+                    <Image
+                      src={c.avatar}
+                      alt={c.client}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </span>
+                  <span className="font-medium truncate max-w-[60px] ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
                 </span>
               </td>
-              <td className="p-2 relative">
-                <button
-                  type="button"
-                  ref={el => { if (el) menuButtonRefs.current[idx] = el; }}
-                  onClick={() => setOpenMenuIdx(openMenuIdx === idx ? null : idx)}
-                  className="appearance-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                  aria-label="Open actions menu"
-                >
-                  <MoreHorizontal className="w-4 h-4 text-gray-500" />
-                </button>
-                {openMenuIdx === idx && menuButtonRefs.current[idx] && (
-                  <ClientActionsMenu
-                    onClose={() => setOpenMenuIdx(null)}
-                    onViewDetails={() => onViewDetails && onViewDetails(c)}
-                    onDelete={() => {/* TODO: handle delete */}}
-                    anchorRef={{ current: menuButtonRefs.current[idx]! }}
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap">{c.date}</td>
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[50px]">{c.type}</td>
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[40px]">{c.cfr}</td>
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[30px]">{c.plans}</td>
+              <td className="p-0.5 sm:p-2 align-middle border-r border-zinc-100">
+                <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
+                  <ChecklistIcons
+                    checked={checklistStates[idx] || [false, false, false, false]}
+                    onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
                   />
-                )}
+                  <span className="text-gray-400 text-[9px] sm:text-xs whitespace-nowrap ml-1">
+                    {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed
+                  </span>
+                </span>
+              </td>
+              <td className="p-0.5 sm:p-2 align-middle">
+                <span style={{ display: 'inline-block', textAlign: 'center', width: '100%' }}>
+                  <button
+                    type="button"
+                    ref={el => { if (el) menuButtonRefs.current[idx] = el; }}
+                    onClick={() => setOpenMenuIdx(openMenuIdx === idx ? null : idx)}
+                    className="appearance-none w-7 h-7 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors focus:ring-2 focus:ring-blue-200 focus:outline-none"
+                    aria-label="Open actions menu"
+                  >
+                    <MoreHorizontal className="w-3 h-3 text-gray-500" />
+                  </button>
+                  {openMenuIdx === idx && menuButtonRefs.current[idx] && (
+                    <ClientActionsMenu
+                      onClose={() => setOpenMenuIdx(null)}
+                      onViewDetails={() => onViewDetails && onViewDetails(c)}
+                      onDelete={() => {/* TODO: handle delete */}}
+                      anchorRef={{ current: menuButtonRefs.current[idx]! }}
+                    />
+                  )}
+                </span>
               </td>
             </tr>
           ))}
