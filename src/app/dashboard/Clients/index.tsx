@@ -6,7 +6,8 @@ import type { ClientFormData } from "./ClientModal";
 import ClientDetails from "./ClientDetails";
 import ReviewChecklistModal from "./ReviewChecklistModal";
 import UploadModal from "./UploadModal";
-import Image from "next/image";
+import ClientFooter from "./ClientFooter";
+import ClientEmptyState from "./ClientEmptyState";
 
 export default function Clients({ detailsViewOpen, onDetailsViewChange }: { detailsViewOpen?: boolean; onDetailsViewChange?: (open: boolean, name?: string, tab?: string) => void; }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -16,6 +17,9 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
   const [selectedTab, setSelectedTab] = useState<string>('details');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // Adjust as needed
+  const totalPages = Math.max(1, Math.ceil(clients.length / pageSize));
 
   React.useEffect(() => {
     if (detailsViewOpen === false) {
@@ -84,20 +88,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
 
   let clientContent: React.ReactNode;
   if (clients.length === 0) {
-    clientContent = (
-      <div className="flex-1 flex items-center justify-center h-full min-h-[50vh] sm:min-h-[75vh]">
-        <div className="flex flex-col items-center justify-center text-center bg-white mt-0 sm:mt-16">
-          <div className="w-56 h-56 flex items-center justify-center mb-0">
-            <Image src="/no_client.svg" alt="No clients" width={224} height={224} className="w-56 h-56" />
-          </div>
-          <div className="text-lg font-semibold text-zinc-900 mb-1">No clients on record</div>
-          <div className="text-zinc-400 text-sm mb-6 px-4 text-center">Once you add clients a list of them will appear here in real time.</div>
-          <button onClick={handleOpenModal} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-2 text-sm font-medium shadow-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Create new client
-          </button>
-        </div>
-      </div>
-    );
+    clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
       <div className="p-0 px-0 sm:p-8">
@@ -123,81 +114,82 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange }: { deta
   ];
 
   return (
-    <>
+    <div className="flex flex-col h-full"> 
       <ClientModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
-      {selectedClient ? (
-        <ClientDetails
-          client={selectedClient}
-          onClientUpdate={handleClientUpdate}
-          checklist={checklistStates[selectedIdx]}
-          onChecklistChange={(newChecklist) => {
-            if (selectedIdx !== -1) handleChecklistChange(selectedIdx, newChecklist);
+      <div className="flex-1 min-h-0 flex flex-col">
+        {selectedClient ? (
+          <ClientDetails
+            client={selectedClient}
+            onClientUpdate={handleClientUpdate}
+            checklist={checklistStates[selectedIdx]}
+            onChecklistChange={(newChecklist) => {
+              if (selectedIdx !== -1) handleChecklistChange(selectedIdx, newChecklist);
+            }}
+            onTabChange={handleTabChange}
+          />
+        ) : (
+          <>
+            <div className="flex items-center justify-between sm:pl-8 sm:pr-8 border-b-1 border-zinc-200 min-h-[64px] bg-white flex-wrap gap-2">
+              <div className="flex gap-2 sm:hidden w-full justify-between mb-1">
+                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Sort">
+                  <ArrowUpDown className="w-5 h-5 text-zinc-500" />
+                </button>
+                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Filter">
+                  <FilterIcon className="w-5 h-5 text-zinc-500" />
+                </button>
+                <button onClick={handleOpenModal} className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Add new client">
+                  <UserPlus className="w-5 h-5 text-zinc-500" />
+                </button>
+                <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Import/Export">
+                  <Download className="w-5 h-5 text-zinc-500" />
+                </button>
+              </div>
+              <div className="hidden sm:flex w-full items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                    <ArrowUpDown className="w-4 h-4" />
+                    Sort
+                  </button>
+                  <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                    <FilterIcon className="w-4 h-4" />
+                    Filter
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleOpenModal} className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                    <UserPlus className="w-4 h-4" />
+                    Add client
+                  </button>
+                  <button className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
+                    <Download className="w-4 h-4" />
+                    Import/Export
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="w-full px-0 sm:px-8 pt-0 pb-0 flex-1 flex flex-col min-h-0">{clientContent}</div>
+          </>
+        )}
+        {/* UploadModal and ReviewChecklistModal coordination */}
+        <UploadModal
+          open={uploadModalOpen && !showReviewChecklist}
+          onClose={handleCloseUploadModal}
+          fileName={undefined}
+          onShowReviewChecklist={() => setShowReviewChecklist(true)}
+          onNoPersonalisedChecklist={() => {
+            setUploadModalOpen(false);
+            setShowReviewChecklist(true);
           }}
-          onTabChange={handleTabChange}
         />
-      ) : (
-        <>
-          <div className="flex items-center justify-between sm:pl-8 sm:pr-8 border-b-1 border-zinc-200 min-h-[64px] bg-white flex-wrap gap-2">
-            {/* Mobile: Icon buttons only */}
-            <div className="flex gap-2 sm:hidden w-full justify-between mb-1">
-              <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Sort">
-                <ArrowUpDown className="w-5 h-5 text-zinc-500" />
-              </button>
-              <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Filter">
-                <FilterIcon className="w-5 h-5 text-zinc-500" />
-              </button>
-              <button onClick={handleOpenModal} className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Add new client">
-                <UserPlus className="w-5 h-5 text-zinc-500" />
-              </button>
-              <button className="p-2 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100" aria-label="Import/Export">
-                <Download className="w-5 h-5 text-zinc-500" />
-              </button>
-            </div>
-            {/* Desktop/Tablet: Row layout with left/right grouping */}
-            <div className="hidden sm:flex w-full items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
-                  <ArrowUpDown className="w-4 h-4" />
-                  Sort
-                </button>
-                <button className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
-                  <FilterIcon className="w-4 h-4" />
-                  Filter
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={handleOpenModal} className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
-                  <UserPlus className="w-4 h-4" />
-                  Add client
-                </button>
-                <button className="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm text-zinc-700 font-normal bg-white hover:bg-zinc-100">
-                  <Download className="w-4 h-4" />
-                  Import/Export
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="w-full px-0 sm:px-8 pt-0 pb-0">{clientContent}</div>
-        </>
-      )}
-      {/* UploadModal and ReviewChecklistModal coordination */}
-      <UploadModal
-        open={uploadModalOpen && !showReviewChecklist}
-        onClose={handleCloseUploadModal}
-        fileName={undefined}
-        onShowReviewChecklist={() => setShowReviewChecklist(true)}
-        onNoPersonalisedChecklist={() => {
-          setUploadModalOpen(false);
-          setShowReviewChecklist(true);
-        }}
-      />
-      <ReviewChecklistModal
-        open={showReviewChecklist}
-        onCancel={() => setShowReviewChecklist(false)}
-        onContinue={() => setShowReviewChecklist(false)}
-        checklistItems={checklistItems}
-      />
-    </>
+        <ReviewChecklistModal
+          open={showReviewChecklist}
+          onCancel={() => setShowReviewChecklist(false)}
+          onContinue={() => setShowReviewChecklist(false)}
+          checklistItems={checklistItems}
+        />
+      </div>
+      <ClientFooter selectedClient={selectedClient} currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+    </div>
   );
 }
