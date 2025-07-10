@@ -1,19 +1,59 @@
 import React from "react";
 import type { ClientItem } from "./ClientListItem";
+import { useTheme } from "../../../theme-context";
 
 interface ClientFooterProps {
   selectedClient: ClientItem | null;
   currentPage: number;
   totalPages: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  isEmpty?: boolean;
+  showFooterActions?: boolean;
 }
 
-const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage }) => {
+const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage, isEmpty, showFooterActions }) => {
+  const { darkMode } = useTheme();
+  if (isEmpty) {
+    return (
+      <footer className="w-full bg-zinc-50 dark:bg-[var(--muted)] py-3 px-4 flex items-center justify-center min-h-[56px] relative text-[var(--foreground)] border-t border-zinc-200 dark:border-[var(--border)]">
+        {/* Edge-to-edge border for mobile only */}
+        <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen top-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
+      </footer>
+    );
+  }
   return (
-    <footer className="w-full bg-zinc-50 dark:bg-[var(--muted)] py-1.5 px-4 flex items-center justify-center min-h-[40px] relative text-[var(--foreground)]">
+    <footer className="w-full bg-zinc-50 dark:bg-[var(--muted)] py-3 px-4 flex items-center justify-center min-h-[56px] relative text-[var(--foreground)] border-t border-zinc-200 dark:border-[var(--border)]">
       {/* Edge-to-edge border for mobile only */}
       <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen top-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
-      {selectedClient ? (
+      {showFooterActions ? (
+        <div className="w-full flex justify-end items-center gap-2">
+          <button
+            className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
+            style={{ minWidth: 0, backgroundColor: darkMode ? 'var(--muted)' : '#fff', color: darkMode ? '#fff' : '#18181b' }}
+          >
+            Save as draft
+          </button>
+          <button
+            className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white/60 text-zinc-400 dark:bg-[var(--muted)] dark:text-[var(--foreground)] transition cursor-not-allowed"
+            style={{ minWidth: 0 }}
+            disabled
+          >
+            Download file
+          </button>
+          <button
+            className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white text-zinc-700 dark:bg-[var(--muted)] dark:text-[var(--foreground)] transition"
+            style={{ minWidth: 0 }}
+          >
+            Send an email
+          </button>
+          <button
+            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal bg-blue-600 text-white transition border border-blue-600 hover:bg-blue-700 hover:border-blue-700"
+            style={{ minWidth: 0 }}
+          >
+            Save and Continue
+          </button>
+        </div>
+      ) : selectedClient ? (
         <div className="w-full flex justify-between items-center">
           <span className="text-zinc-500 text-sm"></span>
         </div>

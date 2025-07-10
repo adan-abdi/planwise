@@ -20,29 +20,43 @@ export interface ClientItem {
   retirementAge?: string;
 }
 
-const ChecklistIcons = ({ checked, onToggle }: { checked: boolean[]; onToggle: (idx: number) => void }) => {
+const ChecklistIcons = ({ checked, onToggle, darkMode }: { checked: boolean[]; onToggle: (idx: number) => void; darkMode: boolean }) => {
   return (
-    <div className="flex items-center gap-[2px]">
+    <div className="flex items-center gap-2">
       {checked.map((isChecked, i) => (
         <button
           key={i}
           type="button"
           onClick={() => onToggle(i)}
-          className={`w-5 h-5 flex items-center justify-center rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 appearance-none shadow-none ${isChecked ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
-          style={{ outline: 'none' }}
+          className="w-[18px] h-[18px] flex items-center justify-center rounded-[4px] border transition-all align-middle cursor-pointer appearance-none shadow-none"
+          style={{ 
+            outline: 'none',
+            border: isChecked 
+              ? darkMode ? '1px solid #4ade80' : '1px solid #22c55e'
+              : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
+            backgroundColor: isChecked 
+              ? darkMode ? 'rgba(34, 197, 94, 0.1)' : '#f0fdf4'
+              : darkMode ? 'var(--background)' : '#ffffff'
+          }}
         >
-          {isChecked && <Check className="w-4 h-4 text-green-500 mx-auto my-auto" />}
+          {isChecked && (
+            <Check 
+              className="w-[14px] h-[14px] mx-auto my-auto" 
+              style={{ color: darkMode ? '#4ade80' : '#22c55e' }}
+            />
+          )}
         </button>
       ))}
     </div>
   );
 };
 
-function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef }: {
+function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef, darkMode }: {
   onClose: () => void;
   onViewDetails: () => void;
   onDelete: () => void;
   anchorRef: React.RefObject<HTMLButtonElement>;
+  darkMode: boolean;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -89,20 +103,45 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef }: {
   return (
     <div
       ref={menuRef}
-      style={style}
-      className="bg-white rounded-[10px] shadow-md border border-zinc-100 py-4 px-6 flex flex-col animate-fade-in"
+      style={{
+        ...style,
+        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+        borderColor: darkMode ? '#52525b' : '#f4f4f5',
+        boxShadow: darkMode ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      }}
+      className="rounded-[10px] border py-4 px-6 flex flex-col animate-fade-in"
     >
       <button
-        className="text-[15px] text-zinc-900 w-full py-2 px-2 text-left hover:bg-zinc-100 rounded-[14px] transition-colors focus:outline-none mb-1"
+        className="text-[15px] w-full py-2 px-2 text-left rounded-[14px] transition-colors focus:outline-none mb-1"
         onClick={() => { onViewDetails(); onClose(); }}
         type="button"
+        style={{
+          color: darkMode ? 'var(--foreground)' : '#18181b',
+          backgroundColor: 'transparent'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
       >
         <div className='px-2'>View details</div>
       </button>
       <button
-        className="text-[15px] text-red-500 w-full py-2 px-2 text-left hover:bg-red-50 rounded-[14px] transition-colors focus:outline-none mt-1"
+        className="text-[15px] w-full py-2 px-2 text-left rounded-[14px] transition-colors focus:outline-none mt-1"
         onClick={() => { onDelete(); onClose(); }}
         type="button"
+        style={{
+          color: darkMode ? '#f87171' : '#ef4444',
+          backgroundColor: 'transparent'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = darkMode ? '#7f1d1d' : '#fef2f2';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
       >
         <div className='px-2'>Delete client’s profile</div>
       </button>
@@ -161,33 +200,59 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
               <button
                 type="button"
                 onClick={handleSelectAll}
-                className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${allSelected ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
-                style={{ outline: 'none' }}
+                className="appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer flex items-center justify-center shadow-none"
+                style={{ 
+                  outline: 'none',
+                  border: allSelected 
+                    ? darkMode ? '1px solid #3b82f6' : '1px solid #2563eb'
+                    : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
+                  backgroundColor: allSelected 
+                    ? darkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.07)'
+                    : darkMode ? 'var(--background)' : '#ffffff'
+                }}
               >
-                {allSelected && <Check className="w-3 h-3 text-green-500" />}
+                {allSelected && (
+                  <Check 
+                    className="w-3 h-3" 
+                    style={{ color: darkMode ? '#3b82f6' : '#2563eb' }}
+                  />
+                )}
               </button>
             </th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left">Advisor Name</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left">Client Name</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left">Date Received</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">Type of Case</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left">CFR Uploaded?</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left">Number of Plans</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left">Checklists Status</th>
-            <th className="p-2 sm:p-2 align-middle text-left">Actions</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Advisor Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Client Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Date Received</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>CFR Uploaded?</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>No. of plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Checklists Status</th>
+            <th className="p-2 sm:p-2 align-middle text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {clients.map((c, idx) => (
-            <tr key={idx} className="border-b border-zinc-100 bg-white h-7 sm:h-9">
+            <tr key={idx} className={`border-b border-zinc-100 bg-white h-7 sm:h-9 hover:bg-[rgba(59,130,246,0.07)]${darkMode ? ' dark:hover:bg-[rgba(59,130,246,0.12)]' : ''}`}>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100">
                 <button
                   type="button"
                   onClick={() => handleSelectRow(idx)}
-                  className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 flex items-center justify-center shadow-none ${selectedRows[idx] ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
-                  style={{ outline: 'none' }}
+                  className="appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer flex items-center justify-center shadow-none"
+                  style={{ 
+                    outline: 'none',
+                    border: selectedRows[idx] 
+                      ? darkMode ? '1px solid #3b82f6' : '1px solid #2563eb'
+                      : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
+                    backgroundColor: selectedRows[idx] 
+                      ? darkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.07)'
+                      : darkMode ? 'var(--background)' : '#ffffff'
+                  }}
                 >
-                  {selectedRows[idx] && <Check className="w-3 h-3 text-green-500" />}
+                  {selectedRows[idx] && (
+                    <Check 
+                      className="w-3 h-3" 
+                      style={{ color: darkMode ? '#3b82f6' : '#2563eb' }}
+                    />
+                  )}
                 </button>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 truncate max-w-[60px]">{c.advisor}</td>
@@ -201,20 +266,21 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                       className="rounded-full object-cover"
                     />
                   </span>
-                  <span className="font-medium truncate max-w-[60px] ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
+                  <span className="font-medium ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
                 </span>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap">{c.date}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[50px]">{c.type}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[40px]">{c.cfr}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[30px]">{c.plans}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[60px]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[30px]">{c.cfr}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[10px]">{c.plans}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
                     checked={checklistStates[idx] || [false, false, false, false]}
                     onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
+                    darkMode={darkMode}
                   />
-                  <span className="text-gray-400 text-[9px] sm:text-xs whitespace-nowrap ml-1">
+                  <span className="text-gray-400 text-[9px] sm:text-xs whitespace-nowrap ml-3">
                     {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed
                   </span>
                 </span>
@@ -228,7 +294,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                     className="appearance-none w-7 h-7 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors focus:ring-2 focus:ring-blue-200 focus:outline-none"
                     aria-label="Open actions menu"
                   >
-                    <MoreHorizontal className="w-3 h-3 text-gray-500" />
+                    <MoreHorizontal className="w-3 h-3 text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                   </button>
                   {openMenuIdx === idx && menuButtonRefs.current[idx] && (
                     <ClientActionsMenu
@@ -236,6 +302,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                       onViewDetails={() => onViewDetails && onViewDetails(c)}
                       onDelete={() => {/* TODO: handle delete */}}
                       anchorRef={{ current: menuButtonRefs.current[idx]! }}
+                      darkMode={darkMode}
                     />
                   )}
                 </span>
@@ -257,33 +324,59 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
               <button
                 type="button"
                 onClick={handleSelectAll}
-                className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-800 flex items-center justify-center shadow-none ${allSelected ? 'border-green-400 bg-green-900/20' : 'border-[var(--border)] bg-[var(--background)]'}`}
-                style={{ outline: 'none' }}
+                className="appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer flex items-center justify-center shadow-none"
+                style={{ 
+                  outline: 'none',
+                  border: allSelected 
+                    ? darkMode ? '1px solid #3b82f6' : '1px solid #2563eb'
+                    : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
+                  backgroundColor: allSelected 
+                    ? darkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.07)'
+                    : darkMode ? 'var(--background)' : '#ffffff'
+                }}
               >
-                {allSelected && <Check className="w-3 h-3 text-green-400" />}
+                {allSelected && (
+                  <Check 
+                    className="w-3 h-3" 
+                    style={{ color: darkMode ? '#3b82f6' : '#2563eb' }}
+                  />
+                )}
               </button>
             </th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left">Advisor Name</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left">Client Name</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-left">Date Received</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left">Type of Case</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left">CFR Uploaded?</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell text-left">Number of Plans</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell text-left">Checklists Status</th>
-            <th className="p-2 sm:p-2 align-middle text-left">Actions</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Advisor Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Client Name</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Date Received</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>CFR Uploaded?</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>No. of plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Checklists Status</th>
+            <th className="p-2 sm:p-2 align-middle text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {clients.map((c, idx) => (
-            <tr key={idx} className="border-b border-zinc-700 bg-[var(--background)] h-7 sm:h-9">
+            <tr key={idx} className={`border-b border-zinc-700 bg-[var(--background)] h-7 sm:h-9 hover:bg-[rgba(59,130,246,0.07)]${darkMode ? ' dark:hover:bg-[rgba(59,130,246,0.12)]' : ''}`}>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600">
                 <button
                   type="button"
                   onClick={() => handleSelectRow(idx)}
-                  className={`appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-800 flex items-center justify-center shadow-none ${selectedRows[idx] ? 'border-green-400 bg-green-900/20' : 'border-[var(--border)] bg-[var(--background)]'}`}
-                  style={{ outline: 'none' }}
+                  className="appearance-none w-4 h-4 rounded-[6px] border transition-all align-middle cursor-pointer flex items-center justify-center shadow-none"
+                  style={{ 
+                    outline: 'none',
+                    border: selectedRows[idx] 
+                      ? darkMode ? '1px solid #3b82f6' : '1px solid #2563eb'
+                      : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
+                    backgroundColor: selectedRows[idx] 
+                      ? darkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.07)'
+                      : darkMode ? 'var(--background)' : '#ffffff'
+                  }}
                 >
-                  {selectedRows[idx] && <Check className="w-3 h-3 text-green-400" />}
+                  {selectedRows[idx] && (
+                    <Check 
+                      className="w-3 h-3" 
+                      style={{ color: darkMode ? '#3b82f6' : '#2563eb' }}
+                    />
+                  )}
                 </button>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 truncate max-w-[60px] text-[var(--foreground)]">{c.advisor}</td>
@@ -297,20 +390,21 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                       className="rounded-full object-cover"
                     />
                   </span>
-                  <span className="font-medium truncate max-w-[60px] ml-1 align-middle inline-block text-[var(--foreground)]" style={{ verticalAlign: 'middle' }}>{c.client}</span>
+                  <span className="font-medium ml-1 align-middle inline-block text-[var(--foreground)]" style={{ verticalAlign: 'middle' }}>{c.client}</span>
                 </span>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-[var(--foreground)]">{c.date}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[50px] text-[var(--foreground)]">{c.type}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[40px] text-[var(--foreground)]">{c.cfr}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell truncate max-w-[30px] text-[var(--foreground)]">{c.plans}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[60px] text-[var(--foreground)]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[30px] text-[var(--foreground)]">{c.cfr}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell truncate max-w-[10px] text-[var(--foreground)]">{c.plans}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
                     checked={checklistStates[idx] || [false, false, false, false]}
                     onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
+                    darkMode={darkMode}
                   />
-                  <span className="text-gray-500 text-[9px] sm:text-xs whitespace-nowrap ml-1">
+                  <span className="text-gray-500 text-[9px] sm:text-xs whitespace-nowrap ml-3">
                     {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed
                   </span>
                 </span>
@@ -324,7 +418,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                     className="appearance-none w-7 h-7 flex items-center justify-center rounded-full hover:bg-[var(--muted)] transition-colors focus:ring-2 focus:ring-blue-800 focus:outline-none"
                     aria-label="Open actions menu"
                   >
-                    <MoreHorizontal className="w-3 h-3 text-gray-400" />
+                    <MoreHorizontal className="w-3 h-3 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                   </button>
                   {openMenuIdx === idx && menuButtonRefs.current[idx] && (
                     <ClientActionsMenu
@@ -332,6 +426,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                       onViewDetails={() => onViewDetails && onViewDetails(c)}
                       onDelete={() => {/* TODO: handle delete */}}
                       anchorRef={{ current: menuButtonRefs.current[idx]! }}
+                      darkMode={darkMode}
                     />
                   )}
                 </span>

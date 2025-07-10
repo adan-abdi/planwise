@@ -27,6 +27,7 @@ import Templates from './Templates';
 import Auditlog from './Auditlog';
 import Teammembers from './Teammembers';
 import SettingsSection from './Settings';
+import { useTheme } from "../../theme-context";
 
 const iconClass = "w-5 h-5";
 
@@ -44,6 +45,8 @@ const supportSections = [
   { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
 
+type BreadcrumbItem = { label: string; icon?: React.ReactNode; onClick?: () => void; isActive?: boolean };
+
 export default function DashboardPage() {
   const [active, setActive] = useState("clients");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -52,74 +55,87 @@ export default function DashboardPage() {
   const activeSection = sections.find((s) => s.key === active);
   const activeSupportSection = supportSections.find((s) => s.key === active);
   const [selectedClientTab, setSelectedClientTab] = useState<string>('details');
+  const [isChecklistReviewActive, setIsChecklistReviewActive] = useState(false);
+  const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
 
   const handleBackToClients = () => setClientDetailsOpen(false);
 
   const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
+  const [triggerRandomClients, setTriggerRandomClients] = useState(false);
   const handleClientDetailsChange = (open: boolean, name?: string, tab?: string) => {
     setClientDetailsOpen(open);
     setSelectedClientName(open && name ? name : null);
     setSelectedClientTab(tab || 'details');
   };
 
+  const { darkMode } = useTheme();
+
+  // Function to generate random clients
+  const generateRandomClients = () => {
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
+    const advisors = ['Robert Fox', 'Sarah Johnson', 'Michael Brown', 'Emma Davis', 'David Wilson'];
+    const types = ['Pension New Money', 'ISA New Money', 'Pension Transfer', 'ISA Transfer'];
+    const cfrOptions = ['Yes', 'No'];
+    
+    const randomClients = Array.from({ length: 15 }, (_, index) => {
+      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const advisor = advisors[Math.floor(Math.random() * advisors.length)];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const cfr = cfrOptions[Math.floor(Math.random() * cfrOptions.length)];
+      const plans = Math.floor(Math.random() * 5) + 1;
+      const checklist = Math.floor(Math.random() * 5);
+      const date = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);
+      
+      return {
+        advisor,
+        client: `${firstName} ${lastName}`,
+        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 99)}.jpg`,
+        date: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        type,
+        cfr,
+        plans,
+        checklist,
+        atr: Math.random() > 0.5 ? 'Yes' : 'No',
+        dob: new Date(1950 + Math.floor(Math.random() * 50), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString('en-GB'),
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+        phone: `+44 ${Math.floor(Math.random() * 9000) + 1000} ${Math.floor(Math.random() * 900000) + 100000}`,
+        website: `https://${firstName.toLowerCase()}-${lastName.toLowerCase()}.com`,
+        retirementAge: (60 + Math.floor(Math.random() * 15)).toString()
+      };
+    });
+    
+    return randomClients;
+  };
+
   return (
     <div className="h-screen bg-[var(--background)] flex flex-col relative w-full max-w-full">
       <MobileDashboardHeader
         onOpenSidebar={() => setMobileSidebarOpen(true)}
-        sectionTitle={(() => {
-          if (active === "clients" && clientDetailsOpen) return '';
-          return activeSection?.label || activeSupportSection?.label || '';
-        })()}
-        breadcrumb={(() => {
-          if (active === "clients" && clientDetailsOpen) {
-            const items = [];
-            items.push({
-              label: "Clients",
-              icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />,
-              onClick: handleBackToClients,
-              isActive: false,
-            });
-            if (selectedClientName) {
-              items.push({
-                label: selectedClientName,
-                isActive: !selectedClientTab.startsWith('transfers/'),
-              });
-            } else if (!selectedClientName) {
-              items.push({
-                label: "Client",
-                isActive: !selectedClientTab.startsWith('transfers/'),
-              });
-            }
-            if (selectedClientTab.startsWith('transfers/')) {
-              items.push({
-                label: "Transfers",
-                isActive: false,
-              });
-              items.push({
-                label: selectedClientTab.replace('transfers/', ''),
-                isActive: true,
-              });
-            } else {
-              items.push({
-                label: selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1),
-                isActive: true,
-              });
-            }
-            return items;
-          }
-          return [];
-        })()}
+        sectionTitle={breadcrumbPath.length > 0 ? breadcrumbPath[breadcrumbPath.length-1].label : (activeSection?.label || activeSupportSection?.label || '')}
+        breadcrumb={breadcrumbPath}
         avatarUrl={"https://randomuser.me/api/portraits/men/32.jpg"}
         userName={"Robert Fox"}
         userRole={"Super admin"}
       />
-      <div className="w-full bg-[var(--background)] border-b-2 border-[var(--border)] relative hidden sm:block">
+      <div className="w-full bg-[var(--background)] border-b-2 relative hidden sm:block" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
         <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-[var(--background)]">
           <div className="w-64 flex-shrink-0 flex items-center h-full bg-[var(--background)]">
             <button
-              className="ml-4 mr-2 p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] transition flex items-center justify-center w-10 h-10 sm:hidden"
+              className="ml-4 mr-2 p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10 sm:hidden"
               aria-label="Open sidebar"
               onClick={() => setMobileSidebarOpen(true)}
+              style={{
+                backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+              }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="7" x2="19" y2="7" />
@@ -128,9 +144,19 @@ export default function DashboardPage() {
               </svg>
             </button>
             <button
-              className="ml-4 mr-2 p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] transition flex items-center justify-center w-10 h-10"
+              className="ml-4 mr-2 p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] transition flex items-center justify-center w-10 h-10"
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               onClick={() => setSidebarCollapsed((c) => !c)}
+              style={{
+                backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
+                borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)';
+              }}
             >
               {sidebarCollapsed ? (
                 <PanelRightOpen className="w-7 h-7 text-zinc-500" />
@@ -141,53 +167,87 @@ export default function DashboardPage() {
             <Image src="/logo.svg" alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
           </div>
           <div className={`flex-1 flex items-center h-full bg-[var(--background)] ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
-            {active === "clients" && clientDetailsOpen ? (
+            {active === "clients" && breadcrumbPath.length > 0 ? (
               <div className="flex items-center gap-2 py-2">
-                <button
-                  onClick={handleBackToClients}
-                  className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
-                  aria-label="Back to client list"
-                >
-                  <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
-                </button>
-                <span className="h-6 w-px bg-[var(--border)]" />
-                <SquareUserRound className="w-4 h-4 text-zinc-400" />
-                <span className="text-zinc-400 text-base font-medium">Clients</span>
-                {/* Render chevron-based breadcrumb for client/transfer path */}
-                {(() => {
-                  // Parse the selectedClientTab for transfer path
-                  let path: string[] = [];
-                  if (selectedClientTab && selectedClientTab.startsWith('transfers/')) {
-                    path = selectedClientTab.replace('transfers/', '').split('/');
-                  }
-                  return (
-                    <>
-                      <ChevronRight className="w-3 h-3 text-zinc-300" />
-                      <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
-                      {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, idx) => (
-                        <React.Fragment key={folder + idx}>
-                          <ChevronRight className="w-3 h-3 text-zinc-300" />
-                          <span className={`text-base font-medium ${idx === path.length - 1 ? 'text-zinc-900 font-semibold' : 'text-zinc-400'}`}>{folder}</span>
-                        </React.Fragment>
-                      ))}
-                      {selectedClientTab && !selectedClientTab.startsWith('transfers/') && (
-                        <>
-                          <ChevronRight className="w-3 h-3 text-zinc-300" />
-                          <span className="text-zinc-900 text-base font-semibold">{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
-                        </>
-                      )}
-                    </>
-                  );
-                })()}
+                {/* Show explicit back button only if not in CFR Checklist, not in root, and active section is clients */}
+                {active === 'clients' && breadcrumbPath.length > 1 && breadcrumbPath[breadcrumbPath.length-1]?.label !== 'CFR Checklist' && (
+                  <>
+                    <button
+                      onClick={handleBackToClients}
+                      className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
+                      aria-label="Back to client list"
+                    >
+                      <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
+                    </button>
+                    <span className="h-6 w-px bg-[var(--border)]" />
+                  </>
+                )}
+                {breadcrumbPath.map((item, idx) => (
+                  <React.Fragment key={item.label + idx}>
+                    {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                    <span className={`text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`} style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}>
+                      {item.label}
+                    </span>
+                  </React.Fragment>
+                ))}
               </div>
-            ) :
-              <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
+            ) : active === "clients" && clientDetailsOpen ? (
+                <div className="flex items-center gap-2 py-2">
+                  <button
+                    onClick={handleBackToClients}
+                    className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
+                    aria-label="Back to client list"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
+                  </button>
+                  <span className="h-6 w-px bg-[var(--border)]" />
+                  <SquareUserRound className="w-4 h-4 text-zinc-400" />
+                  <span className="text-zinc-400 text-base font-medium">Clients</span>
+                  {/* Render chevron-based breadcrumb for client/transfer path */}
+                  {(() => {
+                    // Parse the selectedClientTab for transfer path
+                    let path: string[] = [];
+                    if (selectedClientTab && selectedClientTab.startsWith('transfers/')) {
+                      path = selectedClientTab.replace('transfers/', '').split('/');
+                    }
+                    return (
+                      <>
+                        <ChevronRight className="w-3 h-3 text-zinc-300" />
+                        <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
+                        {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, idx) => (
+                          <React.Fragment key={folder + idx}>
+                            <ChevronRight className="w-3 h-3 text-zinc-300" />
+                            <span
+                              className={`text-base font-medium ${idx === path.length - 1 ? 'font-semibold' : 'text-zinc-400'}`}
+                              style={idx === path.length - 1 ? { color: darkMode ? 'white' : 'black' } : undefined}
+                            >
+                              {folder}
+                            </span>
+                          </React.Fragment>
+                        ))}
+                        {selectedClientTab && !selectedClientTab.startsWith('transfers/') && (
+                          <>
+                            <ChevronRight className="w-3 h-3 text-zinc-300" />
+                            <span className="text-base font-semibold" style={{ color: darkMode ? 'white' : 'black' }}>{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              ) :
+                <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
             }
           </div>
           <DashboardHeaderUserSection
             userName="Robert Fox"
             userRole="Super admin"
             avatarUrl="https://randomuser.me/api/portraits/men/32.jpg"
+            onGenerateRandomClients={() => {
+              if (active === "clients") {
+                setTriggerRandomClients(true);
+              }
+            }}
           />
         </div>
       </div>
@@ -197,7 +257,7 @@ export default function DashboardPage() {
         onSectionSelect={setActive}
         activeSectionKey={active}
       />
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 border-[var(--border)] z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256 }} />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256, borderColor: darkMode ? '#52525b' : '#e4e4e7' }} />
       <div className="flex flex-1 min-h-0">
         <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-[var(--background)] flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
           <nav className="flex-1 flex flex-col gap-8">
@@ -207,17 +267,31 @@ export default function DashboardPage() {
                 {sections.map((section) => (
                   <li
                     key={section.key}
-                    className="w-full relative"
+                    className="w-full relative group"
                     onClick={() => setActive(section.key)}
                   >
                     {active === section.key && (
-                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 dark:bg-[var(--muted)] rounded-xl -z-10" aria-hidden="true" />
+                      <span 
+                        className="absolute left-[-12px] right-2 top-0 bottom-0 rounded-xl -z-10" 
+                        aria-hidden="true"
+                        style={{ 
+                          backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
+                        }}
+                      />
                     )}
-                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
+                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''} rounded-xl`}>
                       {React.cloneElement(section.icon, {
-                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`,
+                        style: active === section.key ? {
+                          color: darkMode ? '#3b82f6' : '#2563eb'
+                        } : undefined
                       })}
-                      <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
+                      <span 
+                        className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}
+                        style={active === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : undefined}
+                      >
+                        {section.label}
+                      </span>
                     </div>
                   </li>
                 ))}
@@ -229,17 +303,31 @@ export default function DashboardPage() {
                 {supportSections.map((section) => (
                   <li
                     key={section.key}
-                    className="w-full relative"
+                    className={`w-full relative group`}
                     onClick={() => setActive(section.key)}
                   >
                     {active === section.key && (
-                      <span className="absolute left-[-12px] right-2 top-0 bottom-0 bg-blue-50 dark:bg-[var(--muted)] rounded-xl -z-10" aria-hidden="true" />
+                      <span 
+                        className="absolute left-[-12px] right-2 top-0 bottom-0 rounded-xl -z-10" 
+                        aria-hidden="true"
+                        style={{ 
+                          backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
+                        }}
+                      />
                     )}
-                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''}`}>
+                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''} rounded-xl`}>
                       {React.cloneElement(section.icon, {
-                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`
+                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`,
+                        style: active === section.key ? {
+                          color: darkMode ? '#3b82f6' : '#2563eb'
+                        } : undefined
                       })}
-                      <span className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}>{section.label}</span>
+                      <span 
+                        className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}
+                        style={active === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : undefined}
+                      >
+                        {section.label}
+                      </span>
                     </div>
                   </li>
                 ))}
@@ -249,7 +337,14 @@ export default function DashboardPage() {
         </aside>
         <div className="flex-1 flex flex-col bg-[var(--background)] w-full px-4 sm:px-0">
           {active === "clients" ? (
-            <Clients detailsViewOpen={clientDetailsOpen} onDetailsViewChange={handleClientDetailsChange} />
+            <Clients 
+              detailsViewOpen={clientDetailsOpen} 
+              onDetailsViewChange={handleClientDetailsChange} 
+              onGenerateRandomClients={generateRandomClients}
+              triggerRandomClients={triggerRandomClients}
+              onRandomClientsGenerated={() => setTriggerRandomClients(false)}
+              onBreadcrumbChange={setBreadcrumbPath}
+            />
           ) : active === "dashboard" ? (
             <Dashboard />
           ) : active === "plans" ? (

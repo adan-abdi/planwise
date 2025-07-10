@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import { useTheme } from "../../theme-context";
 
 interface BreadcrumbItem {
   label: string;
@@ -28,6 +29,7 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { darkMode } = useTheme();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -45,11 +47,21 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
 
   return (
     <div className="sm:hidden w-full sticky top-0 z-40 bg-white dark:bg-[var(--background)] shadow-[0_2px_8px_0_rgba(0,0,0,0.03)]">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100">
+      <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: darkMode ? '#52525b' : '#f4f4f5' }}>
         <button
-          className="p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] hover:!bg-zinc-50 dark:hover:!bg-[#444] transition flex items-center justify-center"
+          className="p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center"
           aria-label="Open sidebar"
           onClick={onOpenSidebar}
+          style={{
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="5" y1="7" x2="19" y2="7" />
@@ -61,10 +73,19 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
         <div className="flex items-center gap-2 relative" ref={dropdownRef}>
           <Image src={avatarUrl} alt={userName} width={36} height={36} className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-[var(--border)] shadow-sm" />
           <button
-            className="ml-1 p-2 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
+            className="ml-1 p-2 rounded-full transition flex items-center justify-center"
             aria-label="Open user menu"
             onClick={() => setDropdownOpen((v) => !v)}
             type="button"
+            style={{
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -77,7 +98,18 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
                   <span className="text-xs text-zinc-400 dark:text-[var(--foreground)] leading-none">{userRole}</span>
                 </div>
               </div>
-              <button className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-900 transition text-zinc-700 dark:text-[var(--foreground)] text-sm font-medium">
+              <button 
+                className="flex items-center gap-2 p-2 rounded-lg transition text-zinc-700 dark:text-[var(--foreground)] text-sm font-medium"
+                style={{
+                  backgroundColor: 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 Notifications
               </button>
@@ -85,15 +117,24 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
           )}
         </div>
       </div>
-      <div className="flex flex-col px-4 py-2 bg-white dark:bg-[var(--background)] border-b border-zinc-200 dark:border-[var(--border)]">
-        <div className="text-lg font-semibold text-zinc-900 mb-1" style={{ fontFamily: "'Gloock', serif" }}>{sectionTitle}</div>
+      <div className="flex flex-col px-4 py-2 bg-white dark:bg-[var(--background)] border-b" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
+        <div className="text-lg font-semibold mb-1" style={{ fontFamily: "'Gloock', serif", color: darkMode ? 'white' : '#18181b' }}>{sectionTitle}</div>
         <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-zinc-400 dark:text-[var(--foreground)] text-sm">
           {breadcrumb[0]?.onClick && (
             <button
               onClick={breadcrumb[0].onClick}
-              className="mr-1 p-1 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
+              className="mr-1 p-1 rounded-full transition flex items-center justify-center"
               aria-label="Back"
               type="button"
+              style={{
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
             >
               <ArrowLeft className="w-5 h-5 text-black dark:text-[var(--foreground)]" />
             </button>
@@ -109,7 +150,10 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
                     className={`flex items-center gap-1 ${idx === breadcrumb.length - 1 && segIdx === segments.length - 1 ? 'text-zinc-900 dark:text-[var(--foreground)] font-semibold' : 'text-zinc-400 dark:text-[var(--foreground)] font-medium'} bg-transparent border-none p-0 m-0`}
                     onClick={item.onClick}
                     disabled={!item.onClick}
-                    style={{ cursor: item.onClick ? 'pointer' : 'default' }}
+                    style={{
+                      cursor: item.onClick ? 'pointer' : 'default',
+                      color: idx === breadcrumb.length - 1 && segIdx === segments.length - 1 ? (darkMode ? 'white' : 'black') : undefined
+                    }}
                   >
                     {item.icon && segIdx === 0 && <span>{item.icon}</span>}
                     <span>{seg}</span>
@@ -125,7 +169,10 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
                   className={`flex items-center gap-1 ${item.isActive ? 'text-zinc-900 dark:text-[var(--foreground)] font-semibold' : 'text-zinc-400 dark:text-[var(--foreground)] font-medium'} bg-transparent border-none p-0 m-0`}
                   onClick={item.onClick}
                   disabled={!item.onClick}
-                  style={{ cursor: item.onClick ? 'pointer' : 'default' }}
+                  style={{
+                    cursor: item.onClick ? 'pointer' : 'default',
+                    color: idx === breadcrumb.length - 1 ? (darkMode ? 'white' : 'black') : undefined
+                  }}
                 >
                   {item.icon && <span>{item.icon}</span>}
                   <span>{item.label}</span>

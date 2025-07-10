@@ -1,6 +1,7 @@
 import React from "react";
 import { X, Home, Users, Layers, ShieldCheck, FileText, List, Users2, Settings } from "lucide-react";
 import Image from "next/image";
+import { useTheme } from "../../theme-context";
 
 const iconClass = "w-5 h-5";
 const sections = [
@@ -22,6 +23,7 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
   onSectionSelect: (key: string) => void;
   activeSectionKey: string;
 }) {
+  const { darkMode } = useTheme();
   return (
     <>
       <div
@@ -45,14 +47,20 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
               {sections.map((section) => (
                 <li
                   key={section.key}
-                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50 dark:bg-[var(--muted)]' : ''}`}
+                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? '' : ''}`}
                   onClick={() => { onSectionSelect(section.key); onClose(); }}
+                  style={activeSectionKey === section.key ? { 
+                    backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
+                  } : undefined}
                 >
-                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-[var(--foreground)]'}`}>
+                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium`}>
                     {React.cloneElement(section.icon, {
-                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-[var(--foreground)]'}`
+                      className: `${iconClass}`,
+                      style: activeSectionKey === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : { color: darkMode ? '#a1a1aa' : '#71717a' }
                     })}
-                    <span>{section.label}</span>
+                    <span style={activeSectionKey === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : { color: darkMode ? '#e4e4e7' : '#3f3f46' }}>
+                      {section.label}
+                    </span>
                   </div>
                 </li>
               ))}
@@ -64,14 +72,20 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
               {supportSections.map((section) => (
                 <li
                   key={section.key}
-                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? 'bg-blue-50 dark:bg-[var(--muted)]' : ''}`}
+                  className={`w-full relative rounded-lg ${activeSectionKey === section.key ? '' : ''}`}
                   onClick={() => { onSectionSelect(section.key); onClose(); }}
+                  style={activeSectionKey === section.key ? { 
+                    backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
+                  } : undefined}
                 >
-                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-[var(--foreground)]'}`}>
+                  <div className={`flex items-center gap-3 py-2 px-3 w-full cursor-pointer font-medium`}>
                     {React.cloneElement(section.icon, {
-                      className: `${iconClass} ${activeSectionKey === section.key ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-[var(--foreground)]'}`
+                      className: `${iconClass}`,
+                      style: activeSectionKey === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : { color: darkMode ? '#a1a1aa' : '#71717a' }
                     })}
-                    <span>{section.label}</span>
+                    <span style={activeSectionKey === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : { color: darkMode ? '#e4e4e7' : '#3f3f46' }}>
+                      {section.label}
+                    </span>
                   </div>
                 </li>
               ))}

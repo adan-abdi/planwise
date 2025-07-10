@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { CloudUpload, Trash } from "lucide-react";
 import Image from "next/image";
 import PersonalisedChecklistConfirmModal from "./PersonalisedChecklistConfirmModal";
+import { useTheme } from "../../../theme-context";
 
 interface UploadModalProps {
   open: boolean;
@@ -21,6 +22,29 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
   const checklistInputRef = useRef<HTMLInputElement>(null);
 
   const [showChecklistConfirm, setShowChecklistConfirm] = useState(false);
+
+  const { darkMode } = useTheme();
+
+  // Define conditional styles
+  const modalBg = darkMode ? '#18181b' : '#fff';
+  const modalText = darkMode ? '#f4f4f5' : '#18181b';
+  const modalBorder = darkMode ? '#27272a' : '#e4e4e7';
+  const headerBg = darkMode ? '#232329' : '#f4f4f5';
+  const headerText = darkMode ? '#f4f4f5' : '#52525b';
+  const tabActiveBg = darkMode ? '#232329' : '#fff';
+  const tabInactiveBg = darkMode ? '#18181b' : '#f4f4f5';
+  const tabActiveText = darkMode ? '#f4f4f5' : '#18181b';
+  const tabInactiveText = darkMode ? '#71717a' : '#a1a1aa';
+  const dragActiveBg = darkMode ? '#1e293b' : '#f0f6ff';
+  const dragActiveBorder = darkMode ? '#2563eb' : '#3b82f6';
+  const fileBoxBg = darkMode ? '#232329' : '#fff';
+  const fileBoxBorder = darkMode ? '#27272a' : '#e4e4e7';
+  const fileBoxText = darkMode ? '#f4f4f5' : '#18181b';
+  const fileBoxSubText = darkMode ? '#a1a1aa' : '#71717a';
+  const buttonCancelBg = darkMode ? '#232329' : '#f4f4f5';
+  const buttonCancelText = darkMode ? '#a1a1aa' : '#52525b';
+  const buttonContinueBg = darkMode ? (activeTab === 'source' && selectedFiles.length === 0 ? '#334155' : '#2563eb') : (activeTab === 'source' && selectedFiles.length === 0 ? '#c7d2fe' : '#2563eb');
+  const buttonContinueText = '#fff';
 
   const handleCancel = () => {
     setSelectedFiles([]);
@@ -120,14 +144,29 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm px-2 sm:px-0 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-zinc-200 flex flex-col overflow-hidden mx-auto my-4 sm:my-0 max-h-[90vh]">
-        <div className="px-4 sm:px-6 py-3 border-b border-zinc-200 bg-zinc-50 flex items-center text-zinc-500 font-medium text-base min-h-[48px]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-0 overflow-y-auto"
+      style={{ backgroundColor: darkMode ? 'rgba(24,24,27,0.85)' : 'rgba(0,0,0,0.1)' }}
+    >
+      <div
+        className="rounded-2xl shadow-2xl w-full max-w-lg border flex flex-col overflow-hidden mx-auto my-4 sm:my-0 max-h-[90vh]"
+        style={{ background: modalBg, color: modalText, borderColor: modalBorder }}
+      >
+        <div
+          className="px-4 sm:px-6 py-3 border-b flex items-center font-medium text-base min-h-[48px]"
+          style={{ background: headerBg, color: headerText, borderColor: modalBorder }}
+        >
           {fileName || "Upload file"}
         </div>
-        <div className="flex justify-center w-full border-b py-2 border-zinc-200 gap-4 mb-4">
+        <div className="flex justify-center w-full border-b py-2 gap-4 mb-4" style={{ borderColor: modalBorder }}>
           <button
-            className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'source' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+            className="px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap"
+            style={{
+              background: activeTab === 'source' ? tabActiveBg : tabInactiveBg,
+              color: activeTab === 'source' ? tabActiveText : tabInactiveText,
+              borderColor: modalBorder,
+              opacity: activeTab === 'source' ? 1 : 0.7,
+            }}
             onClick={activeTab === 'checklist' ? undefined : () => setActiveTab('source')}
             tabIndex={0}
             type="button"
@@ -135,11 +174,14 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
             Source file
           </button>
           <button
-            className={
-              showChecklistContent
-                ? `px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'checklist' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`
-                : `px-3 py-2 text-sm font-medium rounded-[10px] border flex items-center gap-1 whitespace-nowrap bg-zinc-50 border-zinc-100 text-zinc-300 cursor-not-allowed opacity-60`
-            }
+            style={{
+              background: showChecklistContent && activeTab === 'checklist' ? tabActiveBg : tabInactiveBg,
+              color: showChecklistContent && activeTab === 'checklist' ? tabActiveText : tabInactiveText,
+              borderColor: modalBorder,
+              opacity: showChecklistContent ? 1 : 0.5,
+              cursor: showChecklistContent ? 'pointer' : 'not-allowed',
+            }}
+            className="px-3 py-2 text-sm font-medium rounded-[10px] border flex items-center gap-1 whitespace-nowrap"
             aria-disabled={!showChecklistContent}
             tabIndex={showChecklistContent ? 0 : -1}
             type="button"
@@ -149,13 +191,18 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
             Personalised checklist
           </button>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-6 sm:py-8 bg-white w-full overflow-y-auto">
+        <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-6 sm:py-8 w-full overflow-y-auto" style={{ background: modalBg }}>
           {activeTab === 'checklist' && showChecklistContent ? (
             <>
               <label
                 htmlFor="checklist-upload"
-                className={`w-full max-w-md mx-auto rounded-2xl border bg-white flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer ${dragActive ? 'border-blue-500 bg-blue-50/40' : 'border-zinc-200'}`}
-                style={{ minHeight: 200 }}
+                className="w-full max-w-md mx-auto rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer"
+                style={{
+                  minHeight: 200,
+                  background: dragActive ? dragActiveBg : modalBg,
+                  borderColor: dragActive ? dragActiveBorder : modalBorder,
+                  color: modalText,
+                }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -179,11 +226,11 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
                     </span>
                   </span>
                 </div>
-                <div className="text-xl text-zinc-900 mb-2 text-center">Upload checklist documents</div>
-                <div className="text-base text-zinc-500 mb-2 text-center">
-                  <span className="underline cursor-pointer text-zinc-900">Click to upload</span> or drag and drop checklist documents here.
+                <div className="text-xl mb-2 text-center" style={{ color: modalText }}>Upload checklist documents</div>
+                <div className="text-base mb-2 text-center" style={{ color: modalText }}>
+                  <span className="underline cursor-pointer" style={{ color: modalText }}>Click to upload</span> or drag and drop checklist documents here.
                 </div>
-                <div className="text-sm text-zinc-400 text-center mb-2">
+                <div className="text-sm text-center mb-2" style={{ color: fileBoxSubText }}>
                   Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: .PDF
                 </div>
               </label>
@@ -191,13 +238,13 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
                 <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                   <div className="space-y-3">
                     {checklistFiles.map((file, idx) => (
-                      <div key={file.name + file.size} className="flex items-center bg-white border border-zinc-200 rounded-xl px-4 py-3 shadow-sm">
-                        <span className="mr-3 text-zinc-400">
+                      <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 shadow-sm" style={{ background: fileBoxBg, border: `1px solid ${fileBoxBorder}` }}>
+                        <span className="mr-3" style={{ color: fileBoxSubText }}>
                           <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         </span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-base font-medium text-zinc-900 truncate">{file.name}</div>
-                          <div className="text-xs text-zinc-400">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                          <div className="text-base font-medium truncate" style={{ color: fileBoxText }}>{file.name}</div>
+                          <div className="text-xs" style={{ color: fileBoxSubText }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                         </div>
                         <button
                           className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
@@ -217,8 +264,13 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
             <>
               <label
                 htmlFor="file-upload"
-                className={`w-full max-w-md mx-auto rounded-2xl border bg-white flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer ${dragActive ? 'border-blue-500 bg-blue-50/40' : 'border-zinc-200'}`}
-                style={{ minHeight: 200 }}
+                className="w-full max-w-md mx-auto rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer"
+                style={{
+                  minHeight: 200,
+                  background: dragActive ? dragActiveBg : modalBg,
+                  borderColor: dragActive ? dragActiveBorder : modalBorder,
+                  color: modalText,
+                }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -242,11 +294,11 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
                   onChange={handleFileChange}
                   tabIndex={-1}
                 />
-                <div className="text-xl text-zinc-900 mb-2 text-center">Upload documents</div>
-                <div className="text-base text-zinc-500 mb-2 text-center">
-                  <span className="underline cursor-pointer text-zinc-900">Click to upload</span> or drag and drop policy documents here.
+                <div className="text-xl mb-2 text-center" style={{ color: modalText }}>Upload documents</div>
+                <div className="text-base mb-2 text-center" style={{ color: modalText }}>
+                  <span className="underline cursor-pointer" style={{ color: modalText }}>Click to upload</span> or drag and drop policy documents here.
                 </div>
-                <div className="text-sm text-zinc-400 text-center mb-2">
+                <div className="text-sm text-center mb-2" style={{ color: fileBoxSubText }}>
                   Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: .PDF
                 </div>
               </label>
@@ -254,13 +306,13 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
                 <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                   <div className="space-y-3">
                     {selectedFiles.map((file, idx) => (
-                      <div key={file.name + file.size} className="flex items-center bg-white border border-zinc-200 rounded-xl px-4 py-3 shadow-sm">
-                        <span className="mr-3 text-zinc-400">
+                      <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 shadow-sm" style={{ background: fileBoxBg, border: `1px solid ${fileBoxBorder}` }}>
+                        <span className="mr-3" style={{ color: fileBoxSubText }}>
                           <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         </span>
                         <div className="flex-1 min-w-0">
-                          <div className="text-base font-medium text-zinc-900 truncate">{file.name}</div>
-                          <div className="text-xs text-zinc-400">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                          <div className="text-base font-medium truncate" style={{ color: fileBoxText }}>{file.name}</div>
+                          <div className="text-xs" style={{ color: fileBoxSubText }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                         </div>
                         <button
                           className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
@@ -278,18 +330,36 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
             </>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 bg-white border-t border-zinc-100">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 border-t" style={{ background: modalBg, borderColor: modalBorder }}>
           <button
             onClick={handleCancel}
-            className="px-4 sm:px-5 py-2 text-base font-medium text-zinc-500 bg-zinc-100 hover:bg-zinc-200 transition border border-zinc-200 flex items-center justify-center"
-            style={{ fontFamily: 'system-ui, sans-serif', height: 40, lineHeight: '24px', borderRadius: '14px' }}
+            className="px-4 sm:px-5 py-2 text-base font-medium transition border flex items-center justify-center"
+            style={{
+              color: buttonCancelText,
+              background: buttonCancelBg,
+              borderColor: modalBorder,
+              fontFamily: 'system-ui, sans-serif',
+              height: 40,
+              lineHeight: '24px',
+              borderRadius: '14px',
+            }}
           >
             Cancel
           </button>
           <button
             disabled={activeTab === 'source' ? selectedFiles.length === 0 : false}
-            className={`px-4 sm:px-5 py-2 text-base font-medium text-white transition border border-zinc-200 flex items-center justify-center ${activeTab === 'source' ? (selectedFiles.length > 0 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-200 opacity-60 cursor-not-allowed') : 'bg-blue-600 hover:bg-blue-700'}`}
-            style={{ fontFamily: 'system-ui, sans-serif', height: 40, lineHeight: '24px', borderRadius: '14px' }}
+            className="px-4 sm:px-5 py-2 text-base font-medium transition border flex items-center justify-center"
+            style={{
+              color: buttonContinueText,
+              background: buttonContinueBg,
+              borderColor: modalBorder,
+              fontFamily: 'system-ui, sans-serif',
+              height: 40,
+              lineHeight: '24px',
+              borderRadius: '14px',
+              opacity: activeTab === 'source' && selectedFiles.length === 0 ? 0.6 : 1,
+              cursor: activeTab === 'source' && selectedFiles.length === 0 ? 'not-allowed' : 'pointer',
+            }}
             onClick={handleContinue}
           >
             Continue

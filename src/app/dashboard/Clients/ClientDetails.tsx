@@ -16,12 +16,20 @@ import {
   ActivitySquare,
   FolderTree,
   Edit2,
-  FolderClosed,
   X,
   Check,
+  ArrowLeft,
+  ChevronRight,
 } from "lucide-react";
+import DirectoryIcon from '/public/directory.svg';
 import UploadModal from "./UploadModal";
 import ReviewChecklistModal from "./ReviewChecklistModal";
+import { useTheme } from "../../../theme-context";
+import dynamic from 'next/dynamic';
+import FileIcon from '/public/file.png';
+import FileExplorer from './FileExplorer';
+import FolderDocumentBox from './FolderDocumentBox';
+const DocumentViewer = dynamic(() => import('./documentviewer/DocumentViewer'), { ssr: false });
 
 interface ClientDetailsProps {
   client: ClientItem;
@@ -29,6 +37,7 @@ interface ClientDetailsProps {
   checklist?: boolean[];
   onChecklistChange?: (newChecklist: boolean[]) => void;
   onTabChange?: (tab: string) => void;
+  onShowChecklistReviewTest?: () => void;
 }
 
 type TransferType = "pension" | "isa" | null;
@@ -79,7 +88,15 @@ function getFolderContents(path: string[]): TransferFolderItem[] {
 }
 
 const finderCardBase =
-  "flex items-center gap-4 w-full max-w-xs min-w-[220px] px-4 py-3 border border-zinc-200 rounded-lg bg-white cursor-pointer transition-all duration-150 hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30 focus:bg-blue-50/50 focus:border-blue-300 outline-none";
+  "flex items-center gap-4 w-full max-w-xs min-w-[220px] px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 cursor-pointer transition-all duration-150 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-600 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 focus:bg-blue-50/50 dark:focus:bg-blue-900/30 focus:border-blue-300 dark:focus:border-blue-500 outline-none";
+
+type FolderDocumentBoxProps = {
+  item?: any;
+  onClick: () => void;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  [x: string]: any;
+};
 
 function detectTouchDevice() {
   if (typeof window !== 'undefined') {
@@ -93,7 +110,8 @@ function detectTouchDevice() {
   return false;
 }
 
-export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange }: ClientDetailsProps) {
+export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest }: ClientDetailsProps) {
+  const { darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('details');
   const [openedTransfer, setOpenedTransfer] = useState<TransferType>(null);
   const [transferPath, setTransferPath] = useState<string[]>([]);
@@ -171,13 +189,24 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
 
   const [isTouch, setIsTouch] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
   useEffect(() => {
     setIsTouch(detectTouchDevice());
   }, []);
 
+  // Reset selectedDocument when navigating folders
+  useEffect(() => {
+    setSelectedDocument(null);
+  }, [transferPath]);
+
+  // Helper for clickable line style
+  const clickableLineClass = "text-blue-600 dark:text-blue-400 text-sm mt-1 cursor-pointer hover:underline w-fit";
+
   return (
-    <div className="bg-white min-h-full">
-      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 min-h-[56px] bg-white dark:bg-[var(--muted)] w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap">
+    <div className="bg-white dark:bg-[var(--background)] min-h-full">
+      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 dark:border-zinc-700 min-h-[56px] bg-white dark:bg-[var(--background)] w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap"
+        style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
+      >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="relative w-8 h-8 sm:w-10 sm:h-10">
             <Image
@@ -188,186 +217,312 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
             />
           </div>
           <div className="min-w-0">
-            <div className="text-lg sm:text-2xl font-semibold text-zinc-900 truncate">{editValues.client}</div>
+            <div
+              className="text-lg sm:text-2xl font-semibold truncate"
+              style={{ color: darkMode ? 'white' : 'black' }}
+            >
+              {editValues.client}
+            </div>
           </div>
         </div>
         <div className="flex gap-1 sm:gap-2 ml-auto flex-shrink-0">
           {hasUnsavedChanges && (
             <button
-              className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-normal bg-white hover:bg-red-50 transition"
+              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
               onClick={handleCancel}
               type="button"
               aria-label="Cancel"
+              style={{
+                cursor: 'pointer',
+                backgroundColor: darkMode ? '#18181b' : 'white',
+                border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
+                color: darkMode ? '#f87171' : '#dc2626',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#3a2323' : '#f4f4f5';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
+              }}
             >
-              <X className="w-4 h-4 text-red-600" />
-              <span className="text-red-600">Cancel</span>
+              <X className="w-4 h-4" style={{ color: darkMode ? '#f87171' : '#dc2626' }} />
+              <span>Cancel</span>
             </button>
           )}
           {hasUnsavedChanges && (
             <button
-              className="flex items-center gap-1 border border-zinc-200 rounded-lg px-3 py-1.5 text-sm font-normal bg-white hover:bg-green-50 transition"
+              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
               onClick={handleSave}
               type="button"
               aria-label="Save Changes"
+              style={{
+                cursor: 'pointer',
+                backgroundColor: darkMode ? '#18181b' : '#e6fbe8',
+                border: `1px solid ${darkMode ? '#166534' : '#a7f3d0'}`,
+                color: darkMode ? '#4ade80' : '#166534',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#1a3a23' : '#bbf7d0';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : '#e6fbe8';
+              }}
             >
-              <Check className="w-4 h-4 text-green-600" />
-              <span className="text-green-600">Save</span>
+              <Check className="w-4 h-4" style={{ color: darkMode ? '#4ade80' : '#166534' }} />
+              <span>Save</span>
+            </button>
+          )}
+          {onShowChecklistReviewTest && (
+            <button
+              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition border"
+              style={{
+                cursor: 'pointer',
+                backgroundColor: darkMode ? '#18181b' : 'white',
+                border: `1px solid ${darkMode ? '#2563eb' : '#2563eb'}`,
+                color: darkMode ? '#2563eb' : '#2563eb',
+                boxShadow: 'none',
+                height: 36,
+                lineHeight: '20px',
+                borderRadius: 8,
+              }}
+              onClick={onShowChecklistReviewTest}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
+              }}
+            >
+              Show Checklist Review (Test)
             </button>
           )}
         </div>
       </div>
-      <div className="flex items-center border-b pb-4 border-zinc-200 gap-2 px-2 sm:px-8 mb-8 flex-nowrap overflow-x-auto">
+      <div className="flex items-center border-b pb-4 border-zinc-200 dark:border-zinc-700 gap-2 px-2 sm:px-8 flex-nowrap overflow-x-auto"
+        style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
+      >
         <button
-          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'details' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
           onClick={() => setActiveTab('details')}
+          style={{
+            backgroundColor: darkMode
+              ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+              : 'white',
+            border: darkMode
+              ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
+              : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
+            color: darkMode ? 'var(--foreground)' : '#18181b',
+            cursor: activeTab !== 'details' ? 'pointer' : 'default',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode
+              ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+              : 'white';
+          }}
         >
           <FileText className="w-4 h-4 mr-1" />
           Client details
         </button>
         <button
-          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'transfers' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
           onClick={() => setActiveTab('transfers')}
+          style={{
+            backgroundColor: darkMode
+              ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+              : 'white',
+            border: darkMode
+              ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
+              : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
+            color: darkMode ? 'var(--foreground)' : '#18181b',
+            cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode
+              ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+              : 'white';
+          }}
         >
           <FolderTree className="w-4 h-4 mr-1" />
           Transfers
         </button>
         <button
-          className={`px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap ${activeTab === 'activity' ? 'bg-white border-zinc-200 text-zinc-900' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:bg-zinc-100'}`}
+          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
           onClick={() => setActiveTab('activity')}
+          style={{
+            backgroundColor: darkMode
+              ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
+              : 'white',
+            border: darkMode
+              ? (activeTab === 'activity' ? '1px solid #3f3f46' : '1px solid transparent')
+              : (activeTab === 'activity' ? '1px solid #d4d4d8' : '1px solid transparent'),
+            color: darkMode ? 'var(--foreground)' : '#18181b',
+            cursor: activeTab !== 'activity' ? 'pointer' : 'default',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode
+              ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
+              : 'white';
+          }}
         >
           <ActivitySquare className="w-4 h-4 mr-1" />
           Activity
         </button>
       </div>
       {activeTab === 'details' && (
-        <div className="max-w-2xl px-4 sm:px-12">
-          <div className="flex flex-col gap-4">
-            <DetailRowVertical icon={<User className="w-5 h-5 text-zinc-400" />} label="Profile picture">
-              <div className="relative w-8 h-8">
-                <Image src={editValues.avatar} alt={editValues.client} fill className="rounded-full object-cover" />
-              </div>
-            </DetailRowVertical>
-            <EditableRow icon={<Users className="w-5 h-5 text-zinc-400" />} label="Client name" value={editValues.client} editing={editingField==='client'} onEdit={() => handleEdit('client')} onChange={v => handleChange('client', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
-            <EditableRow icon={<UserCircle className="w-5 h-5 text-zinc-400" />} label="Partner name" value={editValues.advisor} editing={editingField==='advisor'} onEdit={() => handleEdit('advisor')} onChange={v => handleChange('advisor', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
-            <EditableRow icon={<Layers className="w-5 h-5 text-zinc-400" />} label="Number of plans" value={editValues.plans?.toString() || ''} editing={editingField==='plans'} onEdit={() => handleEdit('plans')} onChange={v => handleChange('plans', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="number" />
-            <DetailRowVertical icon={<ListChecks className="w-5 h-5 text-zinc-400" />} label="Checklist status">
-              <span className="flex items-center gap-1">
-                {localChecklist.map((checked, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => handleChecklistToggle(i)}
-                    className={`w-5 h-5 flex items-center justify-center rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 appearance-none shadow-none ${checked ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
-                    style={{ outline: 'none' }}
-                  >
-                    {checked && (
-                      <svg className="w-4 h-4 text-green-500 mx-auto my-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    )}
-                  </button>
-                ))}
-                <span className="text-zinc-400 text-xs ml-2">{localChecklist.filter(Boolean).length}/4 completed</span>
-              </span>
-            </DetailRowVertical>
-            <EditableRow icon={<Flame className="w-5 h-5 text-zinc-400" />} label="ATR (Attitude to risk)" value={editValues.atr || ''} editing={editingField==='atr'} onEdit={() => handleEdit('atr')} onChange={v => handleChange('atr', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
-            <EditableRow icon={<Calendar className="w-5 h-5 text-zinc-400" />} label="Date of Birth" value={editValues.dob || ''} editing={editingField==='dob'} onEdit={() => handleEdit('dob')} onChange={v => handleChange('dob', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="date" />
-            <EditableRow icon={<Mail className="w-5 h-5 text-zinc-400" />} label="Email address" value={editValues.email || ''} editing={editingField==='email'} onEdit={() => handleEdit('email')} onChange={v => handleChange('email', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="email" />
-            <EditableRow icon={<Phone className="w-5 h-5 text-zinc-400" />} label="Telephone number" value={editValues.phone || ''} editing={editingField==='phone'} onEdit={() => handleEdit('phone')} onChange={v => handleChange('phone', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
-            <EditableRow icon={<Globe className="w-5 h-5 text-zinc-400" />} label="Website link" value={editValues.website || ''} editing={editingField==='website'} onEdit={() => handleEdit('website')} onChange={v => handleChange('website', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
-            <EditableRow icon={<Calendar className="w-5 h-5 text-zinc-400" />} label="Retirement age" value={editValues.retirementAge || ''} editing={editingField==='retirementAge'} onEdit={() => handleEdit('retirementAge')} onChange={v => handleChange('retirementAge', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="number" />
+        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
+          <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
+            <div style={{ width: '100%', maxWidth: 400, minWidth: 220, paddingLeft: 32, paddingTop: 24 }}>
+              <DetailRowVertical icon={<User className="w-5 h-5 text-zinc-400" />} label="Profile picture">
+                <div className="relative w-8 h-8">
+                  <Image src={editValues.avatar} alt={editValues.client} fill className="rounded-full object-cover" />
+                </div>
+              </DetailRowVertical>
+              <EditableRow icon={<Users className="w-5 h-5 text-zinc-400" />} label="Client name" value={editValues.client} editing={editingField==='client'} onEdit={() => handleEdit('client')} onChange={v => handleChange('client', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
+              <EditableRow icon={<UserCircle className="w-5 h-5 text-zinc-400" />} label="Partner name" value={editValues.advisor} editing={editingField==='advisor'} onEdit={() => handleEdit('advisor')} onChange={v => handleChange('advisor', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
+              <EditableRow icon={<Layers className="w-5 h-5 text-zinc-400" />} label="Number of plans" value={editValues.plans?.toString() || ''} editing={editingField==='plans'} onEdit={() => handleEdit('plans')} onChange={v => handleChange('plans', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="number" />
+              <DetailRowVertical icon={<ListChecks className="w-5 h-5 text-zinc-400" />} label="Checklist status">
+                <span className="flex items-center gap-1">
+                  {localChecklist.map((checked, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleChecklistToggle(i)}
+                      className={`w-5 h-5 flex items-center justify-center rounded-[6px] border transition-all align-middle cursor-pointer focus:ring-2 focus:ring-blue-200 appearance-none shadow-none ${checked ? 'border-green-500 bg-green-50' : 'border-zinc-200 bg-white'}`}
+                      style={{ outline: 'none' }}
+                    >
+                      {checked && (
+                        <svg className="w-4 h-4 text-green-500 mx-auto my-auto" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      )}
+                    </button>
+                  ))}
+                  <span className="text-zinc-400 text-xs ml-2">{localChecklist.filter(Boolean).length}/4 completed</span>
+                </span>
+              </DetailRowVertical>
+              <EditableRow icon={<Flame className="w-5 h-5 text-zinc-400" />} label="ATR (Attitude to risk)" value={editValues.atr || ''} editing={editingField==='atr'} onEdit={() => handleEdit('atr')} onChange={v => handleChange('atr', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
+              <EditableRow icon={<Calendar className="w-5 h-5 text-zinc-400" />} label="Date of Birth" value={editValues.dob || ''} editing={editingField==='dob'} onEdit={() => handleEdit('dob')} onChange={v => handleChange('dob', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="date" />
+              <EditableRow icon={<Mail className="w-5 h-5 text-zinc-400" />} label="Email address" value={editValues.email || ''} editing={editingField==='email'} onEdit={() => handleEdit('email')} onChange={v => handleChange('email', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="email" />
+              <EditableRow icon={<Phone className="w-5 h-5 text-zinc-400" />} label="Telephone number" value={editValues.phone || ''} editing={editingField==='phone'} onEdit={() => handleEdit('phone')} onChange={v => handleChange('phone', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
+              <EditableRow icon={<Globe className="w-5 h-5 text-zinc-400" />} label="Website link" value={editValues.website || ''} editing={editingField==='website'} onEdit={() => handleEdit('website')} onChange={v => handleChange('website', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
+              <EditableRow icon={<Calendar className="w-5 h-5 text-zinc-400" />} label="Retirement age" value={editValues.retirementAge || ''} editing={editingField==='retirementAge'} onEdit={() => handleEdit('retirementAge')} onChange={v => handleChange('retirementAge', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="number" />
+            </div>
+          </div>
+          <div style={{ width: 1, background: 'transparent', height: '100%', alignSelf: 'stretch' }} />
+          <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+            {/* Right column empty */}
           </div>
         </div>
       )}
       {activeTab === 'transfers' && (
-        <div className="max-w-4xl px-2 sm:px-12">
-          <div className="text-xl font-semibold text-zinc-900 mb-6">Transfers</div>
-          {openedTransfer === null ? (
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 w-full">
-              <div
-                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-2 py-2 sm:px-4 sm:py-4 w-full sm:w-auto mb-2 sm:mb-0 cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
-                onClick={() => handleOpenTransfer('pension')}
-                tabIndex={0}
-                role="button"
-                aria-label="Open Pension Transfer"
-              >
-                <FolderClosed className="w-8 h-8 mb-1 text-zinc-400" />
-                <div className="text-base font-semibold text-zinc-900 mb-0.5">Pension Transfer</div>
-                <div className="text-xs text-zinc-400">No. of transfers <span className="inline-block ml-1 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">2</span></div>
-              </div>
-              <div
-                className="flex flex-col items-start bg-white rounded-xl border border-zinc-200 px-2 py-2 sm:px-4 sm:py-4 w-full sm:w-auto cursor-pointer transition-colors hover:bg-zinc-50 focus:bg-zinc-100"
-                onClick={() => handleOpenTransfer('isa')}
-                tabIndex={0}
-                role="button"
-                aria-label="Open ISA Transfer"
-              >
-                <FolderClosed className="w-8 h-8 mb-1 text-zinc-400" />
-                <div className="text-base font-semibold text-zinc-900 mb-0.5">ISA Transfer</div>
-                <div className="text-xs text-zinc-400">No. of transfers <span className="inline-block ml-1 px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 text-xs font-medium">1</span></div>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <div className="flex items-center mb-6 gap-1 flex-wrap">
-                {(transferPath.length > 0) && (
+        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
+          <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+            <div style={{ paddingLeft: 32, paddingTop: 24 }}>
+              {/* Section title or breadcrumbs */}
+              {(openedTransfer === null || transferPath.length === 0) ? (
+                <div className="text-lg font-semibold mb-6" style={{ color: darkMode ? 'white' : '#18181b' }}>Transfers</div>
+              ) : (
+                <div className="flex items-center gap-2 mb-4">
                   <button
-                    onClick={transferPath.length === 1 ? () => handleOpenTransfer(null) : handleBackFolder}
-                    className="mr-2 p-1 rounded-full hover:bg-zinc-100 transition flex items-center justify-center"
-                    aria-label="Back"
+                    type="button"
+                    onClick={handleBackFolder}
+                    className="rounded-full p-1 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    style={{
+                      background: darkMode ? '#27272a' : '#f4f4f5',
+                      color: darkMode ? 'white' : '#18181b',
+                      border: 'none',
+                      width: 32,
+                      height: 32,
+                      minWidth: 32,
+                      minHeight: 32,
+                      boxShadow: 'none',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = darkMode ? '#3f3f46' : '#e4e4e7';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = darkMode ? '#27272a' : '#f4f4f5';
+                    }}
                   >
-                    <svg width="20" height="20" fill="none" stroke="#222" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    <ArrowLeft className="w-5 h-5" />
                   </button>
-                )}
-                {/* Breadcrumb chevron navigation */}
-                {transferPath.map((folder, idx) => (
-                  <React.Fragment key={folder + idx}>
-                    {idx > 0 && (
-                      <svg className="w-3 h-3 text-zinc-300 mx-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    )}
-                    <button
-                      className={`text-base font-medium ${idx === transferPath.length - 1 ? 'text-zinc-900 font-semibold' : 'text-zinc-400'} bg-transparent border-none p-0 m-0 hover:underline`}
-                      onClick={() => {
-                        if (idx !== transferPath.length - 1) {
-                          setTransferPath(transferPath.slice(0, idx + 1));
-                          if (onTabChange) onTabChange(`transfers/${transferPath.slice(0, idx + 1).join("/")}`);
-                        }
-                      }}
-                      disabled={idx === transferPath.length - 1}
-                      style={{ cursor: idx === transferPath.length - 1 ? 'default' : 'pointer' }}
-                      type="button"
-                    >
-                      {folder}
-                    </button>
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2 sm:gap-4 w-full">
-                {getFolderContents(transferPath).map((item) => (
-                  <div
-                    key={item.name}
-                    className={finderCardBase + ' w-full sm:w-auto px-2 py-2 sm:px-4 sm:py-4'}
-                    onClick={item.type === 'folder' ? () => handleEnterFolder(item.name) : undefined}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={item.type === 'folder' ? `Open ${item.name}` : `Open file ${item.name}`}
-                  >
-                    {item.type === 'folder'
-                      ? <FolderClosed className="w-8 h-8 text-zinc-400" />
-                      : <FileText className="w-8 h-8 text-zinc-400" />}
-                    <div className="flex flex-col flex-1 min-w-0 items-start">
-                      <span className="text-base font-semibold text-zinc-900 truncate">{item.name}</span>
-                      <button
-                        type="button"
-                        className="text-xs text-blue-600 hover:underline mt-0.5 ml-0 p-0 bg-transparent border-none cursor-pointer focus:outline-none"
-                        onClick={e => { e.stopPropagation(); handleUploadModal(); }}
-                      >
-                        {isTouch ? 'Tap to upload' : 'Double click to upload'} {item.type === 'folder' ? 'docs' : 'file'}
-                      </button>
-                    </div>
+                  {transferPath.map((folder, idx) => (
+                    <span key={folder} className="flex items-center text-base font-medium">
+                      {idx > 0 && <ChevronRight className="w-4 h-4 text-zinc-400 mx-1" />}
+                      <span className={idx === transferPath.length - 1 ? '' : 'text-zinc-400'} style={{ color: idx === transferPath.length - 1 ? (darkMode ? 'white' : '#18181b') : undefined }}>
+                        {folder}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Transfer root folders */}
+              {openedTransfer === null && transferPath.length === 0 && (
+                <>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 700, overflow: 'auto' }}>
+                    <FolderDocumentBox onClick={() => handleOpenTransfer('pension')}>
+                      <>
+                        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
+                          <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+                          <span style={{ fontWeight: 600, fontSize: 16 }}>Pension Transfers</span>
+                          <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of transfers: {transferFolderData['Pension Transfer'].length}</span>
+                        </div>
+                      </>
+                    </FolderDocumentBox>
+                    <FolderDocumentBox onClick={() => handleOpenTransfer('isa')}>
+                      <>
+                        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
+                          <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+                          <span style={{ fontWeight: 600, fontSize: 16 }}>ISA Transfers</span>
+                          <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of transfers: {transferFolderData['ISA Transfer'].length}</span>
+                        </div>
+                      </>
+                    </FolderDocumentBox>
                   </div>
-                ))}
-              </div>
+                </>
+              )}
+              {/* File explorer with breadcrumbs as its own component */}
+              {openedTransfer !== null && transferPath.length > 0 && (
+                <FileExplorer
+                  transferPath={transferPath}
+                  getFolderContents={getFolderContents}
+                  handleEnterFolder={handleEnterFolder}
+                  handleUploadModal={handleUploadModal}
+                  setSelectedDocument={setSelectedDocument}
+                  clickableLineClass={clickableLineClass}
+                />
+              )}
             </div>
-          )}
+          </div>
+          <div style={{ width: 1, background: darkMode ? '#3f3f46' : '#e4e4e7', height: '100%', alignSelf: 'stretch' }} />
+          <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 32 }}>
+            {selectedDocument ? (
+              <DocumentViewer document={selectedDocument} />
+            ) : null}
+          </div>
+        </div>
+      )}
+      {activeTab === 'activity' && (
+        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
+          <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+            {/* Left column empty */}
+          </div>
+          <div style={{ width: 1, background: darkMode ? '#3f3f46' : '#e4e4e7', height: '100%', alignSelf: 'stretch' }} />
+          <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+            {/* Right column empty */}
+          </div>
         </div>
       )}
       <UploadModal
@@ -423,6 +578,7 @@ function EditableRow({ icon, label, value, editing, onEdit, onChange, onBlur, on
   onKeyDown: (e: React.KeyboardEvent) => void;
   type?: string;
 }) {
+  const { darkMode } = useTheme();
   return (
     <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={editing ? undefined : onEdit}>
       <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[180px] pr-8">
@@ -433,15 +589,26 @@ function EditableRow({ icon, label, value, editing, onEdit, onChange, onBlur, on
         {editing ? (
           <input
             type={type || 'text'}
-            className="border border-zinc-200 rounded-md px-2 py-1 text-base text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-100 w-full text-left"
+            className="border rounded-md px-2 py-1 text-base focus:outline-none focus:ring-2 w-full text-left"
             value={value}
             autoFocus
             onChange={e => onChange(e.target.value)}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
+            style={{
+              border: darkMode ? '1px solid #3f3f46' : '1px solid #e4e4e7',
+              background: darkMode ? 'var(--background)' : 'white',
+              color: darkMode ? 'var(--foreground)' : '#18181b',
+              boxShadow: 'none',
+            }}
           />
         ) : (
-          <span className="text-zinc-900 text-base font-normal w-full text-left">{value || <span className="text-zinc-300">-</span>}</span>
+          <span
+            className="text-base font-normal w-full text-left"
+            style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}
+          >
+            {value || <span className="text-zinc-300">-</span>}
+          </span>
         )}
         <Edit2 className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
       </div>
