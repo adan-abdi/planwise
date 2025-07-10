@@ -6,12 +6,10 @@ interface StepperProps {
 
 interface StepCircleProps {
   state: "completed" | "active" | "pending";
-  label: string;
   darkMode: boolean;
-  stepNumber: number;
 }
 
-const StepCircle: React.FC<StepCircleProps> = ({ state, label, darkMode, stepNumber }) => {
+const StepCircle: React.FC<StepCircleProps> = ({ state, darkMode }) => {
   const baseCircle = "w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold transition-colors duration-150";
   if (state === "completed") {
     return (
@@ -37,19 +35,19 @@ const Stepper: React.FC<StepperProps> = ({ darkMode }) => (
   <div className="flex items-center bg-white dark:bg-[var(--background)] border border-zinc-200 dark:border-zinc-700 rounded-full px-4 py-2 w-fit gap-2" style={{ borderColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
     {/* Step 1: Upload documents (completed) */}
     <div className="flex items-center gap-2">
-      <StepCircle state="completed" label="Upload documents" darkMode={darkMode} stepNumber={1} />
+      <StepCircle state="completed" darkMode={darkMode} />
       <span className="text-base font-medium text-zinc-400">Upload documents</span>
     </div>
     <span className="mx-2 text-zinc-300">&#8250;</span>
     {/* Step 2: CFR Checklist (active) */}
     <div className="flex items-center gap-2">
-      <StepCircle state="active" label="CFR Checklist" darkMode={darkMode} stepNumber={2} />
+      <StepCircle state="active" darkMode={darkMode} />
       <span className={"text-base font-medium " + (darkMode ? "text-blue-400" : "text-blue-600")}>CFR Checklist</span>
     </div>
     <span className="mx-2 text-zinc-300">&#8250;</span>
     {/* Step 3: Review (pending) */}
     <div className="flex items-center gap-2">
-      <StepCircle state="pending" label="Review" darkMode={darkMode} stepNumber={3} />
+      <StepCircle state="pending" darkMode={darkMode} />
       <span className="text-zinc-400 font-medium">Review</span>
     </div>
   </div>

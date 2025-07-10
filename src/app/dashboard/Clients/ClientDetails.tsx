@@ -26,7 +26,6 @@ import UploadModal from "./UploadModal";
 import ReviewChecklistModal from "./ReviewChecklistModal";
 import { useTheme } from "../../../theme-context";
 import dynamic from 'next/dynamic';
-import FileIcon from '/public/file.png';
 import FileExplorer from './FileExplorer';
 import FolderDocumentBox from './FolderDocumentBox';
 const DocumentViewer = dynamic(() => import('./documentviewer/DocumentViewer'), { ssr: false });
@@ -85,29 +84,6 @@ function getFolderContents(path: string[]): TransferFolderItem[] {
     }
   }
   return items;
-}
-
-const finderCardBase =
-  "flex items-center gap-4 w-full max-w-xs min-w-[220px] px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 cursor-pointer transition-all duration-150 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-600 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 focus:bg-blue-50/50 dark:focus:bg-blue-900/30 focus:border-blue-300 dark:focus:border-blue-500 outline-none";
-
-type FolderDocumentBoxProps = {
-  item?: any;
-  onClick: () => void;
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  [x: string]: any;
-};
-
-function detectTouchDevice() {
-  if (typeof window !== 'undefined') {
-    return (
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
-      // @ts-expect-error: msMaxTouchPoints is only present in some browsers
-      navigator.msMaxTouchPoints > 0
-    );
-  }
-  return false;
 }
 
 export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest }: ClientDetailsProps) {
@@ -188,12 +164,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
 
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
 
-  const [isTouch, setIsTouch] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
-  useEffect(() => {
-    setIsTouch(detectTouchDevice());
-  }, []);
-
   // Reset selectedDocument when navigating folders
   useEffect(() => {
     setSelectedDocument(null);

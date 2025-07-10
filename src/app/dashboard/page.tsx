@@ -55,7 +55,6 @@ export default function DashboardPage() {
   const activeSection = sections.find((s) => s.key === active);
   const activeSupportSection = supportSections.find((s) => s.key === active);
   const [selectedClientTab, setSelectedClientTab] = useState<string>('details');
-  const [isChecklistReviewActive, setIsChecklistReviewActive] = useState(false);
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
 
   const handleBackToClients = () => setClientDetailsOpen(false);
@@ -78,7 +77,7 @@ export default function DashboardPage() {
     const types = ['Pension New Money', 'ISA New Money', 'Pension Transfer', 'ISA Transfer'];
     const cfrOptions = ['Yes', 'No'];
     
-    const randomClients = Array.from({ length: 15 }, (_, index) => {
+    const randomClients = Array.from({ length: 15 }, () => {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const advisor = advisors[Math.floor(Math.random() * advisors.length)];
@@ -182,9 +181,9 @@ export default function DashboardPage() {
                     <span className="h-6 w-px bg-[var(--border)]" />
                   </>
                 )}
-                {breadcrumbPath.map((item, idx) => (
-                  <React.Fragment key={item.label + idx}>
-                    {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                {breadcrumbPath.map((item) => (
+                  <React.Fragment key={item.label}>
+                    {breadcrumbPath.indexOf(item) > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
                     <span className={`text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`} style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}>
                       {item.label}
                     </span>
@@ -214,12 +213,12 @@ export default function DashboardPage() {
                       <>
                         <ChevronRight className="w-3 h-3 text-zinc-300" />
                         <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
-                        {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, idx) => (
-                          <React.Fragment key={folder + idx}>
+                        {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, i, arr) => (
+                          <React.Fragment key={folder + i}>
                             <ChevronRight className="w-3 h-3 text-zinc-300" />
                             <span
-                              className={`text-base font-medium ${idx === path.length - 1 ? 'font-semibold' : 'text-zinc-400'}`}
-                              style={idx === path.length - 1 ? { color: darkMode ? 'white' : 'black' } : undefined}
+                              className={`text-base font-medium ${i === arr.length - 1 ? 'font-semibold' : 'text-zinc-400'}`}
+                              style={i === arr.length - 1 ? { color: darkMode ? 'white' : 'black' } : undefined}
                             >
                               {folder}
                             </span>

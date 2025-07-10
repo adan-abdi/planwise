@@ -108,13 +108,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
-  const handleGenerateRandomClients = () => {
-    if (onGenerateRandomClients) {
-      const randomClients = onGenerateRandomClients();
-      setClients(randomClients);
-    }
-  };
-
   const handleStartChecklistReview = () => {
     if (selectedClient) {
       setReviewChecklistData({
@@ -181,7 +174,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
       if (selectedTab.startsWith('transfers/')) {
         path.push({ label: 'Transfers', isActive: false });
         const folders = selectedTab.replace('transfers/', '').split('/');
-        folders.forEach((folder, idx) => {
+        folders.forEach((folder) => {
           path.push({ label: folder, isActive: false });
         });
       } else {
@@ -208,8 +201,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           <ChecklistReview
             checklistItems={reviewChecklistData.checklistItems}
             reviewerName={reviewChecklistData.reviewerName}
-            reviewerAvatar={reviewChecklistData.reviewerAvatar}
-            onChecklistChange={() => {}}
             onBack={handleChecklistReviewBack}
           />
         ) : selectedClient ? (

@@ -62,7 +62,6 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
   const borderColor = darkMode ? '#27272a' : '#e4e4e7';
   const arrowBg = darkMode ? 'var(--muted)' : '#fff';
   const inputText = darkMode ? 'var(--foreground)' : '#222';
-  const inputPlaceholder = darkMode ? '#bbb' : '#bbb';
   const checkBg = darkMode ? 'var(--muted)' : '#fff';
   const checkBorder = darkMode ? '#3f3f46' : '#e4e4e7';
   const checkShadow = darkMode ? '0 1px 2px 0 rgba(0,0,0,0.10)' : '0 1px 2px 0 rgba(0,0,0,0.03)';
@@ -90,25 +89,20 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
     });
   };
 
-  const handleEdit = (idx: number) => {
-    setEditingIdx(idx);
-    setInputValue(values[idx] || '');
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  const handleInputBlur = (idx: number) => {
+  const handleInputBlur = () => {
     setValues(prev => {
       const arr = [...prev];
-      arr[idx] = inputValue.trim();
+      arr[editingIdx!] = inputValue.trim();
       return arr;
     });
     setEditingIdx(null);
   };
 
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       (e.target as HTMLInputElement).blur();
     } else if (e.key === 'Escape') {
@@ -207,8 +201,8 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
                     autoFocus
                     value={inputValue}
                     onChange={handleInputChange}
-                    onBlur={() => handleInputBlur(idx)}
-                    onKeyDown={e => handleInputKeyDown(e, idx)}
+                    onBlur={handleInputBlur}
+                    onKeyDown={handleInputKeyDown}
                     style={{
                       width: '100%',
                       fontSize: 15,

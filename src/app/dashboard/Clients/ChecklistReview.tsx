@@ -1,12 +1,5 @@
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useEffect } from "react";
 import {
-  User,
-  Users,
-  ListChecks,
-  Edit2,
-  X,
-  Check,
   ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "../../../theme-context";
@@ -17,33 +10,14 @@ import ChecklistParser from "./ChecklistParser";
 interface ChecklistReviewProps {
   checklistItems: string[];
   reviewerName: string;
-  reviewerAvatar: string;
-  onChecklistChange?: (newChecklist: boolean[]) => void;
   onBack?: () => void;
 }
 
-export default function ChecklistReview({ checklistItems, reviewerName, reviewerAvatar, onChecklistChange, onBack }: ChecklistReviewProps) {
+export default function ChecklistReview({ reviewerName, onBack }: ChecklistReviewProps) {
   const { darkMode } = useTheme();
-  const [localChecklist, setLocalChecklist] = useState<boolean[]>(Array(checklistItems.length).fill(false));
-  const [editingReviewer, setEditingReviewer] = useState(false);
-  const [editReviewerName, setEditReviewerName] = useState(reviewerName);
 
   useEffect(() => {
-    setEditReviewerName(reviewerName);
   }, [reviewerName]);
-
-  const handleChecklistToggle = (idx: number) => {
-    setLocalChecklist((prev) => {
-      const updated = prev.map((v, i) => (i === idx ? !v : v));
-      if (onChecklistChange) onChecklistChange(updated);
-      return updated;
-    });
-  };
-
-  const handleEditReviewer = () => setEditingReviewer(true);
-  const handleReviewerChange = (v: string) => setEditReviewerName(v);
-  const handleReviewerBlur = () => setEditingReviewer(false);
-  const handleReviewerKeyDown = (e: React.KeyboardEvent) => { if (e.key === 'Enter') setEditingReviewer(false); };
 
   return (
     <div className="bg-white dark:bg-[var(--background)] flex flex-col h-full min-h-0">

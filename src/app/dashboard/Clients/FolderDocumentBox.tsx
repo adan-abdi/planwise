@@ -2,14 +2,13 @@ import React, { CSSProperties } from 'react';
 import { useTheme } from '../../../theme-context';
 
 type FolderDocumentBoxProps = {
-  item?: any;
   onClick: () => void;
   children: React.ReactNode;
   style?: CSSProperties;
-  [x: string]: any;
+  [x: string]: unknown;
 };
 
-const FolderDocumentBox: React.FC<FolderDocumentBoxProps> = ({ item, onClick, children, style = {}, ...rest }) => {
+const FolderDocumentBox: React.FC<FolderDocumentBoxProps> = ({ onClick, children, style = {}, ...rest }) => {
   const { darkMode } = useTheme();
   return (
     <div
