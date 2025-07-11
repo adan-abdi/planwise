@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import AuthShell from '../authShell'
 import { Lock, Eye, EyeOff, KeyRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTheme } from '../../../theme-context'
 
 export default function SignupPage() {
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email')
@@ -19,6 +20,7 @@ export default function SignupPage() {
 
   const otpRefs = useRef<HTMLInputElement[]>([])
   const router = useRouter()
+  const { darkMode } = useTheme();
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -84,6 +86,33 @@ export default function SignupPage() {
   const sharedInputClass =
     'w-full px-4 py-2 rounded-[10px] bg-zinc-100 text-sm shadow-inner border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
 
+  const inputStyle = darkMode
+    ? {
+        background: 'var(--muted)',
+        color: 'var(--foreground)',
+        borderColor: 'var(--border)',
+      }
+    : {}
+  const otpInputStyle = darkMode
+    ? {
+        background: 'var(--muted)',
+        color: 'var(--foreground)',
+        borderColor: 'var(--border)',
+      }
+    : {}
+  const buttonStyle = darkMode
+    ? {
+        backgroundColor: '#2563eb',
+        color: '#fff',
+      }
+    : {}
+  const resendTextStyle = darkMode
+    ? { color: '#bbb' }
+    : {}
+  const infoTextStyle = darkMode
+    ? { color: '#bbb' }
+    : {}
+
   const renderEmailStep = () => (
     <form onSubmit={handleEmailSubmit} className="space-y-6 w-full">
       <input
@@ -92,17 +121,19 @@ export default function SignupPage() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className={sharedInputClass}
+        style={inputStyle}
         required
       />
       {isValidEmail(email) ? (
         <button
           type="submit"
           className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+          style={buttonStyle}
         >
           Continue
         </button>
       ) : (
-        <p className="text-xs text-center text-gray-500 pt-3">
+        <p className="text-xs text-center text-gray-500 pt-3" style={infoTextStyle}>
           We’ll create an account if you don’t have one yet.
         </p>
       )}
@@ -125,6 +156,7 @@ export default function SignupPage() {
               otpRefs.current[i] = el!
             }}
             className="w-10 h-12 text-center text-xl rounded-md bg-zinc-100 shadow-inner focus:border-blue-500 focus:bg-white border border-transparent focus:outline-none transition"
+            style={otpInputStyle}
           />
         ))}
       </div>
@@ -135,11 +167,12 @@ export default function SignupPage() {
         <button
           type="submit"
           className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+          style={buttonStyle}
         >
           Continue
         </button>
       ) : (
-        <p className="text-xs text-center text-black">
+        <p className="text-xs text-center text-black" style={resendTextStyle}>
           Didn’t receive any code? <span className="font-bold">Resend it</span>
         </p>
       )}
@@ -169,6 +202,7 @@ export default function SignupPage() {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className={sharedInputClass + ' pr-10'}
+          style={inputStyle}
           required
         />
         <button
@@ -220,6 +254,7 @@ export default function SignupPage() {
       <button
         type="submit"
         className="w-full mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+        style={buttonStyle}
       >
         Continue
       </button>

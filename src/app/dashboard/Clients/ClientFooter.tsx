@@ -9,22 +9,27 @@ interface ClientFooterProps {
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
   isEmpty?: boolean;
   showFooterActions?: boolean;
+  invisible?: boolean;
+  forceWhiteBg?: boolean;
+  greyBg?: boolean;
 }
 
-const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage, isEmpty, showFooterActions }) => {
+const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage, isEmpty, showFooterActions, invisible, forceWhiteBg, greyBg }) => {
   const { darkMode } = useTheme();
   if (isEmpty) {
-    return (
-      <footer className="w-full bg-zinc-50 dark:bg-[var(--muted)] py-3 px-4 flex items-center justify-center min-h-[56px] relative text-[var(--foreground)] border-t border-zinc-200 dark:border-[var(--border)]">
-        {/* Edge-to-edge border for mobile only */}
-        <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen top-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
-      </footer>
-    );
+    return null;
   }
+  const footerBgClass =
+    greyBg
+      ? 'bg-white dark:bg-[var(--muted)]'
+      : selectedClient || (!showFooterActions && !isEmpty && totalPages > 1)
+        ? 'bg-white dark:bg-transparent'
+        : forceWhiteBg
+          ? 'bg-white dark:bg-[var(--muted)]'
+          : 'bg-white dark:bg-[var(--muted)]';
   return (
-    <footer className="w-full bg-zinc-50 dark:bg-[var(--muted)] py-3 px-4 flex items-center justify-center min-h-[56px] relative text-[var(--foreground)] border-t border-zinc-200 dark:border-[var(--border)]">
-      {/* Edge-to-edge border for mobile only */}
-      <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen top-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
+    <footer className={`w-full ${footerBgClass} py-3 px-4 flex items-center justify-center min-h-[56px] relative text-[var(--foreground)] border-t border-zinc-200 dark:border-[var(--border)]${invisible ? ' invisible' : ''}`}>
+      <div className={`block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen top-0 h-px bg-zinc-200 dark:bg-[var(--border)]${invisible ? ' invisible' : ''}`} />
       {showFooterActions ? (
         <div className="w-full flex justify-end items-center gap-2">
           <button

@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
 import { useRouter } from 'next/navigation'
+import { useTheme } from '../../../theme-context'
 
 export default function LoginPage() {
+  const { darkMode } = useTheme();
   const [step, setStep] = useState<'login' | 'password'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,7 +48,41 @@ export default function LoginPage() {
   }, [password])
 
   const sharedInputClass =
-    'w-full px-4 py-2 rounded-[10px] bg-zinc-100 text-sm shadow-inner border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
+    'w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:outline-none transition duration-150 ease-in-out';
+
+  const inputStyle = darkMode
+    ? {
+        background: 'var(--muted)',
+        color: 'var(--foreground)',
+        borderColor: 'var(--border)',
+        boxShadow: '0 1px 2px 0 #1112',
+      }
+    : {
+        background: '#f4f4f5',
+        color: '#18181b',
+        borderColor: 'transparent',
+        boxShadow: '0 1px 2px 0 #e0e7ef',
+      };
+
+  const buttonStyle = darkMode
+    ? {
+        backgroundColor: '#2563eb',
+        color: '#fff',
+        boxShadow: '0 2px 8px 0 #1112',
+      }
+    : {
+        backgroundColor: '#2563eb',
+        color: '#fff',
+        boxShadow: '0 2px 8px 0 #e0e7ef',
+      };
+
+  const infoTextStyle = darkMode
+    ? { color: '#bbb' }
+    : { color: '#666' };
+
+  const errorTextStyle = darkMode
+    ? { color: '#ff6b6b' }
+    : { color: '#e53e3e' };
 
   const renderPasswordField = () => (
     <div className="space-y-2">
@@ -57,18 +93,20 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className={`${sharedInputClass} pr-10`}
+          style={inputStyle}
           required
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2"
+          style={{ color: darkMode ? '#bbb' : '#666' }}
         >
           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
       {passwordError && (
-        <p className="text-sm text-red-500 text-center">{passwordError}</p>
+        <p className="text-sm text-center" style={errorTextStyle}>{passwordError}</p>
       )}
     </div>
   )
@@ -103,17 +141,19 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={sharedInputClass}
+            style={inputStyle}
             required
           />
           {isValidEmail(email) ? (
             <button
               type="submit"
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
+              style={buttonStyle}
             >
               Continue
             </button>
           ) : (
-            <p className="text-xs text-center text-gray-500 pt-3">
+            <p className="text-xs text-center pt-3" style={infoTextStyle}>
               We’ll create an account if you don’t have one yet.
             </p>
           )}
@@ -123,7 +163,8 @@ export default function LoginPage() {
           {renderPasswordField()}
           <button
             type="submit"
-            className="w-full mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full mt-2 px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
+            style={buttonStyle}
             disabled={passwordError !== ''}
           >
             Continue

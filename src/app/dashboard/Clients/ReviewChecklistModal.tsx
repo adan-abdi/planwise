@@ -13,7 +13,6 @@ export default function ReviewChecklistModal({ open, onCancel, onContinue, check
   const { darkMode } = useTheme();
   if (!open) return null;
 
-  // Define conditional styles
   const modalBg = darkMode ? 'rgba(24,24,27,0.95)' : 'rgba(255,255,255,0.75)';
   const borderColor = darkMode ? '#27272a' : 'var(--border)';
   const footerBg = darkMode ? 'rgba(51,51,51,0.98)' : 'rgba(255,255,255,0.85)';
@@ -30,7 +29,6 @@ export default function ReviewChecklistModal({ open, onCancel, onContinue, check
   const continueBtnBg = darkMode ? '#2563eb' : '#2563eb';
   const continueBtnHover = darkMode ? '#1d4ed8' : '#1d4ed8';
   const continueBtnText = '#fff';
-  // Add a muted background for the right side (checklist area)
   const rightSideBg = 'transparent';
 
   return (

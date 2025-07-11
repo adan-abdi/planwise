@@ -2,6 +2,7 @@ import { Check, MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../../theme-context';
+import { createPortal } from 'react-dom';
 
 export interface ClientItem {
   advisor: string;
@@ -59,6 +60,32 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef, darkMo
   darkMode: boolean;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const [style, setStyle] = useState<React.CSSProperties>({});
+  useEffect(() => {
+    if (anchorRef.current && menuRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      let top = rect.bottom + 8;
+      let left = rect.left - 24;
+      const minWidth = 260;
+      const width = undefined;
+      const menuHeight = menuRef.current.offsetHeight || 200;
+      const menuWidth = menuRef.current.offsetWidth || minWidth;
+      if (top + menuHeight > window.innerHeight) {
+        top = Math.max(8, window.innerHeight - menuHeight - 8);
+      }
+      if (left + menuWidth > window.innerWidth) {
+        left = Math.max(8, window.innerWidth - menuWidth - 8);
+      }
+      setStyle({
+        position: 'fixed',
+        top,
+        left,
+        zIndex: 1000,
+        minWidth,
+        width,
+      });
+    }
+  }, [anchorRef, menuRef]);
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -73,34 +100,7 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef, darkMo
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose, anchorRef]);
-
-  const [style, setStyle] = useState<React.CSSProperties>({});
-  useEffect(() => {
-    if (anchorRef.current && menuRef.current) {
-      const rect = anchorRef.current.getBoundingClientRect();
-      if (typeof window !== 'undefined' && window.innerWidth < 640) {
-        setStyle({
-          position: 'fixed',
-          top: rect.bottom + 8,
-          left: 8,
-          right: 8,
-          minWidth: undefined,
-          width: 'calc(100vw - 16px)',
-          zIndex: 1000,
-        });
-      } else {
-        setStyle({
-          position: 'fixed',
-          top: rect.bottom + 8,
-          left: rect.left - 24,
-          zIndex: 1000,
-          minWidth: 260,
-        });
-      }
-    }
-  }, [anchorRef]);
-
-  return (
+  const menu = (
     <div
       ref={menuRef}
       style={{
@@ -147,6 +147,7 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef, darkMo
       </button>
     </div>
   );
+  return typeof window !== 'undefined' ? createPortal(menu, document.body) : null;
 }
 
 export interface ClientListProps {
@@ -190,7 +191,6 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
     onChecklistChange(clientIdx, newChecklist);
   };
 
-  // Light mode table
   const renderLightTable = () => (
     <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-200 rounded-lg bg-white" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
@@ -314,7 +314,6 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
     </div>
   );
 
-  // Dark mode table
   const renderDarkTable = () => (
     <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-700 rounded-lg bg-[var(--background)]" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse text-[var(--foreground)]">

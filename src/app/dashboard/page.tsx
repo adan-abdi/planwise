@@ -12,7 +12,6 @@ import {
   SquareUserRound,
   SquareKanban,
   Logs,
-  ArrowLeft,
   ChevronRight,
 } from "lucide-react";
 import Clients from "./Clients";
@@ -54,22 +53,19 @@ export default function DashboardPage() {
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
   const activeSupportSection = supportSections.find((s) => s.key === active);
-  const [selectedClientTab, setSelectedClientTab] = useState<string>('details');
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
 
-  const handleBackToClients = () => setClientDetailsOpen(false);
+  const handleBackToClientList = () => setClientDetailsOpen(false);
 
-  const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
   const [triggerRandomClients, setTriggerRandomClients] = useState(false);
-  const handleClientDetailsChange = (open: boolean, name?: string, tab?: string) => {
+  const handleClientDetailsChange = (open: boolean) => {
     setClientDetailsOpen(open);
-    setSelectedClientName(open && name ? name : null);
-    setSelectedClientTab(tab || 'details');
+    // setSelectedClientName(open && name ? name : null); // Removed as per edit hint
+    // setSelectedClientTab(tab || 'details'); // Removed as per edit hint
   };
 
   const { darkMode } = useTheme();
 
-  // Function to generate random clients
   const generateRandomClients = () => {
     const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas'];
     const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
@@ -163,24 +159,11 @@ export default function DashboardPage() {
                 <PanelRightClose className="w-7 h-7 text-zinc-500" />
               )}
             </button>
-            <Image src="/logo.svg" alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
+            <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
           </div>
           <div className={`flex-1 flex items-center h-full bg-[var(--background)] ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
             {active === "clients" && breadcrumbPath.length > 0 ? (
               <div className="flex items-center gap-2 py-2">
-                {/* Show explicit back button only if not in CFR Checklist, not in root, and active section is clients */}
-                {active === 'clients' && breadcrumbPath.length > 1 && breadcrumbPath[breadcrumbPath.length-1]?.label !== 'CFR Checklist' && (
-                  <>
-                    <button
-                      onClick={handleBackToClients}
-                      className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
-                      aria-label="Back to client list"
-                    >
-                      <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
-                    </button>
-                    <span className="h-6 w-px bg-[var(--border)]" />
-                  </>
-                )}
                 {breadcrumbPath.map((item) => (
                   <React.Fragment key={item.label}>
                     {breadcrumbPath.indexOf(item) > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
@@ -190,51 +173,7 @@ export default function DashboardPage() {
                   </React.Fragment>
                 ))}
               </div>
-            ) : active === "clients" && clientDetailsOpen ? (
-                <div className="flex items-center gap-2 py-2">
-                  <button
-                    onClick={handleBackToClients}
-                    className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center"
-                    aria-label="Back to client list"
-                  >
-                    <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
-                  </button>
-                  <span className="h-6 w-px bg-[var(--border)]" />
-                  <SquareUserRound className="w-4 h-4 text-zinc-400" />
-                  <span className="text-zinc-400 text-base font-medium">Clients</span>
-                  {/* Render chevron-based breadcrumb for client/transfer path */}
-                  {(() => {
-                    // Parse the selectedClientTab for transfer path
-                    let path: string[] = [];
-                    if (selectedClientTab && selectedClientTab.startsWith('transfers/')) {
-                      path = selectedClientTab.replace('transfers/', '').split('/');
-                    }
-                    return (
-                      <>
-                        <ChevronRight className="w-3 h-3 text-zinc-300" />
-                        <span className="text-zinc-400 text-base font-medium">Client: {selectedClientName || ""}</span>
-                        {selectedClientTab && selectedClientTab.startsWith('transfers/') && path.length > 0 && path.map((folder, i, arr) => (
-                          <React.Fragment key={folder + i}>
-                            <ChevronRight className="w-3 h-3 text-zinc-300" />
-                            <span
-                              className={`text-base font-medium ${i === arr.length - 1 ? 'font-semibold' : 'text-zinc-400'}`}
-                              style={i === arr.length - 1 ? { color: darkMode ? 'white' : 'black' } : undefined}
-                            >
-                              {folder}
-                            </span>
-                          </React.Fragment>
-                        ))}
-                        {selectedClientTab && !selectedClientTab.startsWith('transfers/') && (
-                          <>
-                            <ChevronRight className="w-3 h-3 text-zinc-300" />
-                            <span className="text-base font-semibold" style={{ color: darkMode ? 'white' : 'black' }}>{selectedClientTab === 'details' ? 'Client details' : selectedClientTab.charAt(0).toUpperCase() + selectedClientTab.slice(1)}</span>
-                          </>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              ) :
+            ) :
                 <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
             }
           </div>
@@ -343,6 +282,7 @@ export default function DashboardPage() {
               triggerRandomClients={triggerRandomClients}
               onRandomClientsGenerated={() => setTriggerRandomClients(false)}
               onBreadcrumbChange={setBreadcrumbPath}
+              onBackToClientList={handleBackToClientList}
             />
           ) : active === "dashboard" ? (
             <Dashboard />

@@ -14,7 +14,6 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
   const { darkMode, toggleDarkMode } = useTheme();
   return (
     <div className="flex items-stretch gap-3 rounded-xl bg-white dark:bg-[var(--background)] px-3 py-1 min-h-0">
-      {/* Dark mode toggle button */}
       <button
         className="w-8 h-8 flex items-center justify-center rounded-full transition"
         aria-label="Toggle dark mode"
@@ -35,7 +34,6 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
           <Sun className="w-5 h-5 text-zinc-400" />
         )}
       </button>
-      {/* Notification icon button */}
       <button 
         className="w-8 h-8 flex items-center justify-center rounded-full transition relative"
         style={{
@@ -51,7 +49,6 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
         <Bell className="w-5 h-5 text-zinc-400" />
         <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-400 border-2 border-white dark:border-[var(--background)]"></span>
       </button>
-      {/* Generate random clients button */}
       {onGenerateRandomClients && (
         <button 
           className="w-8 h-8 flex items-center justify-center rounded-full transition"

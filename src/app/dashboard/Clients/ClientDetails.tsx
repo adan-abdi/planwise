@@ -37,6 +37,8 @@ interface ClientDetailsProps {
   onChecklistChange?: (newChecklist: boolean[]) => void;
   onTabChange?: (tab: string) => void;
   onShowChecklistReviewTest?: () => void;
+  onDocumentOpen?: (open: boolean) => void;
+  onBackToClientList?: () => void;
 }
 
 type TransferType = "pension" | "isa" | null;
@@ -86,7 +88,7 @@ function getFolderContents(path: string[]): TransferFolderItem[] {
   return items;
 }
 
-export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest }: ClientDetailsProps) {
+export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList }: ClientDetailsProps) {
   const { darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('details');
   const [openedTransfer, setOpenedTransfer] = useState<TransferType>(null);
@@ -165,12 +167,13 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
 
   const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
-  // Reset selectedDocument when navigating folders
   useEffect(() => {
     setSelectedDocument(null);
   }, [transferPath]);
+  useEffect(() => {
+    if (onDocumentOpen) onDocumentOpen(!!selectedDocument);
+  }, [selectedDocument, onDocumentOpen]);
 
-  // Helper for clickable line style
   const clickableLineClass = "text-blue-600 dark:text-blue-400 text-sm mt-1 cursor-pointer hover:underline w-fit";
 
   return (
@@ -179,6 +182,25 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
       >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          {onBackToClientList && (
+            <button
+              onClick={onBackToClientList}
+              className="mr-2 p-2 rounded-full transition flex items-center justify-center"
+              aria-label="Back to client list"
+              style={{
+                backgroundColor: darkMode ? 'transparent' : 'transparent',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
+            </button>
+          )}
           <div className="relative w-8 h-8 sm:w-10 sm:h-10">
             <Image
               src={editValues.avatar}
@@ -388,7 +410,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           </div>
           <div style={{ width: 1, background: 'transparent', height: '100%', alignSelf: 'stretch' }} />
           <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-            {/* Right column empty */}
           </div>
         </div>
       )}
@@ -396,7 +417,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
           <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
             <div style={{ paddingLeft: 32, paddingTop: 24 }}>
-              {/* Section title or breadcrumbs */}
               {(openedTransfer === null || transferPath.length === 0) ? (
                 <div className="text-lg font-semibold mb-6" style={{ color: darkMode ? 'white' : '#18181b' }}>Transfers</div>
               ) : (
@@ -435,7 +455,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   ))}
                 </div>
               )}
-              {/* Transfer root folders */}
               {openedTransfer === null && transferPath.length === 0 && (
                 <>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 700, overflow: 'auto' }}>
@@ -464,7 +483,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   </div>
                 </>
               )}
-              {/* File explorer with breadcrumbs as its own component */}
               {openedTransfer !== null && transferPath.length > 0 && (
                 <FileExplorer
                   transferPath={transferPath}
@@ -477,7 +495,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
               )}
             </div>
           </div>
-          <div style={{ width: 1, background: darkMode ? '#3f3f46' : '#e4e4e7', height: '100%', alignSelf: 'stretch' }} />
+          <div style={{ width: 1, background: darkMode ? '#3f3f46' : '#e4e4e7', height: '100%', alignSelf: 'stretch' }} className={activeTab === 'transfers' && !selectedDocument ? 'invisible' : ''} />
           <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 32 }}>
             {selectedDocument ? (
               <DocumentViewer document={selectedDocument} />
@@ -488,11 +506,9 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
       {activeTab === 'activity' && (
         <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
           <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-            {/* Left column empty */}
           </div>
-          <div style={{ width: 1, background: darkMode ? '#3f3f46' : '#e4e4e7', height: '100%', alignSelf: 'stretch' }} />
+          <div style={{ width: 1, background: 'transparent', height: '100%', alignSelf: 'stretch' }} />
           <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-            {/* Right column empty */}
           </div>
         </div>
       )}

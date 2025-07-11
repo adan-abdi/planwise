@@ -1,6 +1,21 @@
 import React, { useState } from "react";
 import { Check, GripVertical, ArrowRight, Info } from "lucide-react";
 import { useTheme } from "../../../theme-context";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const checklistData = [
   { label: "Partner", found: false, value: "-", source: null, confidence: null },
@@ -21,17 +36,6 @@ const checklistData = [
   { label: "Notes", found: false, value: "-", source: null, confidence: null },
 ];
 
-const badgeStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  borderRadius: 999,
-  fontSize: 11,
-  fontWeight: 500,
-  padding: '2px 8px',
-  background: '#f4f4f5',
-  color: '#63636a',
-  marginRight: 4,
-};
 const subtleRadius = 6;
 const squirkleRadius = '16px / 10px';
 const gap = 16;
@@ -40,27 +44,215 @@ interface ChecklistParserProps {
   showFooterActions?: boolean;
 }
 
+interface SortableChecklistItemProps {
+  id: number;
+  idx: number;
+  item: typeof checklistData[number];
+  darkMode: boolean;
+  checked: boolean[];
+  handleToggle: (idx: number) => void;
+  editingIdx: number | null;
+  setEditingIdx: React.Dispatch<React.SetStateAction<number | null>>;
+  inputValue: string;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputBlur: () => void;
+  handleInputKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  values: string[];
+  cardBg: string;
+  cardText: string;
+  subtleRadius: number;
+  badgeFound: string;
+  badgeWarn: string;
+  badgeBg: string;
+  notFoundText: string;
+  notFoundBg: string;
+  borderColor: string;
+  Info: typeof Info;
+  ArrowRight: typeof ArrowRight;
+  inputText: string;
+  gap: number;
+  squirkleRadius: string;
+  checkBg: string;
+  checkBorder: string;
+  checkShadow: string;
+}
+
+function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle, editingIdx, setEditingIdx, inputValue, setInputValue, handleInputChange, handleInputBlur, handleInputKeyDown, values, cardBg, cardText, subtleRadius, badgeFound, badgeWarn, badgeBg, notFoundText, notFoundBg, borderColor, Info, ArrowRight, inputText, gap, squirkleRadius, checkBg, checkBorder, checkShadow }: SortableChecklistItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    boxShadow: isDragging ? '0 8px 32px 0 rgba(40, 80, 200, 0.18), 0 1.5px 8px 0 rgba(0,0,0,0.10)' : undefined,
+    zIndex: isDragging ? 100 : 'auto',
+    borderRadius: isDragging ? `${subtleRadius}px` : undefined,
+    border: isDragging ? `1.5px solid ${borderColor}` : undefined,
+    padding: isDragging ? '8px 8px' : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        display: 'flex',
+        alignItems: 'stretch',
+        minHeight: 64,
+        gap: gap,
+        background: 'transparent',
+        cursor: item.found ? 'pointer' : 'default',
+        transition: 'background 0.15s',
+      }}
+      onClick={() => handleToggle(idx)}
+      {...attributes}
+    >
+      <div
+        style={{ width: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', color: darkMode ? '#fff' : '#000', cursor: 'grab', flexShrink: 0 }}
+        {...listeners}
+        tabIndex={0}
+        aria-label="Drag to reorder"
+      >
+        <GripVertical size={22} />
+      </div>
+      <div style={{
+        flex: 2,
+        background: cardBg,
+        borderRadius: `${subtleRadius}px 0 0 ${subtleRadius}px`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '0 20px',
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 500, color: cardText }}>{item.label}</span>
+        <span style={{ fontSize: 12, color: darkMode ? '#bbb' : '#888', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+          {item.found ? (
+            <>
+              {item.source && <span style={{ color: cardText, fontWeight: 600, marginLeft: 3 }}>Found in <span style={{ fontWeight: 600, marginLeft: 3, color: cardText }}>{item.source}</span></span>}
+              {item.confidence !== null && (
+                <span style={{ color: item.confidence > 95 ? badgeFound : badgeWarn, background: badgeBg, fontWeight: 600 }}>{item.confidence}%</span>
+              )}
+            </>
+          ) : (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ color: notFoundText, background: badgeBg, fontWeight: 500 }}>Not found</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', border: `1px solid ${borderColor}`, color: notFoundText, background: notFoundBg }}>
+                <Info size={13} />
+              </span>
+            </span>
+          )}
+        </span>
+      </div>
+      <div style={{
+        width: 48,
+        minWidth: 48,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: cardBg,
+        borderRadius: subtleRadius,
+      }}>
+        <ArrowRight size={18} color={darkMode ? '#bbb' : '#888'} />
+      </div>
+      <div
+        style={{
+          flex: 2,
+          background: cardBg,
+          borderRadius: `0 ${subtleRadius}px ${subtleRadius}px 0`,
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: 15,
+          color: values[idx] === '' ? notFoundText : cardText,
+          fontWeight: 500,
+          padding: '0 20px',
+          cursor: 'text',
+        }}
+        onClick={e => { e.stopPropagation(); setEditingIdx(idx); setInputValue(values[idx] || ''); }}
+      >
+        {editingIdx === idx ? (
+          <input
+            autoFocus
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            style={{
+              width: '100%',
+              fontSize: 15,
+              fontWeight: 500,
+              color: inputText,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+            }}
+            placeholder="Enter value..."
+          />
+        ) : (
+          values[idx] === '' ? <span style={{ color: notFoundText }}>-</span> : values[idx]
+        )}
+      </div>
+      <div style={{
+        width: 56,
+        minWidth: 56,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: checkBg,
+        borderRadius: squirkleRadius,
+      }}>
+        {item.found ? (
+          <div
+            onClick={e => { e.stopPropagation(); handleToggle(idx); }}
+            style={{
+              border: `1.5px solid ${checkBorder}`,
+              borderRadius: squirkleRadius,
+              background: checkBg,
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: checkShadow,
+              transition: 'box-shadow 0.15s',
+            }}
+            tabIndex={0}
+            aria-label={checked[idx] ? 'Uncheck' : 'Check'}
+          >
+            {checked[idx] && <Check size={18} color={cardText} />}
+          </div>
+        ) : (
+          <div style={{ width: 40, height: 40 }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) => {
   const { darkMode } = useTheme();
-  // Checkbox checked if found by default
+  const [items, setItems] = useState(checklistData.map((_, i) => i)); // store order by index
   const [checked, setChecked] = useState(checklistData.map(item => !!item.found));
-  // Editable values for 'What we found'
   const [values, setValues] = useState(checklistData.map(item => item.value === '-' ? '' : item.value));
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
 
-  // Define dark mode colors
   const bgMain = darkMode ? 'var(--background)' : '#fafafa';
   const cardBg = darkMode ? 'var(--muted)' : '#fff';
   const cardText = darkMode ? 'var(--foreground)' : '#222';
   const badgeBg = darkMode ? '#333' : '#f4f4f5';
-  const badgeText = darkMode ? '#bbb' : '#63636a';
   const badgeFound = darkMode ? '#22c55e' : '#22c55e';
   const badgeWarn = darkMode ? '#f59e42' : '#f59e42';
   const notFoundBg = darkMode ? '#232329' : '#fff';
   const notFoundText = darkMode ? '#bbb' : '#bbb';
   const borderColor = darkMode ? '#27272a' : '#e4e4e7';
-  const arrowBg = darkMode ? 'var(--muted)' : '#fff';
   const inputText = darkMode ? 'var(--foreground)' : '#222';
   const checkBg = darkMode ? 'var(--muted)' : '#fff';
   const checkBorder = darkMode ? '#3f3f46' : '#e4e4e7';
@@ -74,11 +266,13 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
   const footerBtnPrimary = darkMode ? '#2563eb' : '#2563eb';
   const footerBtnPrimaryText = '#fff';
 
-  const badgeStyleDark = {
-    ...badgeStyle,
-    background: badgeBg,
-    color: badgeText,
-  };
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
 
   const handleToggle = (idx: number) => {
     if (!checklistData[idx].found) return;
@@ -110,6 +304,17 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = items.indexOf(Number(active.id));
+      const newIndex = items.indexOf(Number(over.id));
+      setItems(arrayMove(items, oldIndex, newIndex));
+      setChecked(arrayMove(checked, oldIndex, newIndex));
+      setValues(arrayMove(values, oldIndex, newIndex));
+    }
+  };
+
   return (
     <div style={{ padding: 32, width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
       <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>CFR Checklist</h2>
@@ -120,142 +325,52 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
           <div style={{ flex: 2 }}>What we found</div>
           <div style={{ width: 40 }}></div>
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: gap, paddingRight: 16 }}>
-          {checklistData.map((item, idx) => (
-            <div
-              key={item.label + idx}
-              style={{
-                display: 'flex',
-                alignItems: 'stretch',
-                minHeight: 64,
-                gap: gap,
-                background: 'transparent',
-                cursor: item.found ? 'pointer' : 'default',
-                transition: 'background 0.15s',
-              }}
-              onClick={() => handleToggle(idx)}
-            >
-              {/* 1. Dots */}
-              <div style={{ width: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', color: darkMode ? '#fff' : '#000', cursor: 'grab', flexShrink: 0 }}>
-                <GripVertical size={22} />
-              </div>
-              {/* 2. Requested Info */}
-              <div style={{
-                flex: 2,
-                background: cardBg,
-                borderRadius: `${subtleRadius}px 0 0 ${subtleRadius}px`,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                padding: '0 20px',
-              }}>
-                <span style={{ fontSize: 15, fontWeight: 500, color: cardText }}>{item.label}</span>
-                <span style={{ fontSize: 12, color: darkMode ? '#bbb' : '#888', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                  {item.found ? (
-                    <>
-                      {item.source && <span style={{ ...badgeStyleDark }}>Found in <span style={{ fontWeight: 600, marginLeft: 3, color: cardText }}>{item.source}</span></span>}
-                      {item.confidence !== null && (
-                        <span style={{ ...badgeStyleDark, color: item.confidence > 95 ? badgeFound : badgeWarn, background: badgeBg, fontWeight: 600 }}>{item.confidence}%</span>
-                      )}
-                    </>
-                  ) : (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ ...badgeStyleDark, color: notFoundText, background: badgeBg, fontWeight: 500 }}>Not found</span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: '50%', border: `1px solid ${borderColor}`, color: notFoundText, background: notFoundBg }}>
-                        <Info size={13} />
-                      </span>
-                    </span>
-                  )}
-                </span>
-              </div>
-              {/* 3. Arrow */}
-              <div style={{
-                width: 48,
-                minWidth: 48,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: arrowBg,
-                borderRadius: subtleRadius,
-              }}>
-                <ArrowRight size={18} color={darkMode ? '#bbb' : '#888'} />
-              </div>
-              {/* 4. What we found (editable) */}
-              <div
-                style={{
-                  flex: 2,
-                  background: cardBg,
-                  borderRadius: `0 ${subtleRadius}px ${subtleRadius}px 0`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontSize: 15,
-                  color: values[idx] === '' ? notFoundText : cardText,
-                  fontWeight: 500,
-                  padding: '0 20px',
-                  cursor: 'text',
-                }}
-                onClick={e => { e.stopPropagation(); setEditingIdx(idx); setInputValue(values[idx] || ''); }}
-              >
-                {editingIdx === idx ? (
-                  <input
-                    autoFocus
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    onBlur={handleInputBlur}
-                    onKeyDown={handleInputKeyDown}
-                    style={{
-                      width: '100%',
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: inputText,
-                      background: 'transparent',
-                      border: 'none',
-                      outline: 'none',
-                    }}
-                    placeholder="Enter value..."
-                  />
-                ) : (
-                  values[idx] === '' ? <span style={{ color: notFoundText }}>-</span> : values[idx]
-                )}
-              </div>
-              {/* 5. Checkbox */}
-              <div style={{
-                width: 56,
-                minWidth: 56,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: checkBg,
-                borderRadius: squirkleRadius,
-              }}>
-                {item.found ? (
-                  <div
-                    onClick={e => { e.stopPropagation(); handleToggle(idx); }}
-                    style={{
-                      border: `1.5px solid ${checkBorder}`,
-                      borderRadius: squirkleRadius,
-                      background: checkBg,
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: checkShadow,
-                      transition: 'box-shadow 0.15s',
-                    }}
-                    tabIndex={0}
-                    aria-label={checked[idx] ? 'Uncheck' : 'Check'}
-                  >
-                    {checked[idx] && <Check size={18} color={cardText} />}
-                  </div>
-                ) : (
-                  <div style={{ width: 40, height: 40 }} />
-                )}
-              </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={items} strategy={verticalListSortingStrategy}>
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: gap, paddingRight: 16 }}>
+              {items.map((itemIdx, idx) => (
+                <SortableChecklistItem
+                  key={checklistData[itemIdx].label + itemIdx}
+                  id={itemIdx}
+                  idx={idx}
+                  item={checklistData[itemIdx]}
+                  darkMode={darkMode}
+                  checked={checked}
+                  handleToggle={handleToggle}
+                  editingIdx={editingIdx}
+                  setEditingIdx={setEditingIdx}
+                  inputValue={inputValue}
+                  setInputValue={setInputValue}
+                  handleInputChange={handleInputChange}
+                  handleInputBlur={handleInputBlur}
+                  handleInputKeyDown={handleInputKeyDown}
+                  values={values}
+                  cardBg={cardBg}
+                  cardText={cardText}
+                  subtleRadius={subtleRadius}
+                  badgeFound={badgeFound}
+                  badgeWarn={badgeWarn}
+                  badgeBg={badgeBg}
+                  notFoundText={notFoundText}
+                  notFoundBg={notFoundBg}
+                  borderColor={borderColor}
+                  Info={Info}
+                  ArrowRight={ArrowRight}
+                  inputText={inputText}
+                  gap={gap}
+                  squirkleRadius={squirkleRadius}
+                  checkBg={checkBg}
+                  checkBorder={checkBorder}
+                  checkShadow={checkShadow}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
         {showFooterActions && (
           <div style={{
             minHeight: 80,

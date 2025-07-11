@@ -25,16 +25,28 @@ export default function ChecklistReview({ reviewerName, onBack }: ChecklistRevie
         style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
       >
         {onBack && (
-          <button onClick={onBack} className="mr-4 p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-center" aria-label="Back to previous">
+          <button
+            onClick={onBack}
+            className="mr-4 p-2 rounded-full transition flex items-center justify-center"
+            aria-label="Back to previous"
+            style={{
+              backgroundColor: darkMode ? 'transparent' : 'transparent',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
             <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
           </button>
         )}
         <Stepper darkMode={darkMode} />
       </div>
-      {/* Split content area into left and right with a dividing line */}
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden' }}>
         <div style={{ flex: 4, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-          {/* Search box at the top */}
           <div style={{ padding: '24px 24px 2px 24px', background: 'transparent' }}>
             <input
               type="text"
@@ -54,7 +66,6 @@ export default function ChecklistReview({ reviewerName, onBack }: ChecklistRevie
               }}
             />
           </div>
-          {/* DocumentViewer below search box, fills remaining space */}
           <div style={{ flex: 1, minHeight: 0, padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
             <DocumentViewer document={{ name: "Sample Document" }} />
           </div>

@@ -35,7 +35,7 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-[var(--border)]">
-          <Image src="/logo.svg" alt="PlanWise Logo" width={80} height={32} className="h-8 w-auto" />
+          <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={80} height={32} className="h-8 w-auto" />
           <button onClick={onClose} aria-label="Close sidebar">
             <X className="w-7 h-7 text-zinc-400 dark:text-[var(--foreground)]" />
           </button>

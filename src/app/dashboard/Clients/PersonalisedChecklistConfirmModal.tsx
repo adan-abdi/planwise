@@ -11,7 +11,6 @@ interface PersonalisedChecklistConfirmModalProps {
 export default function PersonalisedChecklistConfirmModal({ open, onConfirm, onCancel, onNo }: PersonalisedChecklistConfirmModalProps) {
   const { darkMode } = useTheme();
   if (!open) return null;
-  // Define conditional styles
   const modalBg = darkMode ? 'rgba(34,34,34,0.92)' : 'rgba(255,255,255,0.80)';
   const modalInnerBg = darkMode ? 'rgba(34,34,34,0.85)' : 'rgba(255,255,255,0.70)';
   const borderColor = darkMode ? '#27272a' : '#e4e4e7';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '../../../../theme-context';
 
 interface DocumentViewerProps {
@@ -11,6 +11,12 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document }) => {
   const border = darkMode ? '#333333' : '#E0E0E0';
   const skeletonBase = darkMode ? '#333' : '#eee';
   const skeletonHighlight = darkMode ? '#444' : '#f5f5f5';
+
+  const skeletonWidths = useMemo(() => {
+    return Array.from({ length: 4 }).map(() =>
+      Array.from({ length: 4 }).map(() => `${70 + Math.floor(Math.random() * 31)}%`)
+    );
+  }, []);
 
   return (
     <div
@@ -25,7 +31,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document }) => {
       }}
     >
       <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16, color: darkMode ? 'var(--foreground)' : '#18181b' }}>{document.name}</h2>
-      {/* Shimmer animation style */}
       <style>{`
         @keyframes shimmer {
           0% { background-position: -468px 0; }
@@ -42,25 +47,20 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document }) => {
         }
       `}</style>
       <div style={{ color: darkMode ? 'var(--foreground)' : '#888', fontSize: 16, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Skeleton lines in groups of 4 with randomized widths */}
-        {Array.from({ length: 4 }).map((_, groupIdx) => (
+        {skeletonWidths.map((group, groupIdx) => (
           <div key={groupIdx} style={{ marginBottom: groupIdx < 3 ? 40 : 0 }}>
-            {Array.from({ length: 4 }).map((_, lineIdx) => {
-              // Random width between 70% and 100% for each line
-              const randomWidth = `${70 + Math.floor(Math.random() * 31)}%`;
-              return (
-                <div
-                  key={lineIdx}
-                  className="skeleton-shimmer"
-                  style={{
-                    height: 16,
-                    width: randomWidth,
-                    borderRadius: 4,
-                    marginBottom: lineIdx < 3 ? 8 : 0
-                  }}
-                />
-              );
-            })}
+            {group.map((width, lineIdx) => (
+              <div
+                key={lineIdx}
+                className="skeleton-shimmer"
+                style={{
+                  height: 16,
+                  width,
+                  borderRadius: 4,
+                  marginBottom: lineIdx < 3 ? 8 : 0
+                }}
+              />
+            ))}
           </div>
         ))}
       </div>

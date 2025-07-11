@@ -1,5 +1,5 @@
 import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
 import type { ClientFormData } from "./ClientModal";
@@ -11,13 +11,14 @@ import ClientFooter from "./ClientFooter";
 import ClientEmptyState from "./ClientEmptyState";
 import { useTheme } from "../../../theme-context";
 
-export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenerateRandomClients, triggerRandomClients, onRandomClientsGenerated, onBreadcrumbChange }: { 
+export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenerateRandomClients, triggerRandomClients, onRandomClientsGenerated, onBreadcrumbChange, onBackToClientList }: { 
   detailsViewOpen?: boolean; 
   onDetailsViewChange?: (open: boolean, name?: string, tab?: string) => void;
   onGenerateRandomClients?: () => ClientItem[];
   triggerRandomClients?: boolean;
   onRandomClientsGenerated?: () => void;
   onBreadcrumbChange?: (path: Array<{label: string, icon?: React.ReactNode, onClick?: () => void, isActive?: boolean}>) => void;
+  onBackToClientList?: () => void;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [clients, setClients] = useState<ClientItem[]>([]);
@@ -36,14 +37,15 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     reviewerName: string;
     reviewerAvatar: string;
   } | null>(null);
+  const [documentOpen, setDocumentOpen] = useState(false);
 
   React.useEffect(() => {
     if (detailsViewOpen === false) {
       setSelectedClientName(null);
+      setShowChecklistReview(false); // ensure checklist review is not shown
     }
   }, [detailsViewOpen]);
 
-  // Handle random clients generation trigger
   React.useEffect(() => {
     if (triggerRandomClients && onGenerateRandomClients && onRandomClientsGenerated) {
       const randomClients = onGenerateRandomClients();
@@ -122,51 +124,12 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const selectedIdx = selectedClientName ? clients.findIndex(c => c.client === selectedClientName) : -1;
   const selectedClient = selectedIdx !== -1 ? clients[selectedIdx] : null;
 
-  // Reset ChecklistReview when changing client
   useEffect(() => {
     setShowChecklistReview(false);
   }, [selectedClientName]);
 
-  useEffect(() => {
-    if (onBreadcrumbChange) onBreadcrumbChange(buildBreadcrumb());
-  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData]);
-
-  // For back from CFR Checklist, just hide ChecklistReview
-  const handleChecklistReviewBack = () => {
-    setShowChecklistReview(false);
-  };
-
-  let clientContent: React.ReactNode;
-  if (clients.length === 0) {
-    clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
-  } else {
-    clientContent = (
-      <div className="sm:px-8 sm:pt-4">
-        <ClientList
-          clients={clients}
-          onViewDetails={handleViewDetails}
-          checklistStates={checklistStates}
-          onChecklistChange={handleChecklistChange}
-        />
-      </div>
-    );
-  }
-
-  // Sample checklist items for demo
-  const checklistItems = [
-    "Partner",
-    "Client name",
-    "Client DOB",
-    "SJP SRA",
-    "Recommended Fund Choice",
-    "Checklist completed by",
-    "Provider"
-  ];
-
-  // Helper to build the full breadcrumb path
-  const buildBreadcrumb = () => {
+  const buildBreadcrumb = useCallback(() => {
     const path = [];
-    // Only allow going back to client section if not in CFR Checklist
     const canGoBackToClientSection = !(showChecklistReview && reviewChecklistData);
     path.push({ label: 'Clients', icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />, onClick: canGoBackToClientSection ? () => { if (onDetailsViewChange) onDetailsViewChange(false); } : undefined, isActive: false });
     if (selectedClient) {
@@ -187,11 +150,57 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
       path[path.length-1].isActive = true;
     }
     return path;
+  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, onDetailsViewChange]);
+
+  useEffect(() => {
+    if (onBreadcrumbChange) {
+      if (!selectedClient && !showChecklistReview) {
+        onBreadcrumbChange([]);
+      } else {
+        onBreadcrumbChange(buildBreadcrumb());
+      }
+    }
+  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, buildBreadcrumb, onBreadcrumbChange]);
+
+  const handleChecklistReviewBack = () => {
+    setShowChecklistReview(false);
   };
+
+  const goToClientList = () => {
+    setSelectedClientName(null);
+    setShowChecklistReview(false);
+    if (onDetailsViewChange) onDetailsViewChange(false);
+    if (onBackToClientList) onBackToClientList();
+  };
+
+  let clientContent: React.ReactNode;
+  if (clients.length === 0) {
+    clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
+  } else {
+    clientContent = (
+      <div className="sm:px-8 sm:pt-4">
+        <ClientList
+          clients={clients}
+          onViewDetails={handleViewDetails}
+          checklistStates={checklistStates}
+          onChecklistChange={handleChecklistChange}
+        />
+      </div>
+    );
+  }
+
+  const checklistItems = [
+    "Partner",
+    "Client name",
+    "Client DOB",
+    "SJP SRA",
+    "Recommended Fund Choice",
+    "Checklist completed by",
+    "Provider"
+  ];
 
   return (
     <div className="flex flex-col h-full" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}> 
-      {/* TEMP: Row for test button, styled like save/cancel and in same row */}
       {selectedClient && (
         null
       )}
@@ -220,11 +229,12 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
               setShowChecklistReview(true);
             }}
             onTabChange={handleTabChange}
+            onDocumentOpen={setDocumentOpen}
+            onBackToClientList={goToClientList}
           />
         ) : (
           <>
             <div className="w-full bg-white dark:bg-[var(--background)] flex-wrap gap-2 min-h-[64px] relative border-b" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
-              {/* Edge-to-edge border for mobile only */}
               <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
               <div className="flex sm:hidden mb-1 pt-4 pb-4 justify-between w-full">
                 <div className="flex gap-2">
@@ -377,7 +387,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
             <div className="w-full pt-0 pb-0 flex-1 flex flex-col min-h-0">{clientContent}</div>
           </>
         )}
-        {/* UploadModal and ReviewChecklistModal coordination */}
         <UploadModal
           open={uploadModalOpen && !showReviewChecklist}
           onClose={handleCloseUploadModal}
@@ -395,7 +404,18 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           checklistItems={checklistItems}
         />
       </div>
-      <ClientFooter selectedClient={selectedClient} currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} isEmpty={clients.length === 0} showFooterActions={showChecklistReview && !!reviewChecklistData} />
+      {(clients.length > 0 && !selectedClient) || (showChecklistReview && !!reviewChecklistData) || (selectedTab.startsWith('transfers') && documentOpen) ? (
+        <ClientFooter
+          selectedClient={selectedClient}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+          isEmpty={false}
+          showFooterActions={showReviewChecklist && !!reviewChecklistData}
+          forceWhiteBg={clients.length > 0 && !selectedClient}
+          greyBg={selectedTab.startsWith('transfers') && documentOpen}
+        />
+      ) : null}
     </div>
   );
 }

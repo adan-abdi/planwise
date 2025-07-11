@@ -31,7 +31,6 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
   const { darkMode } = useTheme();
   return (
     <div style={{ width: '100%' }}>
-      {/* Breadcrumbs */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         {transferPath.map((folder, idx) => (
           <span key={folder} style={{ display: 'flex', alignItems: 'center', fontSize: 15, color: idx === transferPath.length - 1 ? (darkMode ? 'white' : '#18181b') : '#a1a1aa', fontWeight: idx === transferPath.length - 1 ? 600 : 400 }}>
@@ -40,7 +39,6 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
           </span>
         ))}
       </div>
-      {/* File/folder explorer */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 560, overflow: 'auto', paddingRight: 12, paddingBottom: 8, boxSizing: 'border-box' }}>
         {getFolderContents(transferPath).map(item => (
           <FolderDocumentBox

@@ -69,7 +69,7 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
             <line x1="5" y1="17" x2="19" y2="17" />
           </svg>
         </button>
-        <Image src="/logo.svg" alt="PlanWise Logo" width={90} height={32} className="h-8 w-auto" />
+        <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={90} height={32} className="h-8 w-auto" />
         <div className="flex items-center gap-2 relative" ref={dropdownRef}>
           <Image src={avatarUrl} alt={userName} width={36} height={36} className="w-9 h-9 rounded-full object-cover border border-zinc-200 dark:border-[var(--border)] shadow-sm" />
           <button
@@ -140,7 +140,6 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
             </button>
           )}
           {breadcrumb.map((item, idx) => {
-            // If label contains slashes, render as chevron-separated segments
             if (item.label.includes('/')) {
               const segments = item.label.split('/');
               return segments.map((seg, segIdx) => (
@@ -161,7 +160,6 @@ const MobileDashboardHeader: React.FC<MobileDashboardHeaderProps> = ({
                 </React.Fragment>
               ));
             }
-            // Otherwise, render as before
             return (
               <React.Fragment key={idx}>
                 {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300 dark:text-[var(--foreground)]" />}

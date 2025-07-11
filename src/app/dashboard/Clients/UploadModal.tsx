@@ -25,7 +25,6 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
 
   const { darkMode } = useTheme();
 
-  // Define conditional styles
   const modalBg = darkMode ? '#18181b' : '#fff';
   const modalText = darkMode ? '#f4f4f5' : '#18181b';
   const modalBorder = darkMode ? '#27272a' : '#e4e4e7';

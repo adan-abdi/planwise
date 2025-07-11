@@ -12,20 +12,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
 
-  // On mount, check localStorage or system preference
   useEffect(() => {
     const stored = localStorage.getItem("theme");
     if (stored === "dark") {
       setDarkMode(true);
-    } else if (stored === "light") {
-      setDarkMode(false);
     } else {
-      // System preference
-      setDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      setDarkMode(false);
     }
   }, []);
 
-  // Update <html> class and localStorage
   useEffect(() => {
     const html = document.documentElement;
     if (darkMode) {
