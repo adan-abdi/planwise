@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
   FileText,
@@ -64,31 +64,45 @@ export default function DashboardPage() {
     // setSelectedClientTab(tab || 'details'); // Removed as per edit hint
   };
 
+  useEffect(() => {
+    if (active !== "clients") {
+      setClientDetailsOpen(false);
+    }
+  }, [active]);
+
   const { darkMode } = useTheme();
 
   const generateRandomClients = () => {
     const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas'];
     const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
     const advisors = ['Robert Fox', 'Sarah Johnson', 'Michael Brown', 'Emma Davis', 'David Wilson'];
-    const types = ['Pension New Money', 'ISA New Money', 'Pension Transfer', 'ISA Transfer'];
     const cfrOptions = ['Yes', 'No'];
     
     const randomClients = Array.from({ length: 15 }, () => {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const advisor = advisors[Math.floor(Math.random() * advisors.length)];
-      const type = types[Math.floor(Math.random() * types.length)];
       const cfr = cfrOptions[Math.floor(Math.random() * cfrOptions.length)];
-      const plans = Math.floor(Math.random() * 5) + 1;
+      const pensionTransfer = Math.floor(Math.random() * 4);
+      const isaTransfer = Math.floor(Math.random() * 4);
+      const pensionNewMoney = Math.floor(Math.random() * 4);
+      const isaNewMoney = Math.floor(Math.random() * 4);
+      const plans = pensionTransfer + isaTransfer + pensionNewMoney + isaNewMoney;
       const checklist = Math.floor(Math.random() * 5);
       const date = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);
-      
+
+      const types = [];
+      if (pensionTransfer > 0) types.push('Pension Transfer');
+      if (isaTransfer > 0) types.push('ISA Transfer');
+      if (pensionNewMoney > 0) types.push('Pension New Money');
+      if (isaNewMoney > 0) types.push('ISA New Money');
+
       return {
         advisor,
         client: `${firstName} ${lastName}`,
         avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 99)}.jpg`,
         date: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        type,
+        type: types.length > 0 ? types.join(', ') : 'N/A',
         cfr,
         plans,
         checklist,
@@ -97,7 +111,11 @@ export default function DashboardPage() {
         email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
         phone: `+44 ${Math.floor(Math.random() * 9000) + 1000} ${Math.floor(Math.random() * 900000) + 100000}`,
         website: `https://${firstName.toLowerCase()}-${lastName.toLowerCase()}.com`,
-        retirementAge: (60 + Math.floor(Math.random() * 15)).toString()
+        retirementAge: (60 + Math.floor(Math.random() * 15)).toString(),
+        pensionTransfer,
+        isaTransfer,
+        pensionNewMoney,
+        isaNewMoney,
       };
     });
     
@@ -164,12 +182,28 @@ export default function DashboardPage() {
           <div className={`flex-1 flex items-center h-full bg-[var(--background)] ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
             {active === "clients" && breadcrumbPath.length > 0 ? (
               <div className="flex items-center gap-2 py-2">
-                {breadcrumbPath.map((item) => (
+                {breadcrumbPath.map((item, idx) => (
                   <React.Fragment key={item.label}>
-                    {breadcrumbPath.indexOf(item) > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
-                    <span className={`text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`} style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}>
-                      {item.label}
-                    </span>
+                    {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                    {idx < breadcrumbPath.length - 1 && item.onClick ? (
+                      <button
+                        type="button"
+                        onClick={item.onClick}
+                        className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {item.icon && <span>{item.icon}</span>}
+                        <span>{item.label}</span>
+                      </button>
+                    ) : (
+                      <span
+                        className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
+                        style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
+                      >
+                        {item.icon && <span>{item.icon}</span>}
+                        <span>{item.label}</span>
+                      </span>
+                    )}
                   </React.Fragment>
                 ))}
               </div>
@@ -186,6 +220,7 @@ export default function DashboardPage() {
                 setTriggerRandomClients(true);
               }
             }}
+            showGenerateButton={active === "clients" && !clientDetailsOpen}
           />
         </div>
       </div>

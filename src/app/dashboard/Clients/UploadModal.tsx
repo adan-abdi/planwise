@@ -57,8 +57,10 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
     if (activeTab === 'source') {
       setShowChecklistConfirm(true);
     } else if (activeTab === 'checklist') {
-      onClose();
-      if (onShowReviewChecklist) onShowReviewChecklist();
+      if (checklistFiles.length > 0) {
+        onClose();
+        if (onShowReviewChecklist) onShowReviewChecklist();
+      }
     }
   };
 

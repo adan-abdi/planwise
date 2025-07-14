@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound, RefreshCw, Moon, Sun, Bell } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -35,14 +35,13 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [reviewChecklistData, setReviewChecklistData] = useState<{
     checklistItems: string[];
     reviewerName: string;
-    reviewerAvatar: string;
   } | null>(null);
   const [documentOpen, setDocumentOpen] = useState(false);
 
   React.useEffect(() => {
     if (detailsViewOpen === false) {
       setSelectedClientName(null);
-      setShowChecklistReview(false); // ensure checklist review is not shown
+      setShowChecklistReview(false);
     }
   }, [detailsViewOpen]);
 
@@ -55,15 +54,17 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   }, [triggerRandomClients, onGenerateRandomClients, onRandomClientsGenerated]);
 
   useEffect(() => {
-    setChecklistStates((prev) => {
-      if (clients.length === prev.length) return prev;
-      if (clients.length > prev.length) {
-        return [...prev, ...clients.slice(prev.length).map((c) => Array(4).fill(false).map((_, i) => i < c.checklist))];
+    if (clients.length !== checklistStates.length) {
+      if (clients.length > checklistStates.length) {
+        setChecklistStates(prev => [
+          ...prev,
+          ...clients.slice(prev.length).map((c) => Array(4).fill(false).map((_, i) => i < c.checklist))
+        ]);
       } else {
-        return prev.slice(0, clients.length);
+        setChecklistStates(prev => prev.slice(0, clients.length));
       }
-    });
-  }, [clients]);
+    }
+  }, [clients, checklistStates.length]);
 
   const handleChecklistChange = (idx: number, newChecklist: boolean[]) => {
     setChecklistStates((prev) => prev.map((arr, i) => (i === idx ? newChecklist : arr)));
@@ -72,20 +73,27 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleSubmit = (data: ClientFormData) => {
+    const plans = data.pensionTransfer + data.isaTransfer + (data.pensionNewMoney || 0) + (data.isaNewMoney || 0);
+    const types: string[] = [];
+    if (data.pensionTransfer > 0) types.push('Pension Transfer');
+    if (data.isaTransfer > 0) types.push('ISA Transfer');
+    if (data.pensionNewMoney > 0) types.push('Pension New Money');
+    if (data.isaNewMoney > 0) types.push('ISA New Money');
     setClients((prev) => [
       ...prev,
       {
-        advisor: data.partnerName,
+        advisor: data.advisorName,
         client: data.clientName,
-        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
         date: data.dob ? new Date(data.dob).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
-        type: data.pensionTransfer > 0 ? "Pension New Money" : data.isaTransfer > 0 ? "ISA New Money" : "N/A",
+        type: types.length > 0 ? types.join(', ') : 'N/A',
         pensionTransfer: data.pensionTransfer,
         isaTransfer: data.isaTransfer,
+        pensionNewMoney: data.pensionNewMoney,
+        isaNewMoney: data.isaNewMoney,
         retirementAge: data.retirementAge,
         atr: data.atr,
         cfr: "No",
-        plans: 1,
+        plans,
         checklist: 0,
       },
     ]);
@@ -110,23 +118,18 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
-  const handleStartChecklistReview = () => {
+  const handleShowReviewChecklist = () => {
     if (selectedClient) {
       setReviewChecklistData({
         checklistItems,
         reviewerName: selectedClient.client,
-        reviewerAvatar: selectedClient.avatar,
       });
-      setShowChecklistReview(true);
+      setShowReviewChecklist(true);
     }
   };
 
   const selectedIdx = selectedClientName ? clients.findIndex(c => c.client === selectedClientName) : -1;
   const selectedClient = selectedIdx !== -1 ? clients[selectedIdx] : null;
-
-  useEffect(() => {
-    setShowChecklistReview(false);
-  }, [selectedClientName]);
 
   const buildBreadcrumb = useCallback(() => {
     const path = [];
@@ -199,11 +202,15 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     "Provider"
   ];
 
+  useEffect(() => {
+    console.log('selectedClient', selectedClient);
+    console.log('showReviewChecklist', showReviewChecklist);
+    console.log('showChecklistReview', showChecklistReview);
+    console.log('reviewChecklistData', reviewChecklistData);
+  }, [selectedClient, showReviewChecklist, showChecklistReview, reviewChecklistData]);
+
   return (
-    <div className="flex flex-col h-full" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}> 
-      {selectedClient && (
-        null
-      )}
+    <div className="flex flex-col h-full" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <ClientModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
       <div className="flex-1 min-h-0 flex flex-col" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {showChecklistReview && reviewChecklistData ? (
@@ -220,14 +227,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
             onChecklistChange={(newChecklist) => {
               if (selectedIdx !== -1) handleChecklistChange(selectedIdx, newChecklist);
             }}
-            onShowChecklistReviewTest={() => {
-              setReviewChecklistData({
-                checklistItems,
-                reviewerName: selectedClient.client,
-                reviewerAvatar: selectedClient.avatar,
-              });
-              setShowChecklistReview(true);
-            }}
+            onShowChecklistReviewTest={handleShowReviewChecklist}
             onTabChange={handleTabChange}
             onDocumentOpen={setDocumentOpen}
             onBackToClientList={goToClientList}
@@ -381,6 +381,30 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                     Import/Export
                     <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
+                  {(selectedClientName === null && !showChecklistReview) && (
+                    <button
+                      onClick={onGenerateRandomClients}
+                      className="icon-btn border border-zinc-200 dark:border-[var(--border)] rounded-full p-2 bg-white dark:bg-[var(--muted)] hover:bg-zinc-100 dark:hover:bg-[var(--border)] transition flex items-center justify-center"
+                      title="Generate random clients"
+                      aria-label="Generate random clients"
+                      type="button"
+                      style={{
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        color: darkMode ? 'var(--foreground)' : '#18181b',
+                        boxShadow: 'none',
+                        width: 36,
+                        height: 36,
+                        minWidth: 36,
+                        minHeight: 36,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -391,17 +415,28 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           open={uploadModalOpen && !showReviewChecklist}
           onClose={handleCloseUploadModal}
           fileName={undefined}
-          onShowReviewChecklist={handleStartChecklistReview}
+          onShowReviewChecklist={handleShowReviewChecklist}
           onNoPersonalisedChecklist={() => {
             setUploadModalOpen(false);
-            handleStartChecklistReview();
+            handleShowReviewChecklist();
           }}
         />
         <ReviewChecklistModal
           open={showReviewChecklist}
           onCancel={() => setShowReviewChecklist(false)}
-          onContinue={() => { setShowReviewChecklist(false); handleStartChecklistReview(); }}
-          checklistItems={checklistItems}
+          onContinue={() => {
+            setShowReviewChecklist(false);
+            setUploadModalOpen(false);
+            setModalOpen(false);
+            if (selectedClient) {
+              setReviewChecklistData({
+                checklistItems,
+                reviewerName: selectedClient.client,
+              });
+            }
+            setShowChecklistReview(true);
+          }}
+          checklistItems={reviewChecklistData?.checklistItems || checklistItems}
         />
       </div>
       {(clients.length > 0 && !selectedClient) || (showChecklistReview && !!reviewChecklistData) || (selectedTab.startsWith('transfers') && documentOpen) ? (
@@ -411,9 +446,12 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           totalPages={totalPages}
           setCurrentPage={setCurrentPage}
           isEmpty={false}
-          showFooterActions={showReviewChecklist && !!reviewChecklistData}
+          showFooterActions={showChecklistReview}
           forceWhiteBg={clients.length > 0 && !selectedClient}
           greyBg={selectedTab.startsWith('transfers') && documentOpen}
+          showTransferDocumentActions={selectedTab.startsWith('transfers') && documentOpen}
+          onSaveDraft={showChecklistReview ? handleChecklistReviewBack : undefined}
+          onSaveAndContinue={showChecklistReview ? handleChecklistReviewBack : undefined}
         />
       ) : null}
     </div>

@@ -12,9 +12,12 @@ interface ClientFooterProps {
   invisible?: boolean;
   forceWhiteBg?: boolean;
   greyBg?: boolean;
+  showTransferDocumentActions?: boolean;
+  onSaveDraft?: () => void;
+  onSaveAndContinue?: () => void;
 }
 
-const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage, isEmpty, showFooterActions, invisible, forceWhiteBg, greyBg }) => {
+const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage, totalPages, setCurrentPage, isEmpty, showFooterActions, invisible, forceWhiteBg, greyBg, showTransferDocumentActions, onSaveDraft, onSaveAndContinue }) => {
   const { darkMode } = useTheme();
   if (isEmpty) {
     return null;
@@ -35,6 +38,7 @@ const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage
           <button
             className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
             style={{ minWidth: 0, backgroundColor: darkMode ? 'var(--muted)' : '#fff', color: darkMode ? '#fff' : '#18181b' }}
+            onClick={onSaveDraft}
           >
             Save as draft
           </button>
@@ -54,8 +58,24 @@ const ClientFooter: React.FC<ClientFooterProps> = ({ selectedClient, currentPage
           <button
             className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal bg-blue-600 text-white transition border border-blue-600 hover:bg-blue-700 hover:border-blue-700"
             style={{ minWidth: 0 }}
+            onClick={onSaveAndContinue}
           >
             Save and Continue
+          </button>
+        </div>
+      ) : showTransferDocumentActions ? (
+        <div className="w-full flex justify-end items-center gap-2">
+          <button
+            className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
+            style={{ minWidth: 0, backgroundColor: darkMode ? 'var(--muted)' : '#fff', color: darkMode ? '#fff' : '#18181b' }}
+          >
+            Send in email
+          </button>
+          <button
+            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal bg-blue-600 text-white transition border border-blue-600 hover:bg-blue-700 hover:border-blue-700"
+            style={{ minWidth: 0 }}
+          >
+            Download
           </button>
         </div>
       ) : selectedClient ? (

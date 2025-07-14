@@ -7,7 +7,6 @@ import { createPortal } from 'react-dom';
 export interface ClientItem {
   advisor: string;
   client: string;
-  avatar: string;
   date: string;
   type: string;
   cfr: string;
@@ -19,16 +18,21 @@ export interface ClientItem {
   phone?: string;
   website?: string;
   retirementAge?: string;
+  avatar?: string;
+  pensionTransfer?: number;
+  isaTransfer?: number;
+  pensionNewMoney?: number;
+  isaNewMoney?: number;
 }
 
-const ChecklistIcons = ({ checked, onToggle, darkMode }: { checked: boolean[]; onToggle: (idx: number) => void; darkMode: boolean }) => {
+const ChecklistIcons = ({ checked, onToggle, darkMode, readOnly = false }: { checked: boolean[]; onToggle?: (idx: number) => void; darkMode: boolean; readOnly?: boolean }) => {
   return (
     <div className="flex items-center gap-2">
       {checked.map((isChecked, i) => (
         <button
           key={i}
           type="button"
-          onClick={() => onToggle(i)}
+          onClick={readOnly ? undefined : () => onToggle && onToggle(i)}
           className="w-[18px] h-[18px] flex items-center justify-center rounded-[4px] border transition-all align-middle cursor-pointer appearance-none shadow-none"
           style={{ 
             outline: 'none',
@@ -37,8 +41,10 @@ const ChecklistIcons = ({ checked, onToggle, darkMode }: { checked: boolean[]; o
               : darkMode ? '1px solid #52525b' : '1px solid #e4e4e7',
             backgroundColor: isChecked 
               ? darkMode ? 'rgba(34, 197, 94, 0.1)' : '#f0fdf4'
-              : darkMode ? 'var(--background)' : '#ffffff'
+              : darkMode ? 'var(--background)' : '#ffffff',
+            cursor: readOnly ? 'default' : 'pointer',
           }}
+          disabled={readOnly}
         >
           {isChecked && (
             <Check 
@@ -150,6 +156,12 @@ function ClientActionsMenu({ onClose, onViewDetails, onDelete, anchorRef, darkMo
   return typeof window !== 'undefined' ? createPortal(menu, document.body) : null;
 }
 
+function formatTypeWithLineBreak(type: string) {
+  const types = type.split(', ');
+  if (types.length <= 2) return type;
+  return types.slice(0, 2).join(', ') + ',\n' + types.slice(2).join(', ');
+}
+
 export interface ClientListProps {
   clients: ClientItem[];
   onViewDetails?: (client: ClientItem) => void;
@@ -222,16 +234,16 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Advisor Name</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Client Name</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Date Received</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left max-w-[180px]" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Type of Case</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>CFR Uploaded?</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>No. of plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell text-left max-w-[40px]" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>No. of plans</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Checklists Status</th>
             <th className="p-2 sm:p-2 align-middle text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {clients.map((c, idx) => (
-            <tr key={idx} className={`border-b border-zinc-100 bg-white h-7 sm:h-9 hover:bg-[rgba(59,130,246,0.07)]${darkMode ? ' dark:hover:bg-[rgba(59,130,246,0.12)]' : ''}`}>
+            <tr key={idx} className={`border-b border-zinc-100 bg-white h-7 sm:h-9 hover:bg-blue-50${darkMode ? ' dark:hover:bg-[rgba(59,130,246,0.12)]' : ''}`}>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100">
                 <button
                   type="button"
@@ -257,28 +269,18 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 truncate max-w-[60px]">{c.advisor}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100">
-                <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                  <span className="relative w-5 h-5 inline-block align-middle" style={{ verticalAlign: 'middle' }}>
-                    <Image
-                      src={c.avatar}
-                      alt={c.client}
-                      fill
-                      className="rounded-full object-cover"
-                    />
-                  </span>
-                  <span className="font-medium ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
-                </span>
+                <span className="font-medium ml-1 align-middle inline-block" style={{ verticalAlign: 'middle' }}>{c.client}</span>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 whitespace-nowrap">{c.date}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[60px]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell max-w-[180px] whitespace-pre-line">{formatTypeWithLineBreak(c.type)}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden md:table-cell truncate max-w-[30px]">{c.cfr}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[10px]">{c.plans}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden lg:table-cell truncate max-w-[40px]">{c.plans}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-100 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
                     checked={checklistStates[idx] || [false, false, false, false]}
-                    onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
                     darkMode={darkMode}
+                    readOnly={true}
                   />
                   <span className="text-gray-400 text-[9px] sm:text-xs whitespace-nowrap ml-3">
                     {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed
@@ -345,9 +347,9 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Advisor Name</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Client Name</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Date Received</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Type of Case</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell max-w-[180px] text-[var(--foreground)] whitespace-pre-line">Type of Case</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>CFR Uploaded?</th>
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>No. of plans</th>
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell text-left max-w-[40px] text-[var(--foreground)]">No. of plans</th>
             <th className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Checklists Status</th>
             <th className="p-2 sm:p-2 align-middle text-left" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>Actions</th>
           </tr>
@@ -379,29 +381,19 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
                 </button>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 truncate max-w-[60px] text-[var(--foreground)]">{c.advisor}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600">
-                <span style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                  <span className="relative w-5 h-5 inline-block align-middle" style={{ verticalAlign: 'middle' }}>
-                    <Image
-                      src={c.avatar}
-                      alt={c.client}
-                      fill
-                      className="rounded-full object-cover"
-                    />
-                  </span>
-                  <span className="font-medium ml-1 align-middle inline-block text-[var(--foreground)]" style={{ verticalAlign: 'middle' }}>{c.client}</span>
-                </span>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 text-[var(--foreground)]">
+                <span className="font-medium ml-1 align-middle inline-block text-[var(--foreground)]" style={{ verticalAlign: 'middle' }}>{c.client}</span>
               </td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 whitespace-nowrap text-[var(--foreground)]">{c.date}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[60px] text-[var(--foreground)]">{c.type}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell max-w-[180px] text-[var(--foreground)] whitespace-pre-line">{formatTypeWithLineBreak(c.type)}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden md:table-cell truncate max-w-[30px] text-[var(--foreground)]">{c.cfr}</td>
-              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell truncate max-w-[10px] text-[var(--foreground)]">{c.plans}</td>
+              <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden lg:table-cell truncate max-w-[40px] text-[var(--foreground)]">{c.plans}</td>
               <td className="p-2 sm:p-2 align-middle border-r border-zinc-600 hidden sm:table-cell">
                 <span style={{ display: 'inline-flex', alignItems: 'center', textAlign: 'center', width: '100%' }} className="whitespace-nowrap">
                   <ChecklistIcons
                     checked={checklistStates[idx] || [false, false, false, false]}
-                    onToggle={(checkIdx) => handleChecklistToggle(idx, checkIdx)}
                     darkMode={darkMode}
+                    readOnly={true}
                   />
                   <span className="text-gray-500 text-[9px] sm:text-xs whitespace-nowrap ml-3">
                     {(checklistStates[idx] || []).filter(Boolean).length}/4 Completed

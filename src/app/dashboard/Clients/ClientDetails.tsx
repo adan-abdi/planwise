@@ -20,6 +20,8 @@ import {
   Check,
   ArrowLeft,
   ChevronRight,
+  PlusCircle,
+  Upload,
 } from "lucide-react";
 import DirectoryIcon from '/public/directory.svg';
 import UploadModal from "./UploadModal";
@@ -28,6 +30,7 @@ import { useTheme } from "../../../theme-context";
 import dynamic from 'next/dynamic';
 import FileExplorer from './FileExplorer';
 import FolderDocumentBox from './FolderDocumentBox';
+import CreateNewCase from './CreateNewCase';
 const DocumentViewer = dynamic(() => import('./documentviewer/DocumentViewer'), { ssr: false });
 
 interface ClientDetailsProps {
@@ -39,60 +42,52 @@ interface ClientDetailsProps {
   onShowChecklistReviewTest?: () => void;
   onDocumentOpen?: (open: boolean) => void;
   onBackToClientList?: () => void;
+  transferPath?: string[];
+  setTransferPath?: (path: string[]) => void;
 }
 
 type TransferType = "pension" | "isa" | null;
 
-const transferFolderData = {
-  "Pension Transfer": [
-    { type: "folder", name: "Ceding 1", children: [
-      { type: "folder", name: "Subfolder A", children: [
-        { type: "file", name: "Document 1.pdf" },
-        { type: "file", name: "Document 2.pdf" },
-      ] },
-      { type: "file", name: "Ceding1File.txt" },
-    ] },
-    { type: "folder", name: "Ceding 2", children: [
-      { type: "file", name: "Ceding2File.txt" },
-    ] },
-    { type: "folder", name: "CFR", children: [
-      { type: "file", name: "CFRFile.txt" },
-    ] },
-    { type: "file", name: "EES file" },
-  ],
-  "ISA Transfer": [
-    { type: "folder", name: "ISA Folder 1", children: [
-      { type: "file", name: "ISAFile1.txt" },
-    ] },
-    { type: "file", name: "ISA file" },
-  ],
-};
+const transferTypes = [
+  { key: 'pensionTransfer', label: 'Pension Transfers' },
+  { key: 'isaTransfer', label: 'ISA Transfers' },
+  { key: 'pensionNewMoney', label: 'Pension New Money' },
+  { key: 'isaNewMoney', label: 'ISA New Money' },
+];
 
-type TransferFolderItem = {
-  type: "folder" | "file";
-  name: string;
-  children?: TransferFolderItem[];
-};
-
-function getFolderContents(path: string[]): TransferFolderItem[] {
-  if (!path.length) return [];
-  let items = transferFolderData[path[0] as keyof typeof transferFolderData] as TransferFolderItem[];
-  for (let i = 1; i < path.length; i++) {
-    const next = items.find(item => item.name === path[i] && item.type === "folder");
-    if (next && next.children) {
-      items = next.children;
-    } else {
-      return [];
+function getDynamicFolderContents(transferKey: string, count: number, transferPath: string[]) {
+  if (transferPath.length === 1) {
+    const seedingFolders = Array.from({ length: count }, (_, i) => ({
+      type: 'folder' as const,
+      name: `Seeding ${i + 1}`,
+      children: [
+        { type: 'file' as const, name: `Document ${i + 1}.pdf` },
+      ],
+    }));
+    return [
+      { type: 'file' as const, name: 'CFR Document.pdf' },
+      { type: 'file' as const, name: 'ESS Document.pdf' },
+      ...seedingFolders,
+    ];
+  }
+  if (transferPath.length === 2 && transferPath[1].startsWith('Seeding ')) {
+    const idx = parseInt(transferPath[1].replace('Seeding ', ''));
+    if (!isNaN(idx) && idx >= 1 && idx <= count) {
+      return [
+        { type: 'file' as const, name: `Document ${idx}.pdf` },
+      ];
     }
   }
-  return items;
+  return [];
 }
 
-export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList }: ClientDetailsProps) {
+export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList, transferPath: controlledTransferPath, setTransferPath: controlledSetTransferPath }: ClientDetailsProps) {
   const { darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('details');
   const [openedTransfer, setOpenedTransfer] = useState<TransferType>(null);
-  const [transferPath, setTransferPath] = useState<string[]>([]);
+  const [internalTransferPath, internalSetTransferPath] = useState<string[]>([]);
+  const transferPath = typeof controlledTransferPath !== 'undefined' ? controlledTransferPath : internalTransferPath;
+  const setTransferPath = typeof controlledSetTransferPath !== 'undefined' ? controlledSetTransferPath : internalSetTransferPath;
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<ClientItem>(client);
   const [localChecklist, setLocalChecklist] = useState<boolean[]>(checklist || Array(4).fill(false));
@@ -128,16 +123,13 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
     JSON.stringify(editValues) !== JSON.stringify(client) ||
     JSON.stringify(localChecklist) !== JSON.stringify(checklist || Array(4).fill(false));
 
-  const handleOpenTransfer = (type: TransferType) => {
-    setOpenedTransfer(type);
-    if (type) {
-      const root = type === "pension" ? "Pension Transfer" : "ISA Transfer";
-      setTransferPath([root]);
-      if (onTabChange) onTabChange(`transfers/${root}`);
-    } else {
-      setTransferPath([]);
-      if (onTabChange) onTabChange("transfers");
-    }
+  const [openedTransferKey, setOpenedTransferKey] = useState<string | null>(null);
+
+  const handleOpenTransfer = (type: string) => {
+    setOpenedTransferKey(type);
+    setOpenedTransfer(type as any); // for legacy logic, if needed
+    setTransferPath([transferTypes.find(t => t.key === type)?.label || type]);
+    if (onTabChange) onTabChange(`transfers/${type}`);
   };
 
   const handleEnterFolder = (name: string) => {
@@ -164,15 +156,15 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
-  const [showReviewChecklist, setShowReviewChecklist] = useState(false);
-
-  const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<any | null>(null);
   useEffect(() => {
     setSelectedDocument(null);
   }, [transferPath]);
   useEffect(() => {
     if (onDocumentOpen) onDocumentOpen(!!selectedDocument);
   }, [selectedDocument, onDocumentOpen]);
+
+  const [createCaseModalOpen, setCreateCaseModalOpen] = useState(false);
 
   const clickableLineClass = "text-blue-600 dark:text-blue-400 text-sm mt-1 cursor-pointer hover:underline w-fit";
 
@@ -201,14 +193,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
               <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
             </button>
           )}
-          <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-            <Image
-              src={editValues.avatar}
-              alt={editValues.client}
-              fill
-              className="rounded-full object-cover"
-            />
-          </div>
           <div className="min-w-0">
             <div
               className="text-lg sm:text-2xl font-semibold truncate"
@@ -265,120 +249,134 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
               <span>Save</span>
             </button>
           )}
-          {onShowChecklistReviewTest && (
-            <button
-              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition border"
-              style={{
-                cursor: 'pointer',
-                backgroundColor: darkMode ? '#18181b' : 'white',
-                border: `1px solid ${darkMode ? '#2563eb' : '#2563eb'}`,
-                color: darkMode ? '#2563eb' : '#2563eb',
-                boxShadow: 'none',
-                height: 36,
-                lineHeight: '20px',
-                borderRadius: 8,
-              }}
-              onClick={onShowChecklistReviewTest}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
-              }}
-            >
-              Show Checklist Review (Test)
-            </button>
-          )}
         </div>
       </div>
       <div className="flex items-center border-b pb-4 border-zinc-200 dark:border-zinc-700 gap-2 px-2 sm:px-8 flex-nowrap overflow-x-auto"
         style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
       >
-        <button
-          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
-          onClick={() => setActiveTab('details')}
-          style={{
-            backgroundColor: darkMode
-              ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-              : 'white',
-            border: darkMode
-              ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
-              : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
-            color: darkMode ? 'var(--foreground)' : '#18181b',
-            cursor: activeTab !== 'details' ? 'pointer' : 'default',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = darkMode
-              ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-              : 'white';
-          }}
-        >
-          <FileText className="w-4 h-4 mr-1" />
-          Client details
-        </button>
-        <button
-          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
-          onClick={() => setActiveTab('transfers')}
-          style={{
-            backgroundColor: darkMode
-              ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-              : 'white',
-            border: darkMode
-              ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
-              : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
-            color: darkMode ? 'var(--foreground)' : '#18181b',
-            cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = darkMode
-              ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-              : 'white';
-          }}
-        >
-          <FolderTree className="w-4 h-4 mr-1" />
-          Transfers
-        </button>
-        <button
-          className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
-          onClick={() => setActiveTab('activity')}
-          style={{
-            backgroundColor: darkMode
-              ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
-              : 'white',
-            border: darkMode
-              ? (activeTab === 'activity' ? '1px solid #3f3f46' : '1px solid transparent')
-              : (activeTab === 'activity' ? '1px solid #d4d4d8' : '1px solid transparent'),
-            color: darkMode ? 'var(--foreground)' : '#18181b',
-            cursor: activeTab !== 'activity' ? 'pointer' : 'default',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = darkMode
-              ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
-              : 'white';
-          }}
-        >
-          <ActivitySquare className="w-4 h-4 mr-1" />
-          Activity
-        </button>
+        <div className="flex gap-2 flex-nowrap">
+          <button
+            className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
+            onClick={() => setActiveTab('details')}
+            style={{
+              backgroundColor: darkMode
+                ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                : 'white',
+              border: darkMode
+                ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
+                : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
+              color: darkMode ? 'var(--foreground)' : '#18181b',
+              cursor: activeTab !== 'details' ? 'pointer' : 'default',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = darkMode
+                ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                : 'white';
+            }}
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            Client details
+          </button>
+          <button
+            className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
+            onClick={() => setActiveTab('transfers')}
+            style={{
+              backgroundColor: darkMode
+                ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                : 'white',
+              border: darkMode
+                ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
+                : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
+              color: darkMode ? 'var(--foreground)' : '#18181b',
+              cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = darkMode
+                ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                : 'white';
+            }}
+          >
+            <FolderTree className="w-4 h-4 mr-1" />
+            Transfers
+          </button>
+          <button
+            className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
+            onClick={() => setActiveTab('activity')}
+            style={{
+              backgroundColor: darkMode
+                ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
+                : 'white',
+              border: darkMode
+                ? (activeTab === 'activity' ? '1px solid #3f3f46' : '1px solid transparent')
+                : (activeTab === 'activity' ? '1px solid #d4d4d8' : '1px solid transparent'),
+              color: darkMode ? 'var(--foreground)' : '#18181b',
+              cursor: activeTab !== 'activity' ? 'pointer' : 'default',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = darkMode
+                ? (activeTab === 'activity' ? 'var(--muted)' : 'var(--background)')
+                : 'white';
+            }}
+          >
+            <ActivitySquare className="w-4 h-4 mr-1" />
+            Activity
+          </button>
+        </div>
+        <div className="flex-1" />
+        {activeTab === 'transfers' && openedTransfer === null && transferPath.length === 0 && (
+          <div className="flex gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={() => setCreateCaseModalOpen(true)}
+              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium bg-white dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)] text-zinc-700 dark:text-[var(--foreground)]`}
+              style={{
+                backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+              }}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add new case
+            </button>
+            <button
+              type="button"
+              onClick={() => alert('Upload CFR (TODO)')}
+              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium bg-white dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)] text-zinc-700 dark:text-[var(--foreground)]`}
+              style={{
+                backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+              }}
+            >
+              <Upload className="w-4 h-4" />
+              Upload CFR
+            </button>
+          </div>
+        )}
       </div>
       {activeTab === 'details' && (
         <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, height: '85%', overflow: 'auto' }}>
           <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
             <div style={{ width: '100%', maxWidth: 400, minWidth: 220, paddingLeft: 32, paddingTop: 24 }}>
-              <DetailRowVertical icon={<User className="w-5 h-5 text-zinc-400" />} label="Profile picture">
-                <div className="relative w-8 h-8">
-                  <Image src={editValues.avatar} alt={editValues.client} fill className="rounded-full object-cover" />
-                </div>
-              </DetailRowVertical>
               <EditableRow icon={<Users className="w-5 h-5 text-zinc-400" />} label="Client name" value={editValues.client} editing={editingField==='client'} onEdit={() => handleEdit('client')} onChange={v => handleChange('client', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
               <EditableRow icon={<UserCircle className="w-5 h-5 text-zinc-400" />} label="Partner name" value={editValues.advisor} editing={editingField==='advisor'} onEdit={() => handleEdit('advisor')} onChange={v => handleChange('advisor', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
               <EditableRow icon={<Layers className="w-5 h-5 text-zinc-400" />} label="Number of plans" value={editValues.plans?.toString() || ''} editing={editingField==='plans'} onEdit={() => handleEdit('plans')} onChange={v => handleChange('plans', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} type="number" />
@@ -418,7 +416,28 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
             <div style={{ paddingLeft: 32, paddingTop: 24 }}>
               {(openedTransfer === null || transferPath.length === 0) ? (
-                <div className="text-lg font-semibold mb-6" style={{ color: darkMode ? 'white' : '#18181b' }}>Transfers</div>
+                <>
+                  <div className="text-lg font-semibold mb-6" style={{ color: darkMode ? 'white' : '#18181b' }}>Transfers</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 700, overflow: 'auto' }}>
+                    {transferTypes.map(({ key, label }) => {
+                      const count = editValues[key as keyof typeof editValues] as number | undefined;
+                      if (!count || count <= 0) return null;
+                      return (
+                        <FolderDocumentBox key={key} onClick={() => handleOpenTransfer(key as any)}>
+                          <>
+                            <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
+                              <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+                              <span style={{ fontWeight: 600, fontSize: 16 }}>{label}</span>
+                              <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of transfers: {count}</span>
+                            </div>
+                          </>
+                        </FolderDocumentBox>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center gap-2 mb-4">
                   <button
@@ -455,38 +474,15 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   ))}
                 </div>
               )}
-              {openedTransfer === null && transferPath.length === 0 && (
-                <>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 700, overflow: 'auto' }}>
-                    <FolderDocumentBox onClick={() => handleOpenTransfer('pension')}>
-                      <>
-                        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
-                          <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-                          <span style={{ fontWeight: 600, fontSize: 16 }}>Pension Transfers</span>
-                          <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of transfers: {transferFolderData['Pension Transfer'].length}</span>
-                        </div>
-                      </>
-                    </FolderDocumentBox>
-                    <FolderDocumentBox onClick={() => handleOpenTransfer('isa')}>
-                      <>
-                        <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
-                          <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-                          <span style={{ fontWeight: 600, fontSize: 16 }}>ISA Transfers</span>
-                          <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of transfers: {transferFolderData['ISA Transfer'].length}</span>
-                        </div>
-                      </>
-                    </FolderDocumentBox>
-                  </div>
-                </>
-              )}
               {openedTransfer !== null && transferPath.length > 0 && (
                 <FileExplorer
                   transferPath={transferPath}
-                  getFolderContents={getFolderContents}
+                  getFolderContents={() => {
+                    const transferType = transferTypes.find(t => t.label === transferPath[0]);
+                    if (!transferType) return [];
+                    const count = editValues[transferType.key as keyof typeof editValues] as number | undefined;
+                    return getDynamicFolderContents(transferType.key, count || 0, transferPath);
+                  }}
                   handleEnterFolder={handleEnterFolder}
                   handleUploadModal={handleUploadModal}
                   setSelectedDocument={setSelectedDocument}
@@ -513,30 +509,28 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         </div>
       )}
       <UploadModal
-        open={uploadModalOpen && !showReviewChecklist}
+        open={uploadModalOpen}
         onClose={handleCloseUploadModal}
-        onNoPersonalisedChecklist={() => {
-          setUploadModalOpen(false);
-          setShowReviewChecklist(true);
-        }}
-        onShowReviewChecklist={() => {
-          setUploadModalOpen(false);
-          setShowReviewChecklist(true);
-        }}
+        onNoPersonalisedChecklist={onShowChecklistReviewTest}
+        onShowReviewChecklist={onShowChecklistReviewTest}
       />
-      <ReviewChecklistModal
-        open={showReviewChecklist}
-        onCancel={() => setShowReviewChecklist(false)}
-        onContinue={() => setShowReviewChecklist(false)}
-        checklistItems={[
-          "Partner",
-          "Client name",
-          "Client DOB",
-          "SJP SRA",
-          "Recommended Fund Choice",
-          "Checklist completed by",
-          "Provider"
-        ]}
+      <CreateNewCase
+        open={createCaseModalOpen}
+        onClose={() => setCreateCaseModalOpen(false)}
+        onSubmit={({ pensionTransfer, isaTransfer, pensionNewMoney, isaNewMoney }) => {
+          const updatedClient = { ...editValues };
+          updatedClient.pensionTransfer = (updatedClient.pensionTransfer || 0) + (pensionTransfer || 0);
+          updatedClient.isaTransfer = (updatedClient.isaTransfer || 0) + (isaTransfer || 0);
+          updatedClient.pensionNewMoney = (updatedClient.pensionNewMoney || 0) + (pensionNewMoney || 0);
+          updatedClient.isaNewMoney = (updatedClient.isaNewMoney || 0) + (isaNewMoney || 0);
+          updatedClient.plans =
+            (updatedClient.pensionTransfer || 0) +
+            (updatedClient.isaTransfer || 0) +
+            (updatedClient.pensionNewMoney || 0) +
+            (updatedClient.isaNewMoney || 0);
+          onClientUpdate(updatedClient);
+          setCreateCaseModalOpen(false);
+        }}
       />
     </div>
   );
@@ -545,7 +539,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
 function DetailRowVertical({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-4 py-2">
-      <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[180px] pr-8">
+      <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[220px] max-w-[260px] pr-8">
         {icon}
         <span>{label}</span>
       </div>
@@ -568,11 +562,11 @@ function EditableRow({ icon, label, value, editing, onEdit, onChange, onBlur, on
   const { darkMode } = useTheme();
   return (
     <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={editing ? undefined : onEdit}>
-      <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[180px] pr-8">
+      <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[220px] max-w-[260px] pr-8">
         {icon}
         <span>{label}</span>
       </div>
-      <div className="flex-1 flex items-center gap-2 text-left">
+      <div className="flex-1 flex items-start gap-2 text-left justify-start w-full">
         {editing ? (
           <input
             type={type || 'text'}
@@ -587,12 +581,15 @@ function EditableRow({ icon, label, value, editing, onEdit, onChange, onBlur, on
               background: darkMode ? 'var(--background)' : 'white',
               color: darkMode ? 'var(--foreground)' : '#18181b',
               boxShadow: 'none',
+              minWidth: 0,
+              maxWidth: '100%',
+              textAlign: 'left',
             }}
           />
         ) : (
           <span
             className="text-base font-normal w-full text-left"
-            style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}
+            style={{ color: darkMode ? 'var(--foreground)' : '#18181b', textAlign: 'left', width: '100%' }}
           >
             {value || <span className="text-zinc-300">-</span>}
           </span>
