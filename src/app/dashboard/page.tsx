@@ -72,18 +72,46 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const profile: any = await getProfile();
-        if (profile && profile.data) {
-          setUserName(profile.data.fullName || profile.data.full_name || profile.data.email);
-          setAvatarUrl(profile.data.profilePictureUrl || profile.data.profile_picture_url || "");
+        const profile: unknown = await getProfile();
+        if (
+          profile &&
+          typeof profile === 'object' &&
+          profile !== null &&
+          'data' in profile &&
+          typeof (profile as { data?: unknown }).data === 'object' &&
+          (profile as { data?: unknown }).data !== null
+        ) {
+          const data = (profile as { data: unknown }).data;
+          setUserName((typeof data === 'object' && data !== null && 'fullName' in data && typeof (data as { fullName?: string }).fullName === 'string'
+            ? (data as { fullName: string }).fullName
+            : typeof data === 'object' && data !== null && 'full_name' in data && typeof (data as { full_name?: string }).full_name === 'string'
+            ? (data as { full_name: string }).full_name
+            : typeof data === 'object' && data !== null && 'email' in data && typeof (data as { email?: string }).email === 'string'
+            ? (data as { email: string }).email
+            : ""));
+          setAvatarUrl((typeof data === 'object' && data !== null && 'profilePictureUrl' in data && typeof (data as { profilePictureUrl?: string }).profilePictureUrl === 'string'
+            ? (data as { profilePictureUrl: string }).profilePictureUrl
+            : typeof data === 'object' && data !== null && 'profile_picture_url' in data && typeof (data as { profile_picture_url?: string }).profile_picture_url === 'string'
+            ? (data as { profile_picture_url: string }).profile_picture_url
+            : ""));
           const user = {
-            ...profile.data,
-            full_name: profile.data.fullName || profile.data.full_name,
-            profilePictureUrl: profile.data.profilePictureUrl || profile.data.profile_picture_url,
+            ...(typeof data === 'object' && data !== null ? data : {}),
+            full_name:
+              (typeof data === 'object' && data !== null && 'fullName' in data && typeof (data as { fullName?: string }).fullName === 'string'
+                ? (data as { fullName: string }).fullName
+                : typeof data === 'object' && data !== null && 'full_name' in data && typeof (data as { full_name?: string }).full_name === 'string'
+                ? (data as { full_name: string }).full_name
+                : undefined),
+            profilePictureUrl:
+              (typeof data === 'object' && data !== null && 'profilePictureUrl' in data && typeof (data as { profilePictureUrl?: string }).profilePictureUrl === 'string'
+                ? (data as { profilePictureUrl: string }).profilePictureUrl
+                : typeof data === 'object' && data !== null && 'profile_picture_url' in data && typeof (data as { profile_picture_url?: string }).profile_picture_url === 'string'
+                ? (data as { profile_picture_url: string }).profile_picture_url
+                : undefined),
           };
           localStorage.setItem('user', JSON.stringify(user));
         }
-      } catch (err) {
+      } catch {
         const userStr = localStorage.getItem('user');
         if (userStr) {
           const user = JSON.parse(userStr);

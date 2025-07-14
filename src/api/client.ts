@@ -20,8 +20,8 @@ export async function apiFetch<T>(
   }
 
   if (!res.ok) {
-    const error = new Error(data?.message || `API error: ${res.status}`);
-    (error as any).response = data;
+    const error: Error & { response?: unknown } = new Error(data?.message || `API error: ${res.status}`);
+    error.response = data;
     throw error;
   }
   return data;

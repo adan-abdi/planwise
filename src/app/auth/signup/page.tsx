@@ -7,8 +7,22 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
 import EmailInput from '../EmailInput';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { validateSignupOtp } from '../../../api/services/auth';
 import { registerUser, RegisterResponse, requestSignupOtp } from '../../../api/services/auth';
+
+function EmailFromQuerySignup({ setEmail, setStep, isValidEmail, step }: { setEmail: (email: string) => void, setStep: (step: 'email' | 'otp' | 'password') => void, isValidEmail: (email: string) => boolean, step: 'email' | 'otp' | 'password' }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (step !== 'email') return;
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery && isValidEmail(emailFromQuery)) {
+      setEmail(emailFromQuery);
+      setStep('otp');
+    }
+  }, [searchParams, setEmail, setStep, isValidEmail, step]);
+  return null;
+}
 
 export default function SignupPage() {
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email')
@@ -27,15 +41,8 @@ export default function SignupPage() {
   const otpRefs = useRef<HTMLInputElement[]>([])
   const router = useRouter()
   const { darkMode } = useTheme();
-  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const emailFromQuery = searchParams.get('email');
-    if (emailFromQuery && isValidEmail(emailFromQuery)) {
-      setEmail(emailFromQuery);
-      setStep('otp');
-    }
-  }, []);
+  // useSearchParams must be wrapped in Suspense
 
   useEffect(() => {
     if (resendMessage && resendMessage.toLowerCase().includes('sent')) {
@@ -85,10 +92,10 @@ export default function SignupPage() {
       } else {
         setOtpError(result.message || 'Invalid or expired OTP.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('OTP validation error', err);
-      if (err && err.message) {
-        setOtpError(err.message);
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setOtpError((err as { message: string }).message);
       } else {
         setOtpError('Something went wrong. Please try again.');
       }
@@ -131,8 +138,12 @@ export default function SignupPage() {
           setPasswordError(result.message || 'Registration failed.');
         }
       }
-    } catch (err: any) {
-      setPasswordError(err.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setPasswordError((err as { message: string }).message);
+      } else {
+        setPasswordError('Something went wrong. Please try again.');
+      }
     }
   }
 
@@ -146,8 +157,12 @@ export default function SignupPage() {
       } else {
         setResendMessage(result.message || 'Failed to resend code.');
       }
-    } catch (err: any) {
-      setResendMessage(err.message || 'Failed to resend code.');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setResendMessage((err as { message: string }).message);
+      } else {
+        setResendMessage('Failed to resend code.');
+      }
     } finally {
       setResendLoading(false);
     }
@@ -177,9 +192,6 @@ export default function SignupPage() {
       }
     : {}
   const resendTextStyle = darkMode
-    ? { color: '#bbb' }
-    : {}
-  const infoTextStyle = darkMode
     ? { color: '#bbb' }
     : {}
 
@@ -346,34 +358,39 @@ export default function SignupPage() {
   }
 
   return (
-    <AuthShell
-      showBackButton={step !== 'email'}
-      onBack={() => {
-        if (step === 'otp' || step === 'password') {
-          router.push('/');
+    <>
+      <Suspense fallback={null}>
+        <EmailFromQuerySignup setEmail={setEmail} setStep={setStep} isValidEmail={isValidEmail} step={step} />
+      </Suspense>
+      <AuthShell
+        showBackButton={step !== 'email'}
+        onBack={() => {
+          if (step === 'otp' || step === 'password') {
+            router.push('/');
+          }
+        }}
+        headerNode={getHeaderIcon()}
+        title={
+          step === 'otp'
+            ? 'Enter Code'
+            : step === 'password'
+              ? 'Set a Password'
+              : 'Welcome to PlanWise'
         }
-      }}
-      headerNode={getHeaderIcon()}
-      title={
-        step === 'otp'
-          ? 'Enter Code'
-          : step === 'password'
-            ? 'Set a Password'
-            : 'Welcome to PlanWise'
-      }
-      subtitle={
-        step === 'otp'
-          ? `We've sent a 6-digit code to ${email}`
-          : step === 'password'
-            ? 'Create a custom password for your account.'
-            : 'Enter your details to get started'
-      }
-    >
-      {step === 'email'
-        ? renderEmailStep()
-        : step === 'otp'
-          ? renderOtpStep()
-          : renderPasswordStep()}
-    </AuthShell>
+        subtitle={
+          step === 'otp'
+            ? `We've sent a 6-digit code to ${email}`
+            : step === 'password'
+              ? 'Create a custom password for your account.'
+              : 'Enter your details to get started'
+        }
+      >
+        {step === 'email'
+          ? renderEmailStep()
+          : step === 'otp'
+            ? renderOtpStep()
+            : renderPasswordStep()}
+      </AuthShell>
+    </>
   )
 }

@@ -59,8 +59,12 @@ export default function ProfilePage() {
       } else {
         setError(result.message || 'Failed to update profile.')
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to update profile.')
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setError((err as { message: string }).message);
+      } else {
+        setError('Failed to update profile.');
+      }
     } finally {
       setLoading(false)
     }

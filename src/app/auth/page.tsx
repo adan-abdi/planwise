@@ -35,10 +35,10 @@ export default function AuthEntryPage() {
         }
         router.push(`/auth/signup?email=${encodeURIComponent(email)}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("checkUserExists error", err);
-      if (err && err.message) {
-        setError(err.message);
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setError((err as { message: string }).message);
       } else {
         setError("Something went wrong. Please try again.");
       }

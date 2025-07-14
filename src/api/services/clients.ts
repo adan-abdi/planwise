@@ -7,7 +7,7 @@ export async function getClients() {
 export async function getClientById(id: string) {
   return apiFetch(`/clients/${id}`);
 }
-export async function createClient(data: any) {
+export async function createClient(data: unknown) {
   return apiFetch('/clients', {
     method: 'POST',
     body: JSON.stringify(data),

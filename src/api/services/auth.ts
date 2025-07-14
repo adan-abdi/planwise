@@ -84,7 +84,7 @@ export interface UpdateProfileResponse {
     email: string;
     fullName: string;
     profilePictureUrl: string | null;
-    organizations: any[];
+    organizations: unknown[];
   };
 }
 
@@ -110,8 +110,8 @@ export async function updateUserProfile(fullName: string, profileImage?: File): 
     data = null;
   }
   if (!res.ok) {
-    const error = new Error(data?.message || `API error: ${res.status}`);
-    (error as any).response = data;
+    const error: Error & { response?: unknown } = new Error(data?.message || `API error: ${res.status}`);
+    error.response = data;
     throw error;
   }
   return data;

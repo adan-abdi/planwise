@@ -7,7 +7,21 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
 import EmailInput from '../EmailInput';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { login } from '../../../api/services/auth';
+import type { RegisterResponse } from '../../../api/services/auth';
+
+function EmailFromQuery({ setEmail, setStep, isValidEmail }: { setEmail: (email: string) => void, setStep: (step: 'login' | 'password') => void, isValidEmail: (email: string) => boolean }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery && isValidEmail(emailFromQuery)) {
+      setEmail(emailFromQuery);
+      setStep('password');
+    }
+  }, [searchParams, setEmail, setStep, isValidEmail]);
+  return null;
+}
 
 export default function LoginPage() {
   const { darkMode } = useTheme();
@@ -18,7 +32,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const router = useRouter()
-  const searchParams = useSearchParams();
+  // useSearchParams must be wrapped in Suspense
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -37,7 +51,7 @@ export default function LoginPage() {
       return;
     }
     try {
-      const result: any = await login({ email: email.trim(), password });
+      const result = await login({ email: email.trim(), password }) as RegisterResponse;
       if (result.status && result.data) {
         localStorage.setItem('token', result.data.token);
         localStorage.setItem('refresh_token', result.data.refresh_token);
@@ -46,18 +60,14 @@ export default function LoginPage() {
       } else {
         setPasswordError(result.message || 'Login failed.');
       }
-    } catch (err: any) {
-      setPasswordError(err.message || 'Login failed.');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
+        setPasswordError((err as { message: string }).message);
+      } else {
+        setPasswordError('Login failed.');
+      }
     }
   }
-
-  useEffect(() => {
-    const emailFromQuery = searchParams.get('email');
-    if (emailFromQuery && isValidEmail(emailFromQuery)) {
-      setEmail(emailFromQuery);
-      setStep('password');
-    }
-  }, []);
 
   useEffect(() => {
     if (password.length === 0) {
@@ -98,10 +108,6 @@ export default function LoginPage() {
         boxShadow: '0 2px 8px 0 #e0e7ef',
       };
 
-  const infoTextStyle = darkMode
-    ? { color: '#bbb' }
-    : { color: '#666' };
-
   const errorTextStyle = darkMode
     ? { color: '#ff6b6b' }
     : { color: '#e53e3e' };
@@ -134,46 +140,51 @@ export default function LoginPage() {
   )
 
   return (
-    <AuthShell
-      showBackButton={step === 'password'}
-      onBack={() => {
-        setStep('login')
-        setPassword('')
-        setPasswordError('')
-      }}
-      headerNode={
-        step === 'password' ? (
-          <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
-            <Lock className="w-5 h-5" />
-          </div>
-        ) : undefined
-      }
-      title={step === 'password' ? 'Enter Password' : 'Welcome to PlanWise'}
-      subtitle={
-        step === 'password'
-          ? 'Please enter your custom account password.'
-          : 'Enter your details to get started'
-      }
-    >
-      {step === 'login' ? (
-        <EmailInput
-          value={email}
-          onChange={setEmail}
-          onSubmit={handleEmailSubmit}
-        />
-      ) : (
-        <form onSubmit={handlePasswordSubmit} className="space-y-4 w-full">
-          {renderPasswordField()}
-          <button
-            type="submit"
-            className="w-full mt-2 px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
-            style={buttonStyle}
-            disabled={passwordError !== ''}
-          >
-            Continue
-          </button>
-        </form>
-      )}
-    </AuthShell>
+    <>
+      <Suspense fallback={null}>
+        <EmailFromQuery setEmail={setEmail} setStep={setStep} isValidEmail={isValidEmail} />
+      </Suspense>
+      <AuthShell
+        showBackButton={step === 'password'}
+        onBack={() => {
+          setStep('login')
+          setPassword('')
+          setPasswordError('')
+        }}
+        headerNode={
+          step === 'password' ? (
+            <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
+              <Lock className="w-5 h-5" />
+            </div>
+          ) : undefined
+        }
+        title={step === 'password' ? 'Enter Password' : 'Welcome to PlanWise'}
+        subtitle={
+          step === 'password'
+            ? 'Please enter your custom account password.'
+            : 'Enter your details to get started'
+        }
+      >
+        {step === 'login' ? (
+          <EmailInput
+            value={email}
+            onChange={setEmail}
+            onSubmit={handleEmailSubmit}
+          />
+        ) : (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4 w-full">
+            {renderPasswordField()}
+            <button
+              type="submit"
+              className="w-full mt-2 px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
+              style={buttonStyle}
+              disabled={passwordError !== ''}
+            >
+              Continue
+            </button>
+          </form>
+        )}
+      </AuthShell>
+    </>
   )
 }
