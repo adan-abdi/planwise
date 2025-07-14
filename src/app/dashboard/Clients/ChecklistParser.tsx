@@ -238,7 +238,7 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
 
 const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) => {
   const { darkMode } = useTheme();
-  const [items, setItems] = useState(checklistData.map((_, i) => i)); // store order by index
+  const [items, setItems] = useState(checklistData.map((_, i) => i));
   const [checked, setChecked] = useState(checklistData.map(item => !!item.found));
   const [values, setValues] = useState(checklistData.map(item => item.value === '-' ? '' : item.value));
   const [editingIdx, setEditingIdx] = useState<number | null>(null);

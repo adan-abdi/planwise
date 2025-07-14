@@ -64,8 +64,8 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
         dob: dob ? dob.toISOString().split('T')[0] : '',
         retirementAge,
         atr,
-        pensionNewMoney, // add to form data
-        isaNewMoney,     // add to form data
+        pensionNewMoney, 
+        isaNewMoney,
       });
     }
     resetForm();

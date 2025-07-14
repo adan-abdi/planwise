@@ -1,5 +1,4 @@
 import { Check, MoreHorizontal } from 'lucide-react'
-import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../../theme-context';
 import { createPortal } from 'react-dom';
@@ -166,10 +165,9 @@ export interface ClientListProps {
   clients: ClientItem[];
   onViewDetails?: (client: ClientItem) => void;
   checklistStates: boolean[][];
-  onChecklistChange: (clientIdx: number, newChecklist: boolean[]) => void;
 }
 
-export default function ClientList({ clients, onViewDetails, checklistStates, onChecklistChange }: ClientListProps) {
+export default function ClientList({ clients, onViewDetails, checklistStates }: ClientListProps) {
   const [selectedRows, setSelectedRows] = useState<boolean[]>(clients.map(() => false));
   const [openMenuIdx, setOpenMenuIdx] = useState<number | null>(null);
   const menuButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -197,18 +195,13 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
   const handleSelectRow = (idx: number) => {
     setSelectedRows(selectedRows.map((v, i) => (i === idx ? !v : v)));
   };
-  const handleChecklistToggle = (clientIdx: number, checklistIdx: number) => {
-    const current = checklistStates[clientIdx] || [false, false, false, false];
-    const newChecklist = current.map((v, j) => (j === checklistIdx ? !v : v));
-    onChecklistChange(clientIdx, newChecklist);
-  };
 
   const renderLightTable = () => (
     <div className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border border-zinc-200 rounded-lg bg-white" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
         <thead className="text-zinc-700 font-semibold bg-zinc-50 border-b border-zinc-200 shadow-xs rounded-t-md">
           <tr className="h-8 sm:h-10">
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100">{/* select all */}
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-100">
               <button
                 type="button"
                 onClick={handleSelectAll}
@@ -321,7 +314,7 @@ export default function ClientList({ clients, onViewDetails, checklistStates, on
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse text-[var(--foreground)]">
         <thead className="text-[var(--foreground)] font-semibold bg-[var(--muted)] border-b border-zinc-700 shadow-xs rounded-t-md">
           <tr className="h-8 sm:h-10">
-            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600">{/* select all */}
+            <th className="p-2 sm:p-2 align-middle border-r border-zinc-600">
               <button
                 type="button"
                 onClick={handleSelectAll}

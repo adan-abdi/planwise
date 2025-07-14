@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound, RefreshCw, Moon, Sun, Bell } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound, RefreshCw } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -29,7 +29,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
   const [showChecklistReview, setShowChecklistReview] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10; // Adjust as needed
+  const pageSize = 10;
   const totalPages = Math.max(1, Math.ceil(clients.length / pageSize));
   const { darkMode } = useTheme();
   const [reviewChecklistData, setReviewChecklistData] = useState<{
@@ -186,7 +186,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           clients={clients}
           onViewDetails={handleViewDetails}
           checklistStates={checklistStates}
-          onChecklistChange={handleChecklistChange}
         />
       </div>
     );

@@ -5,7 +5,7 @@ import FileIcon from '/public/file.png';
 import { useTheme } from '../../../theme-context';
 import FolderDocumentBox from './FolderDocumentBox';
 
-interface TransferFolderItem {
+export interface TransferFolderItem {
   type: 'folder' | 'file';
   name: string;
   children?: TransferFolderItem[];

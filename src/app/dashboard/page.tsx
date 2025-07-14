@@ -60,8 +60,6 @@ export default function DashboardPage() {
   const [triggerRandomClients, setTriggerRandomClients] = useState(false);
   const handleClientDetailsChange = (open: boolean) => {
     setClientDetailsOpen(open);
-    // setSelectedClientName(open && name ? name : null); // Removed as per edit hint
-    // setSelectedClientTab(tab || 'details'); // Removed as per edit hint
   };
 
   useEffect(() => {

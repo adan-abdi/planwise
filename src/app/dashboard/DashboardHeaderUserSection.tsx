@@ -27,7 +27,6 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
           <Grid2x2Check className="w-5 h-5" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
         </button>
       )}
-      {/* Dark/Light toggle */}
       <button
         className="w-8 h-8 flex items-center justify-center rounded-full transition"
         aria-label="Toggle dark mode"
@@ -42,7 +41,6 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
           <Sun className="w-5 h-5 text-zinc-400" />
         )}
       </button>
-      {/* Notification */}
       <button 
         className="w-8 h-8 flex items-center justify-center rounded-full transition relative"
         style={{ backgroundColor: 'transparent' }}

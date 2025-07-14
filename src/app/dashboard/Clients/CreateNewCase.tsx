@@ -1,5 +1,4 @@
 import React from "react";
-import { useTheme } from '../../../theme-context';
 
 interface CreateNewCaseProps {
   open: boolean;
@@ -13,7 +12,6 @@ interface CreateNewCaseProps {
 }
 
 export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCaseProps) {
-  const { darkMode } = useTheme();
   const [pensionTransfer, setPensionTransfer] = React.useState(0);
   const [isaTransfer, setIsaTransfer] = React.useState(0);
   const [pensionNewMoney, setPensionNewMoney] = React.useState(0);

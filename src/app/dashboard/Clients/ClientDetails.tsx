@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import type { TransferFolderItem } from "./FileExplorer";
 import { ClientItem } from "./ClientListItem";
 import Image from "next/image";
 import {
-  User,
   Users,
   UserCircle,
   Layers,
@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import DirectoryIcon from '/public/directory.svg';
 import UploadModal from "./UploadModal";
-import ReviewChecklistModal from "./ReviewChecklistModal";
 import { useTheme } from "../../../theme-context";
 import dynamic from 'next/dynamic';
 import FileExplorer from './FileExplorer';
@@ -123,11 +122,8 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
     JSON.stringify(editValues) !== JSON.stringify(client) ||
     JSON.stringify(localChecklist) !== JSON.stringify(checklist || Array(4).fill(false));
 
-  const [openedTransferKey, setOpenedTransferKey] = useState<string | null>(null);
-
   const handleOpenTransfer = (type: string) => {
-    setOpenedTransferKey(type);
-    setOpenedTransfer(type as any); // for legacy logic, if needed
+    setOpenedTransfer(type as TransferType);
     setTransferPath([transferTypes.find(t => t.key === type)?.label || type]);
     if (onTabChange) onTabChange(`transfers/${type}`);
   };
@@ -156,7 +152,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
-  const [selectedDocument, setSelectedDocument] = useState<any | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
   useEffect(() => {
     setSelectedDocument(null);
   }, [transferPath]);
@@ -423,7 +419,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                       const count = editValues[key as keyof typeof editValues] as number | undefined;
                       if (!count || count <= 0) return null;
                       return (
-                        <FolderDocumentBox key={key} onClick={() => handleOpenTransfer(key as any)}>
+                        <FolderDocumentBox key={key} onClick={() => handleOpenTransfer(key as unknown as string)}>
                           <>
                             <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
                               <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
