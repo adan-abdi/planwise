@@ -1,10 +1,14 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import AuthShell from '../authShell'
 import { Lock, Eye, EyeOff, KeyRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
+import EmailInput from '../EmailInput';
+import { useSearchParams } from 'next/navigation';
+import { validateSignupOtp } from '../../../api/services/auth';
+import { registerUser, RegisterResponse, requestSignupOtp } from '../../../api/services/auth';
 
 export default function SignupPage() {
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email')
@@ -17,10 +21,28 @@ export default function SignupPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   const otpRefs = useRef<HTMLInputElement[]>([])
   const router = useRouter()
   const { darkMode } = useTheme();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery && isValidEmail(emailFromQuery)) {
+      setEmail(emailFromQuery);
+      setStep('otp');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (resendMessage && resendMessage.toLowerCase().includes('sent')) {
+      const timeout = setTimeout(() => setResendMessage(''), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [resendMessage]);
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -47,18 +69,33 @@ export default function SignupPage() {
     }
   }
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const fullCode = otp.join('')
-    if (fullCode !== '123456') {
-      setOtpError('Incorrect validation code!')
-    } else {
-      setOtpError('')
-      setStep('password')
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fullCode = otp.join('').trim();
+    const trimmedEmail = email.trim();
+    if (fullCode.length !== 6) {
+      setOtpError('Please enter the 6-digit code.');
+      return;
+    }
+    try {
+      const result = await validateSignupOtp(trimmedEmail, fullCode) as { status: boolean; message?: string };
+      if (result.status) {
+        setOtpError('');
+        setStep('password');
+      } else {
+        setOtpError(result.message || 'Invalid or expired OTP.');
+      }
+    } catch (err: any) {
+      console.error('OTP validation error', err);
+      if (err && err.message) {
+        setOtpError(err.message);
+      } else {
+        setOtpError('Something went wrong. Please try again.');
+      }
     }
   }
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     let valid = true
@@ -77,11 +114,44 @@ export default function SignupPage() {
       setConfirmPasswordError('')
     }
 
-    if (valid) {
-      console.log('Signup complete:', { email, password })
-      router.push('/auth/profile')
+    if (!valid) return;
+
+    try {
+      const result: RegisterResponse = await registerUser(email.trim(), password);
+      if (result.status && result.data) {
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('refresh_token', result.data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+        localStorage.setItem('organization', JSON.stringify(result.data.organization));
+        router.push('/auth/profile');
+      } else {
+        if (result.message && result.message.toLowerCase().includes('already exists')) {
+          setPasswordError('An account already exists with this email. Please log in or use a different email.');
+        } else {
+          setPasswordError(result.message || 'Registration failed.');
+        }
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || 'Something went wrong. Please try again.');
     }
   }
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    try {
+      const result = await requestSignupOtp(email.trim()) as { status: boolean; message?: string };
+      if (result.status) {
+        setResendMessage('A new code has been sent to your email.');
+      } else {
+        setResendMessage(result.message || 'Failed to resend code.');
+      }
+    } catch (err: any) {
+      setResendMessage(err.message || 'Failed to resend code.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const sharedInputClass =
     'w-full px-4 py-2 rounded-[10px] bg-zinc-100 text-sm shadow-inner border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
@@ -114,30 +184,11 @@ export default function SignupPage() {
     : {}
 
   const renderEmailStep = () => (
-    <form onSubmit={handleEmailSubmit} className="space-y-6 w-full">
-      <input
-        type="email"
-        placeholder="Email address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className={sharedInputClass}
-        style={inputStyle}
-        required
-      />
-      {isValidEmail(email) ? (
-        <button
-          type="submit"
-          className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
-          style={buttonStyle}
-        >
-          Continue
-        </button>
-      ) : (
-        <p className="text-xs text-center text-gray-500 pt-3" style={infoTextStyle}>
-          We’ll create an account if you don’t have one yet.
-        </p>
-      )}
-    </form>
+    <EmailInput
+      value={email}
+      onChange={setEmail}
+      onSubmit={handleEmailSubmit}
+    />
   )
 
   const renderOtpStep = () => (
@@ -163,6 +214,18 @@ export default function SignupPage() {
       {otpError && (
         <p className="text-sm text-red-500 text-center">{otpError}</p>
       )}
+      {resendMessage && (
+        <p className="text-sm text-center" style={{ color: resendMessage.toLowerCase().includes('sent') ? '#22c55e' : '#e53e3e' }}>{resendMessage}</p>
+      )}
+      <button
+        type="button"
+        className="w-full text-xs text-blue-600 hover:underline mb-2 disabled:opacity-50"
+        onClick={handleResendOtp}
+        disabled={resendLoading}
+        style={{ marginTop: '-8px' }}
+      >
+        {resendLoading ? 'Resending...' : 'Resend code'}
+      </button>
       {otp.join('').length === 6 ? (
         <button
           type="submit"
@@ -173,7 +236,7 @@ export default function SignupPage() {
         </button>
       ) : (
         <p className="text-xs text-center text-black" style={resendTextStyle}>
-          Didn’t receive any code? <span className="font-bold">Resend it</span>
+          Didn’t receive any code? <span className="font-bold">Check your spam folder or resend.</span>
         </p>
       )}
     </form>
@@ -234,7 +297,7 @@ export default function SignupPage() {
         placeholder: 'Password',
         show: showPassword,
         toggleShow: () => setShowPassword(!showPassword),
-        error: passwordError,
+        error: passwordError && passwordError.toLowerCase().includes('password') ? passwordError : undefined,
       })}
       {renderPasswordField({
         value: confirmPassword,
@@ -251,6 +314,9 @@ export default function SignupPage() {
         toggleShow: () => setShowConfirmPassword(!showConfirmPassword),
         error: confirmPasswordError,
       })}
+      {passwordError && !passwordError.toLowerCase().includes('password') && (
+        <p className="text-sm text-red-500 text-center">{passwordError}</p>
+      )}
       <button
         type="submit"
         className="w-full mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-[10px] shadow hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -283,16 +349,8 @@ export default function SignupPage() {
     <AuthShell
       showBackButton={step !== 'email'}
       onBack={() => {
-        if (step === 'otp') {
-          setStep('email')
-          setOtp(Array(6).fill(''))
-          setOtpError('')
-        } else if (step === 'password') {
-          setStep('otp')
-          setPassword('')
-          setConfirmPassword('')
-          setPasswordError('')
-          setConfirmPasswordError('')
+        if (step === 'otp' || step === 'password') {
+          router.push('/');
         }
       }}
       headerNode={getHeaderIcon()}

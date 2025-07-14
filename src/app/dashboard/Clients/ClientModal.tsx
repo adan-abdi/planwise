@@ -89,7 +89,7 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
   const commonRetirementAges = ["50", "60", "70", "80", "90", "100"];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--background)]/60 dark:bg-black/60 backdrop-blur-sm transition-all px-2 sm:px-0 overflow-y-auto">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-0 overflow-y-auto backdrop-blur-lg transition-all ${darkMode ? 'bg-zinc-900/30' : 'bg-white/20'}`}>
       <div className="bg-[var(--background)] rounded-2xl shadow-2xl w-full max-w-xl relative border border-[var(--border)] flex flex-col mx-auto my-2 sm:my-0 max-h-[80vh] overflow-visible">
         <div className="px-4 sm:px-6 py-2 border-b border-[var(--border)] rounded-t-2xl bg-[var(--muted)] dark:bg-[var(--muted)]">
           <span className="text-zinc-400 font-medium text-base">Create new client</span>

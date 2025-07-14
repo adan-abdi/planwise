@@ -5,6 +5,9 @@ import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
+import EmailInput from '../EmailInput';
+import { useSearchParams } from 'next/navigation';
+import { login } from '../../../api/services/auth';
 
 export default function LoginPage() {
   const { darkMode } = useTheme();
@@ -15,6 +18,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const router = useRouter()
+  const searchParams = useSearchParams();
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -26,16 +30,34 @@ export default function LoginPage() {
     }
   }
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters.')
-      return
+      setPasswordError('Password must be at least 6 characters.');
+      return;
     }
-
-    console.log('Submitted login:', { email, password })
-    router.push('/dashboard')
+    try {
+      const result: any = await login({ email: email.trim(), password });
+      if (result.status && result.data) {
+        localStorage.setItem('token', result.data.token);
+        localStorage.setItem('refresh_token', result.data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(result.data.user));
+        router.push('/dashboard');
+      } else {
+        setPasswordError(result.message || 'Login failed.');
+      }
+    } catch (err: any) {
+      setPasswordError(err.message || 'Login failed.');
+    }
   }
+
+  useEffect(() => {
+    const emailFromQuery = searchParams.get('email');
+    if (emailFromQuery && isValidEmail(emailFromQuery)) {
+      setEmail(emailFromQuery);
+      setStep('password');
+    }
+  }, []);
 
   useEffect(() => {
     if (password.length === 0) {
@@ -134,30 +156,11 @@ export default function LoginPage() {
       }
     >
       {step === 'login' ? (
-        <form onSubmit={handleEmailSubmit} className="space-y-6 w-full">
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={sharedInputClass}
-            style={inputStyle}
-            required
-          />
-          {isValidEmail(email) ? (
-            <button
-              type="submit"
-              className="w-full px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
-              style={buttonStyle}
-            >
-              Continue
-            </button>
-          ) : (
-            <p className="text-xs text-center pt-3" style={infoTextStyle}>
-              We’ll create an account if you don’t have one yet.
-            </p>
-          )}
-        </form>
+        <EmailInput
+          value={email}
+          onChange={setEmail}
+          onSubmit={handleEmailSubmit}
+        />
       ) : (
         <form onSubmit={handlePasswordSubmit} className="space-y-4 w-full">
           {renderPasswordField()}

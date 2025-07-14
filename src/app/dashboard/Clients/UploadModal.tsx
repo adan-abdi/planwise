@@ -146,8 +146,7 @@ export default function UploadModal({ open, onClose, fileName, onShowReviewCheck
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-0 overflow-y-auto"
-      style={{ backgroundColor: darkMode ? 'rgba(24,24,27,0.85)' : 'rgba(0,0,0,0.1)' }}
+      className={`fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-0 overflow-y-auto backdrop-blur-lg transition-all ${darkMode ? 'bg-zinc-900/30' : 'bg-white/20'}`}
     >
       <div
         className="rounded-2xl shadow-2xl w-full max-w-lg border flex flex-col overflow-hidden mx-auto my-4 sm:my-0 max-h-[90vh]"

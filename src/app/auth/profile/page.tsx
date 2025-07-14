@@ -1,32 +1,69 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Pencil, User } from 'lucide-react'
 import AuthShell from '../authShell'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
+import { updateUserProfile, UpdateProfileResponse } from '../../../api/services/auth';
 
 export default function ProfilePage() {
   const [name, setName] = useState('')
   const [profilePreview, setProfilePreview] = useState<string | null>(null)
+  const [profileFile, setProfileFile] = useState<File | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const router = useRouter()
   const { darkMode } = useTheme()
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handlePopState = () => {
+        if (window.location.pathname === '/dashboard') {
+          router.replace('/');
+        }
+      };
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    }
+  }, [router]);
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setProfileFile(file)
       const reader = new FileReader()
       reader.onload = () => setProfilePreview(reader.result as string)
       reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Profile saved:', { name, profilePreview })
-    router.push('/dashboard')
+    setLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      const result: UpdateProfileResponse = await updateUserProfile(name, profileFile || undefined)
+      if (result.status && result.data) {
+        setSuccess('Profile updated successfully!')
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}')
+        user.full_name = result.data.fullName
+        user.profilePictureUrl = result.data.profilePictureUrl
+        localStorage.setItem('user', JSON.stringify(user))
+        setTimeout(() => router.push('/dashboard'), 1000)
+      } else {
+        setError(result.message || 'Failed to update profile.')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to update profile.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -114,7 +151,8 @@ export default function ProfilePage() {
           }}
           required
         />
-
+        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        {success && <p className="text-sm text-green-500 text-center">{success}</p>}
         <button
           type="submit"
           className="w-full px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
@@ -123,8 +161,9 @@ export default function ProfilePage() {
             color: '#fff',
             boxShadow: darkMode ? '0 2px 8px 0 #1112' : '0 2px 8px 0 #e0e7ef',
           }}
+          disabled={loading}
         >
-          Continue
+          {loading ? 'Saving...' : 'Continue'}
         </button>
 
         <p className="text-center text-sm pt-2" style={{ color: darkMode ? '#bbb' : '#666' }}>

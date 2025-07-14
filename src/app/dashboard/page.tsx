@@ -27,6 +27,7 @@ import Auditlog from './Auditlog';
 import Teammembers from './Teammembers';
 import SettingsSection from './Settings';
 import { useTheme } from "../../theme-context";
+import { getProfile } from '../../api/services/auth';
 
 const iconClass = "w-5 h-5";
 
@@ -47,6 +48,15 @@ const supportSections = [
 type BreadcrumbItem = { label: string; icon?: React.ReactNode; onClick?: () => void; isActive?: boolean };
 
 export default function DashboardPage() {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/';
+      }
+    }
+  }, []);
+
   const [active, setActive] = useState("clients");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -54,6 +64,43 @@ export default function DashboardPage() {
   const activeSection = sections.find((s) => s.key === active);
   const activeSupportSection = supportSections.find((s) => s.key === active);
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
+
+  const [userName, setUserName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const userRole = "Paraplanner";
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const profile: any = await getProfile();
+        if (profile && profile.data) {
+          setUserName(profile.data.fullName || profile.data.full_name || profile.data.email);
+          setAvatarUrl(profile.data.profilePictureUrl || profile.data.profile_picture_url || "");
+          const user = {
+            ...profile.data,
+            full_name: profile.data.fullName || profile.data.full_name,
+            profilePictureUrl: profile.data.profilePictureUrl || profile.data.profile_picture_url,
+          };
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch (err) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          setUserName(user.full_name || user.fullName || user.email);
+          setAvatarUrl(user.profilePictureUrl || user.profile_picture_url || "");
+        }
+      }
+    }
+    fetchProfile();
+    function handleFocus() {
+      fetchProfile();
+    }
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const resolvedAvatarUrl = avatarUrl || "/logo.svg";
 
   const handleBackToClientList = () => setClientDetailsOpen(false);
 
@@ -67,6 +114,18 @@ export default function DashboardPage() {
       setClientDetailsOpen(false);
     }
   }, [active]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handlePopState = () => {
+        if (window.location.pathname === '/dashboard') {
+          window.location.href = '/';
+        }
+      };
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    }
+  }, []);
 
   const { darkMode } = useTheme();
 
@@ -126,9 +185,9 @@ export default function DashboardPage() {
         onOpenSidebar={() => setMobileSidebarOpen(true)}
         sectionTitle={breadcrumbPath.length > 0 ? breadcrumbPath[breadcrumbPath.length-1].label : (activeSection?.label || activeSupportSection?.label || '')}
         breadcrumb={breadcrumbPath}
-        avatarUrl={"https://randomuser.me/api/portraits/men/32.jpg"}
-        userName={"Robert Fox"}
-        userRole={"Super admin"}
+        avatarUrl={resolvedAvatarUrl}
+        userName={userName}
+        userRole={userRole}
       />
       <div className="w-full bg-[var(--background)] border-b-2 relative hidden sm:block" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
         <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-[var(--background)]">
@@ -210,9 +269,9 @@ export default function DashboardPage() {
             }
           </div>
           <DashboardHeaderUserSection
-            userName="Robert Fox"
-            userRole="Super admin"
-            avatarUrl="https://randomuser.me/api/portraits/men/32.jpg"
+            userName={userName}
+            userRole={userRole}
+            avatarUrl={resolvedAvatarUrl}
             onGenerateRandomClients={() => {
               if (active === "clients") {
                 setTriggerRandomClients(true);
@@ -228,7 +287,7 @@ export default function DashboardPage() {
         onSectionSelect={setActive}
         activeSectionKey={active}
       />
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 z-50 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256, borderColor: darkMode ? '#52525b' : '#e4e4e7' }} />
+      <div className={`absolute top-0 bottom-0 w-0 border-l-2 z-40 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256, borderColor: darkMode ? '#52525b' : '#e4e4e7' }} />
       <div className="flex flex-1 min-h-0">
         <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-[var(--background)] flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
           <nav className="flex-1 flex flex-col gap-8">
