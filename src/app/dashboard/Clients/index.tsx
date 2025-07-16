@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, ChevronDown, SquareUserRound, RefreshCw } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, RefreshCw, Search as SearchIcon } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -29,7 +29,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
   const [showChecklistReview, setShowChecklistReview] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 13;
   const totalPages = Math.max(1, Math.ceil(clients.length / pageSize));
   const { darkMode } = useTheme();
   const [reviewChecklistData, setReviewChecklistData] = useState<{
@@ -37,6 +37,9 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     reviewerName: string;
   } | null>(null);
   const [documentOpen, setDocumentOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  // 1. Add state for cases pagination at the Clients level
+  const [casesCurrentPage, setCasesCurrentPage] = useState<number>(1);
 
   React.useEffect(() => {
     if (detailsViewOpen === false) {
@@ -73,27 +76,21 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleSubmit = (data: ClientFormData) => {
-    const plans = data.pensionTransfer + data.isaTransfer + (data.pensionNewMoney || 0) + (data.isaNewMoney || 0);
-    const types: string[] = [];
-    if (data.pensionTransfer > 0) types.push('Pension Transfer');
-    if (data.isaTransfer > 0) types.push('ISA Transfer');
-    if (data.pensionNewMoney > 0) types.push('Pension New Money');
-    if (data.isaNewMoney > 0) types.push('ISA New Money');
     setClients((prev) => [
       ...prev,
       {
         advisor: data.advisorName,
         client: data.clientName,
-        date: data.dob ? new Date(data.dob).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
-        type: types.length > 0 ? types.join(', ') : 'N/A',
-        pensionTransfer: data.pensionTransfer,
-        isaTransfer: data.isaTransfer,
-        pensionNewMoney: data.pensionNewMoney,
-        isaNewMoney: data.isaNewMoney,
-        retirementAge: data.retirementAge,
-        atr: data.atr,
+        date: '',
+        type: 'N/A',
+        pensionTransfer: 0,
+        isaTransfer: 0,
+        pensionNewMoney: 0,
+        isaNewMoney: 0,
+        retirementAge: '',
+        atr: '',
         cfr: "No",
-        plans,
+        plans: 0,
         checklist: 0,
       },
     ]);
@@ -137,12 +134,14 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     path.push({ label: 'Clients', icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />, onClick: canGoBackToClientSection ? () => { if (onDetailsViewChange) onDetailsViewChange(false); } : undefined, isActive: false });
     if (selectedClient) {
       path.push({ label: `Client: ${selectedClient.client}`, isActive: false });
-      if (selectedTab.startsWith('transfers/')) {
-        path.push({ label: 'Transfers', isActive: false });
-        const folders = selectedTab.replace('transfers/', '').split('/');
-        folders.forEach((folder) => {
-          path.push({ label: folder, isActive: false });
-        });
+      if (selectedTab === 'transfers' || selectedTab.startsWith('transfers/')) {
+        path.push({ label: 'Cases', isActive: false });
+        if (selectedTab.startsWith('transfers/')) {
+          const folders = selectedTab.replace('transfers/', '').split('/');
+          folders.forEach((folder) => {
+            path.push({ label: folder, isActive: false });
+          });
+        }
       } else {
         path.push({ label: selectedTab === 'details' ? 'Client details' : selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1), isActive: false });
       }
@@ -176,16 +175,25 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     if (onBackToClientList) onBackToClientList();
   };
 
-  let clientContent: React.ReactNode;
-  if (clients.length === 0) {
+  // Filter clients by search term
+  const filteredClients = clients.filter(
+    (c) =>
+      c.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.advisor?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Only show clients for the current page
+  const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  let clientContent;
+  if (filteredClients.length === 0) {
     clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
       <div className="sm:px-8 sm:pt-4">
         <ClientList
-          clients={clients}
+          clients={paginatedClients}
           onViewDetails={handleViewDetails}
-          checklistStates={checklistStates}
         />
       </div>
     );
@@ -230,6 +238,8 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
             onTabChange={handleTabChange}
             onDocumentOpen={setDocumentOpen}
             onBackToClientList={goToClientList}
+            casesCurrentPage={casesCurrentPage}
+            setCasesCurrentPage={setCasesCurrentPage}
           />
         ) : (
           <>
@@ -271,6 +281,19 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                     <FilterIcon className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Filter</span>
                   </button>
+                  {/* Search input for mobile */}
+                  <div className="relative ml-2" style={{ minWidth: 160, maxWidth: 240 }}>
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                      <SearchIcon className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Search clients"
+                      className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button 
@@ -305,8 +328,13 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                       e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
                     }}
                   >
-                    <Download className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
-                    <span className="dark:text-[var(--foreground)]">Import/Export</span>
+                    {/* Use Upload icon for Export if available, otherwise keep Download */}
+                    {typeof Upload !== 'undefined' ? (
+                      <Upload className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    ) : (
+                      <Download className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    )}
+                    <span className="dark:text-[var(--foreground)]">Export</span>
                   </button>
                 </div>
               </div>
@@ -344,6 +372,19 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                     <FilterIcon className="w-4 h-4" />
                     Filter
                   </button>
+                  {/* Search input for desktop */}
+                  <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                      <SearchIcon className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Search clients"
+                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
@@ -376,9 +417,13 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                       e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
                     }}
                   >
-                    <Download className="w-4 h-4" />
-                    Import/Export
-                    <ChevronDown className="w-4 h-4 ml-1" />
+                    {/* Use Upload icon for Export if available, otherwise keep Download */}
+                    {typeof Upload !== 'undefined' ? (
+                      <Upload className="w-4 h-4" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    Export
                   </button>
                   {(selectedClientName === null && !showChecklistReview) && (
                     <button

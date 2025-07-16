@@ -161,46 +161,19 @@ export default function DashboardPage() {
     const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas'];
     const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
     const advisors = ['Robert Fox', 'Sarah Johnson', 'Michael Brown', 'Emma Davis', 'David Wilson'];
-    const cfrOptions = ['Yes', 'No'];
     
-    const randomClients = Array.from({ length: 15 }, () => {
+    const randomClients = Array.from({ length: 30 }, () => {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const advisor = advisors[Math.floor(Math.random() * advisors.length)];
-      const cfr = cfrOptions[Math.floor(Math.random() * cfrOptions.length)];
-      const pensionTransfer = Math.floor(Math.random() * 4);
-      const isaTransfer = Math.floor(Math.random() * 4);
-      const pensionNewMoney = Math.floor(Math.random() * 4);
-      const isaNewMoney = Math.floor(Math.random() * 4);
-      const plans = pensionTransfer + isaTransfer + pensionNewMoney + isaNewMoney;
-      const checklist = Math.floor(Math.random() * 5);
-      const date = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);
-
-      const types = [];
-      if (pensionTransfer > 0) types.push('Pension Transfer');
-      if (isaTransfer > 0) types.push('ISA Transfer');
-      if (pensionNewMoney > 0) types.push('Pension New Money');
-      if (isaNewMoney > 0) types.push('ISA New Money');
-
       return {
-        advisor,
         client: `${firstName} ${lastName}`,
-        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 99)}.jpg`,
-        date: date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        type: types.length > 0 ? types.join(', ') : 'N/A',
-        cfr,
-        plans,
-        checklist,
-        atr: Math.random() > 0.5 ? 'Yes' : 'No',
-        dob: new Date(1950 + Math.floor(Math.random() * 50), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString('en-GB'),
-        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
-        phone: `+44 ${Math.floor(Math.random() * 9000) + 1000} ${Math.floor(Math.random() * 900000) + 100000}`,
-        website: `https://${firstName.toLowerCase()}-${lastName.toLowerCase()}.com`,
-        retirementAge: (60 + Math.floor(Math.random() * 15)).toString(),
-        pensionTransfer,
-        isaTransfer,
-        pensionNewMoney,
-        isaNewMoney,
+        advisor,
+        date: '',
+        type: 'N/A',
+        cfr: 'N/A',
+        plans: 0,
+        checklist: 0,
       };
     });
     
