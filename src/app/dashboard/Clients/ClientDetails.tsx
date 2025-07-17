@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import type { TransferFolderItem } from "./FileExplorer";
 import type { ClientItem as OriginalClientItem } from "./ClientListItem";
 import {
@@ -6,24 +6,24 @@ import {
   UserCircle,
   FileText,
   FolderTree,
-  Edit2,
   X,
   Check,
   ArrowLeft,
   PlusCircle,
-  MoreHorizontal,
-  ArrowUpDown,
-  ArrowDown,
-  ArrowUp,
-  Grid2x2Check
+  Loader2
 } from "lucide-react";
 import UploadModal from "./UploadModal";
 import { useTheme } from "../../../theme-context";
 import CreateNewCase from './CreateNewCase';
 import ClientFooter from "./ClientFooter";
 import type { Dispatch, SetStateAction } from 'react';
-import FileExplorer from './FileExplorer';
-import DocumentViewer from './documentviewer/DocumentViewer';
+import CasesTable from './ClientDetails/CasesTable';
+import CaseDetailsView from './ClientDetails/CaseDetailsView';
+import EmptyCasesState from './ClientDetails/EmptyCasesState';
+import EditableRow from './ClientDetails/EditableRow';
+import CaseActionModal from './ClientDetails/CaseActionModal';
+import DeleteCaseModal from './ClientDetails/DeleteCaseModal';
+import { generatePensionNewMoneyStructure, generateIsaNewMoneyStructure } from './ClientDetails/pensionNewMoneyStructure';
 
 interface ClientDetailsProps {
   client: OriginalClientItem;
@@ -37,6 +37,9 @@ interface ClientDetailsProps {
   transferPath?: string[];
   casesCurrentPage: number;
   setCasesCurrentPage: Dispatch<SetStateAction<number>>;
+  onCaseView?: (caseType: string) => void;
+  viewingCaseIdx: number | null;
+  setViewingCaseIdx: (idx: number | null) => void;
 }
 
 type TransferType = "pension" | "isa" | null;
@@ -46,19 +49,26 @@ type Transfer = {
   transferType: 'pensionTransfer' | 'isaTransfer' | 'pensionNewMoney' | 'isaNewMoney';
   amount?: number;
   provider: string;
+  isaType?: 'stocksAndShares' | 'cashIsa'; // <-- add this
 };
+export type { Transfer };
 
 interface Case {
   id: string;
   createdAt: string;
   caseType: string; // e.g. 'Pension', 'ISA', etc.
   transfers: Transfer[];
+  single?: { checked: boolean; type: 'personal' | 'employer' | null };
+  regular?: { checked: boolean; type: 'personal' | 'employer' | null };
+  ess?: boolean;
+  essPartial?: boolean;
 }
+export type { Case };
 
 // Extend ClientItem to allow 'cases' property
 type ClientItem = OriginalClientItem & { cases?: Case[] };
 
-export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList, transferPath: controlledTransferPath, casesCurrentPage, setCasesCurrentPage }: ClientDetailsProps) {
+export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList, transferPath: controlledTransferPath, casesCurrentPage, setCasesCurrentPage, onCaseView, viewingCaseIdx, setViewingCaseIdx }: ClientDetailsProps) {
   const { darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('transfers');
   const [openedTransfer] = useState<TransferType>(null);
@@ -121,48 +131,21 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
     setCases(client.cases || []);
   }, [client]);
 
-  // 4. Dummy case generator: generate 30 cases, each with random transfer counts
-  const handleGenerateDummyCases = () => {
-    const caseTypes = ['Pension Transfer', 'ISA Transfer', 'Pension New Money', 'ISA New Money'];
-    const providers = ['Provider A', 'Provider B', 'Provider C', 'Provider D'];
-    const transferTypes: Transfer['transferType'][] = ['pensionTransfer', 'isaTransfer', 'pensionNewMoney', 'isaNewMoney'];
-    const newCases: Case[] = Array.from({ length: 30 }, (_, i) => {
-      const caseType = caseTypes[Math.floor(Math.random() * caseTypes.length)];
-      // 1-4 transfers per case, each with possibly different provider
-      const numTransfers = Math.floor(Math.random() * 4) + 1;
-      const usedProviders: string[] = [];
-      const transfers: Transfer[] = Array.from({ length: numTransfers }, () => {
-        let provider;
-        do {
-          provider = providers[Math.floor(Math.random() * providers.length)];
-        } while (usedProviders.includes(provider) && usedProviders.length < providers.length);
-        usedProviders.push(provider);
-        const transferType = transferTypes[Math.floor(Math.random() * transferTypes.length)];
-        return {
-          transferType,
-          amount: Math.floor(Math.random() * 10000) + 1000,
-          provider,
-        };
-      });
-      // Each case is a day earlier than the previous
-      const createdAt = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString();
-      return {
-        id: `dummy-${createdAt}`,
-        createdAt,
-        caseType,
-        transfers,
-      };
-    });
-    setCases(newCases);
-    // Save to client
-    onClientUpdate({ ...((editValues as object)), cases: newCases } as ClientItem);
-  };
+  // Add a loading state for case hydration
+  const [isCasesLoading, setIsCasesLoading] = useState(false);
+  // Simulate loading when cases change (for demo)
+  useEffect(() => {
+    setIsCasesLoading(true);
+    const timeout = setTimeout(() => setIsCasesLoading(false), 800);
+    return () => clearTimeout(timeout);
+  }, [cases]);
 
-  // 5. Pagination and sorting for cases
+  // 4. Pagination and sorting for cases
   const pageSize = 12;
   const [sortState, setSortState] = useState<{ column: string | null; order: 'asc' | 'desc' | null }>({ column: null, order: null });
   const [sortedCases, setSortedCases] = useState<Case[]>(cases);
-  const [caseSearch] = useState("");
+  // Add state for search value
+  const [caseSearch, setCaseSearch] = useState("");
 
   useEffect(() => {
     const sorted = [...cases];
@@ -208,16 +191,15 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
     setActiveCaseTypeFilters(['All']);
   }, [casesCurrentPage]);
 
+  // Update filteredCases to filter by both filter and search
   const filteredCases = cases.filter((c) => {
-    // If 'All' is selected, show all cases
-    if (activeCaseTypeFilters.includes('All')) {
-      // continue to search filter
-    } else if (activeCaseTypeFilters.length > 0 && !activeCaseTypeFilters.includes(c.caseType)) {
+    // Filter by case type
+    if (activeCaseTypeFilters[0] && activeCaseTypeFilters[0] !== 'All' && c.caseType !== activeCaseTypeFilters[0]) {
       return false;
     }
+    // Search
     const search = caseSearch.toLowerCase();
     if (!search) return true;
-    // Search in caseType, all providers, and all transferTypes
     if (c.caseType.toLowerCase().includes(search)) return true;
     if (c.transfers.some(t => t.provider.toLowerCase().includes(search))) return true;
     if (c.transfers.some(t => t.transferType.toLowerCase().includes(search))) return true;
@@ -238,7 +220,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [selectedRows, setSelectedRows] = useState<boolean[]>(cases.map(() => false));
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [actionRowIdx, setActionRowIdx] = useState<number | null>(null);
-  const actionBtnRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [actionModalPos, setActionModalPos] = useState<{ top: number; left: number } | null>(null);
   useEffect(() => {
     setSelectedRows(cases.map(() => false));
@@ -261,30 +242,8 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [pendingDeleteIdx, setPendingDeleteIdx] = useState<number | null>(null);
 
   // Add state for viewing case details
-  const [viewingCaseIdx, setViewingCaseIdx] = useState<number | null>(null);
   const [caseExplorerPath, setCaseExplorerPath] = useState<string[]>([]);
   const [caseSelectedDocument, setCaseSelectedDocument] = useState<TransferFolderItem | null>(null);
-
-  // Mock folder/file structure for demo
-  function getMockFolderContents(path: string[]): TransferFolderItem[] {
-    // For demo, always return the same structure
-    if (path.length === 0) {
-      return [
-        { type: 'folder', name: 'Documents', children: [
-          { type: 'file', name: 'Policy.pdf' },
-          { type: 'file', name: 'Statement.pdf' },
-        ] },
-        { type: 'file', name: 'Welcome Letter.pdf' },
-      ];
-    }
-    if (path[0] === 'Documents') {
-      return [
-        { type: 'file', name: 'Policy.pdf' },
-        { type: 'file', name: 'Statement.pdf' },
-      ];
-    }
-    return [];
-  }
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[var(--background)]">
@@ -292,35 +251,86 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
       >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          {onBackToClientList && (
+          {/* Back button removed from here */}
+          {/* Tabs here */}
+          <div className="flex gap-2 flex-nowrap">
             <button
-              onClick={onBackToClientList}
-              className="mr-2 p-2 rounded-full transition flex items-center justify-center"
-              aria-label="Back to client list"
+              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'transfers' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
+              onClick={() => setActiveTab('transfers')}
               style={{
-                backgroundColor: darkMode ? 'transparent' : 'transparent',
-                transition: 'background-color 0.2s',
+                backgroundColor: darkMode
+                  ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                  : (activeTab === 'transfers' ? '#f4f4f5' : 'white'),
+                border: darkMode
+                  ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
+                  : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
+                color: darkMode ? 'var(--foreground)' : '#18181b',
+                cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
+                fontWeight: activeTab === 'transfers' ? 600 : 500,
+                fontSize: '1.1rem',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.backgroundColor = darkMode
+                  ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                  : (activeTab === 'transfers' ? '#f4f4f5' : 'white');
               }}
             >
-              <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
+              <FolderTree className="w-4 h-4 mr-1" />
+              Cases
             </button>
-          )}
-          <div className="min-w-0">
-            <div
-              className="text-lg sm:text-2xl font-semibold truncate"
-              style={{ color: darkMode ? 'white' : 'black' }}
+            <button
+              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'details' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
+              onClick={() => setActiveTab('details')}
+              style={{
+                backgroundColor: darkMode
+                  ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                  : (activeTab === 'details' ? '#f4f4f5' : 'white'),
+                border: darkMode
+                  ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
+                  : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
+                color: darkMode ? 'var(--foreground)' : '#18181b',
+                cursor: activeTab !== 'details' ? 'pointer' : 'default',
+                fontWeight: activeTab === 'details' ? 600 : 500,
+                fontSize: '1.1rem',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = darkMode
+                  ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                  : (activeTab === 'details' ? '#f4f4f5' : 'white');
+              }}
             >
-              {editValues.client}
-            </div>
+              <FileText className="w-4 h-4 mr-1" />
+              Client details
+            </button>
           </div>
         </div>
-        <div className="flex gap-1 sm:gap-2 ml-auto flex-shrink-0">
+        {/* Add new case button on far right, only for Cases tab */}
+        {activeTab === 'transfers' && (
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCreateCaseModalOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-zinc-200 bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] font-medium text-sm shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 transition"
+              style={{ minHeight: 32 }}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add new case
+            </button>
+            {isCasesLoading && (
+              <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-300 animate-spin">
+                <Loader2 className="w-4 h-4" />
+                <span className="text-xs font-medium">Hydrating...</span>
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
           {hasUnsavedChanges && (
             <button
               className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
@@ -369,109 +379,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           )}
         </div>
       </div>
-      <div className="flex items-center border-b pb-4 border-zinc-200 dark:border-zinc-700 gap-2 px-2 sm:px-8 flex-nowrap overflow-x-auto"
-        style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
-      >
-        <div className="flex gap-2 flex-nowrap">
-          <button
-            className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
-            onClick={() => setActiveTab('transfers')}
-            style={{
-              backgroundColor: darkMode
-                ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                : 'white',
-              border: darkMode
-                ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
-                : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
-              color: darkMode ? 'var(--foreground)' : '#18181b',
-              cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = darkMode
-                ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                : 'white';
-            }}
-          >
-            <FolderTree className="w-4 h-4 mr-1" />
-            Cases
-          </button>
-          <button
-            className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium`}
-            onClick={() => setActiveTab('details')}
-            style={{
-              backgroundColor: darkMode
-                ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                : 'white',
-              border: darkMode
-                ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
-                : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
-              color: darkMode ? 'var(--foreground)' : '#18181b',
-              cursor: activeTab !== 'details' ? 'pointer' : 'default',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = darkMode
-                ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                : 'white';
-            }}
-          >
-            <FileText className="w-4 h-4 mr-1" />
-            Client details
-          </button>
-        </div>
-        <div className="flex-1" />
-        {activeTab === 'transfers' && openedTransfer === null && transferPath.length === 0 && (
-          <div className="flex gap-2 ml-auto">
-            {/* Dummy case generator button */}
-            <button
-              type="button"
-              onClick={handleGenerateDummyCases}
-              className="icon-btn border border-zinc-200 dark:border-[var(--border)] rounded-full p-2 bg-white dark:bg-[var(--muted)] hover:bg-zinc-100 dark:hover:bg-[var(--border)] transition flex items-center justify-center"
-              title="Generate dummy cases"
-              aria-label="Generate dummy cases"
-              style={{
-                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                color: darkMode ? 'var(--foreground)' : '#18181b',
-                boxShadow: 'none',
-                width: 36,
-                height: 36,
-                minWidth: 36,
-                minHeight: 36,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Grid2x2Check className="w-5 h-5" />
-            </button>
-            {/* Add new case button */}
-            <button
-              type="button"
-              onClick={() => setCreateCaseModalOpen(true)}
-              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium bg-white dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)] text-zinc-700 dark:text-[var(--foreground)]`}
-              style={{
-                backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-              }}
-            >
-              <PlusCircle className="w-4 h-4" />
-              Add new case
-            </button>
-          </div>
-        )}
-      </div>
       {activeTab === 'details' && (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <div style={{ minWidth: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
@@ -487,257 +394,114 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
       )}
       {activeTab === 'transfers' && (
         viewingCaseIdx !== null ? (
-          <div className="flex-1 min-h-0 flex flex-row" style={{ height: '100%' }}>
-            <div style={{ width: 320, minWidth: 220, maxWidth: 400, borderRight: '1.5px solid #e4e4e7', background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
-              <div className="p-4 border-b" style={{ borderColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-                <button
-                  className="text-blue-600 hover:underline font-medium text-sm"
-                  onClick={() => { setViewingCaseIdx(null); setCaseExplorerPath([]); setCaseSelectedDocument(null); }}
-                >
-                  ← Back to Cases
-                </button>
-                <div className="mt-2 text-lg font-semibold" style={{ color: darkMode ? 'white' : '#18181b' }}>
-                  {cases[viewingCaseIdx]?.caseType || 'Case Details'}
-                </div>
-              </div>
-              <div className="flex-1 overflow-auto p-4 pt-2">
-                <FileExplorer
-                  transferPath={caseExplorerPath}
-                  getFolderContents={getMockFolderContents}
-                  handleEnterFolder={name => setCaseExplorerPath([...caseExplorerPath, name])}
-                  handleUploadModal={() => {}}
-                  setSelectedDocument={item => {
-                    setCaseSelectedDocument(item);
-                  }}
-                  clickableLineClass="text-blue-600 hover:underline cursor-pointer"
-                />
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 0, background: darkMode ? 'var(--background)' : 'white', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-              <div className="p-6">
-                <DocumentViewer document={caseSelectedDocument || { name: 'Select a document' }} />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="overflow-x-auto w-full px-0 mt-4 sm:mt-0 sm:pt-0 scrollbar-thin border rounded-lg bg-white dark:bg-[var(--background)]"
-            style={{
-              marginBottom: 0,
-              borderColor: darkMode ? '#3f3f46' : '#e4e4e7',
+          <CaseDetailsView
+            caseExplorerPath={caseExplorerPath}
+            setCaseExplorerPath={setCaseExplorerPath}
+            caseSelectedDocument={caseSelectedDocument}
+            setCaseSelectedDocument={setCaseSelectedDocument}
+            darkMode={darkMode}
+            onUploadModal={() => setUploadModalOpen(true)}
+            caseData={filteredCases[viewingCaseIdx]}
+            onAddTransfer={transfer => {
+              // Find the case in the main cases array (not filteredCases)
+              const caseId = filteredCases[viewingCaseIdx].id;
+              setCases(prevCases => {
+                const updated = prevCases.map(c => {
+                  if (c.id !== caseId) return c;
+                  // Handle Pension New Money and ISA New Money
+                  if (c.caseType === 'Pension New Money') {
+                    const newTransfers = [...c.transfers, transfer];
+                    return {
+                      ...c,
+                      transfers: newTransfers,
+                      documents: generatePensionNewMoneyStructure({ ...c, transfers: newTransfers })
+                    };
+                  } else if (c.caseType === 'ISA New Money') {
+                    const newTransfers = [...c.transfers, transfer];
+                    return {
+                      ...c,
+                      transfers: newTransfers,
+                      documents: generateIsaNewMoneyStructure({ ...c, transfers: newTransfers })
+                    };
+                  } else {
+                    // Default: just add transfer
+                    return { ...c, transfers: [...c.transfers, transfer] };
+                  }
+                });
+                // Persist to client
+                onClientUpdate({ ...((editValues as object)), cases: updated } as ClientItem);
+                return updated;
+              });
             }}
-          >
-            <table className="w-full text-xs text-left border-collapse">
-              <thead
-                className="text-zinc-700 dark:text-[var(--foreground)] font-semibold bg-zinc-50 dark:bg-[var(--muted)] border-b shadow-xs rounded-t-md"
-                style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
-              >
-                <tr className="h-10">
-                  <th className="p-2 align-middle border-r w-10 text-center"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Select</th>
-                  <th className="p-2 align-middle border-r select-none" style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7', cursor: 'pointer' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleSort('date')}
-                      className="flex items-center gap-1 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                      style={{ color: darkMode ? 'var(--foreground)' : '#18181b', fontWeight: 600 }}
-                    >
-                      Date Added
-                      {sortState.column === 'date' && sortState.order === 'asc' && <ArrowUp className="w-3 h-3" />}
-                      {sortState.column === 'date' && sortState.order === 'desc' && <ArrowDown className="w-3 h-3" />}
-                      {sortState.column !== 'date' && <ArrowUpDown className="w-3 h-3" />}
-                    </button>
-                  </th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Type of Case</th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ width: 80, minWidth: 60, maxWidth: 100, borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>No. of Transfers</th>
-                  <th className="p-2 align-middle border-r select-none" style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7', cursor: 'pointer' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleSort('provider')}
-                      className="flex items-center gap-1 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                      style={{ color: darkMode ? 'var(--foreground)' : '#18181b', fontWeight: 600 }}
-                    >
-                      Provider
-                      {sortState.column === 'provider' && sortState.order === 'asc' && <ArrowUp className="w-3 h-3" />}
-                      {sortState.column === 'provider' && sortState.order === 'desc' && <ArrowDown className="w-3 h-3" />}
-                      {sortState.column !== 'provider' && <ArrowUpDown className="w-3 h-3" />}
-                    </button>
-                  </th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>CFR</th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Seeding</th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>CYC</th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Illustration</th>
-                  <th className="p-2 align-middle border-r"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>SL</th>
-                  <th className="p-2 align-middle select-none border-r" style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7', cursor: 'pointer' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleSort('status')}
-                      className="flex items-center gap-1 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                      style={{ color: darkMode ? 'var(--foreground)' : '#18181b', fontWeight: 600 }}
-                    >
-                      Status
-                      {sortState.column === 'status' && sortState.order === 'asc' && <ArrowUp className="w-3 h-3" />}
-                      {sortState.column === 'status' && sortState.order === 'desc' && <ArrowDown className="w-3 h-3" />}
-                      {sortState.column !== 'status' && <ArrowUpDown className="w-3 h-3" />}
-                    </button>
-                  </th>
-                  <th className="p-2 align-middle"
-                      style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                  {filteredCases.slice((casesCurrentPage - 1) * pageSize, casesCurrentPage * pageSize).map((caseObj, rowIdx) => (
-                    <tr
-                      key={caseObj.id}
-                      className={`border-b h-9
-                        ${selectedRows[rowIdx]
-                          ? (darkMode ? 'bg-[rgba(59,130,246,0.12)]' : 'bg-blue-50')
-                          : (darkMode ? 'bg-[var(--background)]' : 'bg-white')}
-                        hover:bg-blue-50${darkMode ? ' dark:hover:bg-[rgba(59,130,246,0.12)]' : ''}`}
-                      style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
-                    >
-                      <td className="p-2 align-middle border-r w-10 text-center"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedRows(selectedRows.map((v, i) => i === rowIdx ? !v : v))}
-                          className="appearance-none w-4 h-4 rounded-[4px] border transition-all align-middle cursor-pointer flex items-center justify-center shadow-none"
-                          style={{
-                            outline: 'none',
-                            border: selectedRows[rowIdx]
-                              ? darkMode ? '1px solid #3b82f6' : '1px solid #2563eb'
-                              : darkMode ? '1px solid #3f3f46' : '1px solid #e4e4e7',
-                            backgroundColor: selectedRows[rowIdx]
-                              ? darkMode ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.07)'
-                              : darkMode ? 'var(--background)' : '#ffffff',
-                          }}
-                        >
-                          {selectedRows[rowIdx] && (
-                            <Check className="w-3 h-3" style={{ color: darkMode ? '#3b82f6' : '#2563eb' }} />
-                          )}
-                        </button>
-                      </td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>{new Date(caseObj.createdAt).toLocaleDateString()}</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>{caseObj.caseType}</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ width: 80, minWidth: 60, maxWidth: 100, borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-                        {caseObj.transfers.length}
-                      </td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7', maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {(() => {
-                          const uniqueProviders = Array.from(new Set(caseObj.transfers.map(t => t.provider)));
-                          if (uniqueProviders.length <= 2) {
-                            return uniqueProviders.join(', ');
-                          } else {
-                            return `${uniqueProviders.slice(0, 2).join(', ')} +${uniqueProviders.length - 2} more`;
-                          }
-                        })()}
-                      </td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>-</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>-</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>-</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>-</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>-</td>
-                      <td className="p-2 align-middle border-r"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>Pending</td>
-                      <td className="p-2 align-middle"
-                          style={{ borderRightColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-                        <button
-                          type="button"
-                          className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                          ref={el => { actionBtnRefs.current[rowIdx] = el; }}
-                          onClick={e => {
-                            setActionRowIdx(rowIdx);
-                            setActionModalOpen(true);
-                            const rect = (e.target as HTMLElement).getBoundingClientRect();
-                            setActionModalPos({
-                              top: rect.bottom + window.scrollY + 4,
-                              left: rect.right + window.scrollX - 220, // align right edge, modal width ~220px
-                            });
-                          }}
-                        >
-                          <MoreHorizontal className="w-5 h-5 text-zinc-400" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {/* Render the modal OUTSIDE the table, not inside .map or any <tr> */}
-              {actionModalOpen && actionRowIdx !== null && actionModalPos && (
-                <div
-                  id="case-action-modal"
-                  className="fixed z-[100]"
-                  style={{ top: actionModalPos.top, left: actionModalPos.left, minWidth: 220 }}
-                >
-                  <div className="bg-[var(--background)] rounded-2xl shadow-2xl w-full max-w-xs border border-[var(--border)] flex flex-col">
-                    <div className="flex flex-col gap-2 px-4 sm:px-6 py-4">
-                      <button
-                        className="w-full text-left px-4 py-2 rounded-lg bg-transparent font-medium transition border-0"
-                        style={{
-                          border: 'none',
-                          color: darkMode ? 'var(--foreground)' : '#18181b',
-                          background: 'transparent',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.background = darkMode ? '#27272a' : '#f4f4f5';
-                          e.currentTarget.style.color = darkMode ? 'var(--foreground)' : '#18181b';
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.color = darkMode ? 'var(--foreground)' : '#18181b';
-                        }}
-                        onClick={() => { setActionModalOpen(false); setViewingCaseIdx(actionRowIdx); setCaseExplorerPath([]); setCaseSelectedDocument(null); }}
-                      >
-                        View Case Details
-                      </button>
-                      <button
-                        className="w-full text-left px-4 py-2 rounded-lg bg-transparent text-red-600 font-medium transition hover:bg-red-50 dark:hover:bg-red-900/30 border-0"
-                        style={{ border: 'none' }}
-                        onClick={() => {
-                          setActionModalOpen(false);
-                          setPendingDeleteIdx(actionRowIdx);
-                          setShowDeleteConfirm(true);
-                        }}
-                      >
-                        Delete Case
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+          />
+        ) : (
+          filteredCases.length === 0 ? (
+            <EmptyCasesState onAddNewCase={() => setCreateCaseModalOpen(true)} />
+          ) : (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex-1 px-4 min-h-0 flex flex-col">
+                <CasesTable
+                  cases={filteredCases}
+                  selectedRows={selectedRows}
+                  onSelectRow={idx => setSelectedRows(selectedRows.map((v, i) => i === idx ? !v : v))}
+                  onSort={handleSort}
+                  sortState={sortState}
+                  onAction={(rowIdx, e) => {
+                    setActionModalOpen(true);
+                    setActionRowIdx(rowIdx);
+                    const rect = (e.target as HTMLElement).getBoundingClientRect();
+                    setActionModalPos({
+                      top: rect.bottom + window.scrollY + 4,
+                      left: rect.right + window.scrollX - 220,
+                    });
+                  }}
+                  pageSize={pageSize}
+                  currentPage={casesCurrentPage}
+                  darkMode={darkMode}
+                  onSearch={setCaseSearch}
+                  searchValue={caseSearch}
+                  onFilterChange={val => setActiveCaseTypeFilters([val])}
+                  filterValue={activeCaseTypeFilters[0]}
+                />
+                {/* Render the modal OUTSIDE the table, not inside .map or any <tr> */}
+                {actionModalOpen && actionRowIdx !== null && actionModalPos && (
+                  <CaseActionModal
+                    open={actionModalOpen}
+                    position={actionModalPos}
+                    onView={() => {
+                      setActionModalOpen(false);
+                      setViewingCaseIdx(actionRowIdx);
+                      setCaseExplorerPath([]);
+                      setCaseSelectedDocument(null);
+                      if (onCaseView && typeof actionRowIdx === 'number' && cases[actionRowIdx]) {
+                        onCaseView(cases[actionRowIdx].caseType);
+                      }
+                    }}
+                    onDelete={() => {
+                      setActionModalOpen(false);
+                      setPendingDeleteIdx(actionRowIdx);
+                      setShowDeleteConfirm(true);
+                    }}
+                    darkMode={darkMode}
+                  />
+                )}
+              </div>
+              <ClientFooter
+                selectedClient={null}
+                currentPage={casesCurrentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCasesCurrentPage}
+                isEmpty={false}
+                showFooterActions={false}
+                invisible={false}
+                forceWhiteBg={false}
+                greyBg={false}
+                showTransferDocumentActions={false}
+              />
             </div>
+            // End refactor
           )
-        )}
-      )
-      {activeTab === 'transfers' && (
-        <ClientFooter
-          selectedClient={null}
-          currentPage={casesCurrentPage}
-          totalPages={totalPages}
-          setCurrentPage={setCasesCurrentPage}
-          isEmpty={false}
-          showFooterActions={false}
-          invisible={false}
-          forceWhiteBg={false}
-          greyBg={false}
-          showTransferDocumentActions={false}
-        />
+        )
       )}
       <UploadModal
         open={uploadModalOpen}
@@ -758,92 +522,21 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
       />
       {/* Delete confirmation modal */}
       {showDeleteConfirm && pendingDeleteIdx !== null && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center px-2 sm:px-0 overflow-y-auto" style={{ background: 'rgba(255, 0, 32, 0.07)', backdropFilter: 'blur(12px)' }}>
-          <div className="bg-[var(--background)] rounded-2xl shadow-2xl w-full max-w-md relative border border-[var(--border)] flex flex-col mx-auto my-2 sm:my-0">
-            <div className="px-4 sm:px-6 py-2 border-b border-[var(--border)] rounded-t-2xl bg-[var(--muted)] dark:bg-[var(--muted)]">
-              <span className="text-zinc-700 dark:text-[var(--foreground)] font-medium text-base">Delete Case</span>
-            </div>
-            <div className="flex flex-col gap-4 px-4 sm:px-6 py-6" style={{ background: 'rgba(255,0,0,0.03)' }}>
-              <div className="text-base text-black dark:text-[var(--foreground)]">Are you sure you want to delete this case? This action cannot be undone.</div>
-              <div className="flex gap-2 justify-end mt-2">
-                <button
-                  className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--muted)] text-zinc-500 font-medium transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  onClick={() => { setShowDeleteConfirm(false); setPendingDeleteIdx(null); }}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 rounded-lg border border-red-600 bg-red-600 text-white font-medium transition hover:bg-red-700"
-                  onClick={() => {
-                    // Actually delete the case
-                    if (pendingDeleteIdx !== null) {
-                      const filtered = cases.filter((_, idx) => idx !== pendingDeleteIdx);
-                      setCases(filtered);
-                      onClientUpdate({ ...((editValues as object)), cases: filtered } as ClientItem);
-                    }
-                    setShowDeleteConfirm(false);
-                    setPendingDeleteIdx(null);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeleteCaseModal
+          open={showDeleteConfirm}
+          onCancel={() => { setShowDeleteConfirm(false); setPendingDeleteIdx(null); }}
+          onConfirm={() => {
+            // Actually delete the case
+            if (pendingDeleteIdx !== null) {
+              const filtered = cases.filter((_, idx) => idx !== pendingDeleteIdx);
+              setCases(filtered);
+              onClientUpdate({ ...((editValues as object)), cases: filtered } as ClientItem);
+            }
+            setShowDeleteConfirm(false);
+            setPendingDeleteIdx(null);
+          }}
+        />
       )}
-    </div>
-  );
-}
-
-function EditableRow({ icon, label, value, editing, onEdit, onChange, onBlur, onKeyDown, type }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  editing: boolean;
-  onEdit: () => void;
-  onChange: (v: string) => void;
-  onBlur: () => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  type?: string;
-}) {
-  const { darkMode } = useTheme();
-  return (
-    <div className="flex items-center gap-4 py-2 group cursor-pointer" onClick={editing ? undefined : onEdit}>
-      <div className="text-zinc-400 text-sm flex items-center gap-2 min-w-[220px] max-w-[260px] pr-8">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <div className="flex-1 flex items-start gap-2 text-left justify-start w-full max-w-2xl">
-        {editing ? (
-          <input
-            type={type || 'text'}
-            className="border rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 w-full text-left max-w-2xl"
-            value={value}
-            autoFocus
-            onChange={e => onChange(e.target.value)}
-            onBlur={onBlur}
-            onKeyDown={onKeyDown}
-            style={{
-              border: darkMode ? '1px solid #3f3f46' : '1px solid #e4e4e7',
-              background: darkMode ? 'var(--background)' : 'white',
-              color: darkMode ? 'var(--foreground)' : '#18181b',
-              boxShadow: 'none',
-              minWidth: 0,
-              maxWidth: '100%',
-              textAlign: 'left',
-            }}
-          />
-        ) : (
-          <span
-            className="text-base font-normal w-full text-left"
-            style={{ color: darkMode ? 'var(--foreground)' : '#18181b', textAlign: 'left', width: '100%' }}
-          >
-            {value || <span className="text-zinc-300">-</span>}
-          </span>
-        )}
-        <Edit2 className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity ml-2" />
-      </div>
     </div>
   );
 } 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown } from 'lucide-react';
+import { generatePensionNewMoneyStructure, FolderOrFile, generateIsaNewMoneyStructure } from './ClientDetails/pensionNewMoneyStructure';
 
 // Types should match those in ClientDetails
 type Transfer = {
@@ -24,6 +25,7 @@ interface Case {
   single?: { checked: boolean; type: 'personal' | 'employer' | null };
   regular?: { checked: boolean; type: 'personal' | 'employer' | null };
   carryForward?: boolean;
+  documents?: FolderOrFile[];
 }
 
 interface CreateNewCaseProps {
@@ -85,6 +87,20 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
   const [numTransfers, setNumTransfers] = useState(1);
   const [ess, setEss] = useState<boolean | null>(null);
   const [essPartial, setEssPartial] = useState<boolean | null>(null);
+
+  // Handlers to enforce ESS/ESS Partial logic
+  const handleEssChange = (value: boolean) => {
+    setEss(value);
+    if (value === false && essPartial === true) {
+      setEssPartial(false);
+    }
+  };
+  const handleEssPartialChange = (value: boolean) => {
+    setEssPartial(value);
+    if (value === true && ess === false) {
+      setEss(true);
+    }
+  };
 
   // ISA Transfer specific
   const [stocks, setStocks] = useState(false);
@@ -198,8 +214,11 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
         newCase.single = single;
         newCase.regular = regular;
         newCase.carryForward = carryForward ?? undefined;
+        // Attach folder structure
+        newCase.documents = generatePensionNewMoneyStructure(newCase);
       } else if (caseType === 'ISA New Money') {
         newCase.transfers = transfers.map(t => ({ ...t, transferType: 'isaNewMoney' }));
+        newCase.documents = generateIsaNewMoneyStructure(newCase);
       }
       onSubmit(newCase);
     }
@@ -212,17 +231,17 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
     onClose();
   };
 
-  // Form validation
-  let isFormValid = false;
-  if (caseType === 'Pension Transfer') {
-    isFormValid = transfers.some(t => t.provider && t.provider.trim() !== '') && ess !== null && essPartial !== null;
-  } else if (caseType === 'ISA Transfer') {
-    isFormValid = (stocks || shares || cashIsa > 0) && (numStocksAndShares > 0 || cashIsa > 0);
-  } else if (caseType === 'Pension New Money') {
-    isFormValid = essNewMoney !== null && (single.checked || regular.checked);
-  } else if (caseType === 'ISA New Money') {
-    isFormValid = transfers.some(t => t.provider && t.provider.trim() !== '');
-  }
+  // // Form validation
+  // let isFormValid = false;
+  // if (caseType === 'Pension Transfer') {
+  //   isFormValid = ess !== null && essPartial !== null;
+  // } else if (caseType === 'ISA Transfer') {
+  //   isFormValid = (stocks || shares || cashIsa > 0) && (numStocksAndShares > 0 || cashIsa > 0);
+  // } else if (caseType === 'Pension New Money') {
+  //   isFormValid = essNewMoney !== null && (single.checked || regular.checked);
+  // } else if (caseType === 'ISA New Money') {
+  //   isFormValid = transfers.some(t => t.provider && t.provider.trim() !== '');
+  // }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--background)]/60 dark:bg-black/60 backdrop-blur-sm transition-all px-2 sm:px-0 overflow-y-auto">
@@ -271,34 +290,22 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
                 <div className="flex-1 flex flex-col gap-2">
                   <label className="block text-sm font-medium text-[var(--foreground)] mb-1">ESS</label>
                   <div className="flex gap-4">
-                    <TickCheckbox checked={ess === true} onChange={() => setEss(true)} label="Yes" />
-                    <TickCheckbox checked={ess === false} onChange={() => setEss(false)} label="No" />
+                    <TickCheckbox checked={ess === true} onChange={() => handleEssChange(true)} label="Yes" />
+                    <TickCheckbox checked={ess === false} onChange={() => handleEssChange(false)} label="No" />
                   </div>
                 </div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <label className="block text-sm font-medium text-[var(--foreground)] mb-1">ESS Partial?</label>
-                  <div className="flex gap-4">
-                    <TickCheckbox checked={essPartial === true} onChange={() => setEssPartial(true)} label="Yes" />
-                    <TickCheckbox checked={essPartial === false} onChange={() => setEssPartial(false)} label="No" />
+                {ess !== false && (
+                  <div className="flex-1 flex flex-col gap-2">
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-1">ESS Partial?</label>
+                    <div className="flex gap-4">
+                      <TickCheckbox checked={essPartial === true} onChange={() => handleEssPartialChange(true)} label="Yes" />
+                      <TickCheckbox checked={essPartial === false} onChange={() => handleEssPartialChange(false)} label="No" />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               <div className="mt-2">
-                <div className="font-medium text-sm mb-2 text-zinc-500">Transfers</div>
-                <div className="flex flex-col gap-2">
-                  {transfers.slice(0, numTransfers).map((t) => (
-                    <div key={t.provider} className="flex gap-2 items-center bg-white dark:bg-[var(--background)] rounded-lg p-2 border border-[var(--border)]">
-                      <input
-                        type="text"
-                        value={t.provider}
-                        onChange={e => handleTransferChange(transfers.indexOf(t), 'provider', e.target.value)}
-                        placeholder="Provider name"
-                        className="border border-[var(--border)] rounded-lg px-2 py-1 text-base bg-[var(--background)] dark:bg-[var(--muted)] text-[var(--foreground)] focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition w-full"
-                        required
-                      />
-                    </div>
-                  ))}
-                </div>
+                {/* Transfers section removed for Pension Transfer as requested */}
               </div>
             </div>
           )}
@@ -509,7 +516,7 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
             </button>
             <button
               type="submit"
-              disabled={!isFormValid || !caseType}
+              disabled={false}
               className={`px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               Create

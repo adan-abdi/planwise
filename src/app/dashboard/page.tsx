@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShieldCheck,
   FileText,
-  Users2,
   Settings,
   PanelRightClose,
   PanelRightOpen,
   LayoutDashboard,
   SquareUserRound,
   SquareKanban,
-  Logs,
   ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
@@ -34,14 +33,10 @@ const iconClass = "w-5 h-5";
 const sections = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className={iconClass} /> },
   { key: "clients", label: "Clients", icon: <SquareUserRound className={iconClass} /> },
-  { key: "plans", label: "Plans", icon: <SquareKanban className={iconClass} /> },
-  { key: "compliance", label: "Compliance", icon: <ShieldCheck className={iconClass} /> },
-];
-
-const supportSections = [
+  { key: "plans", label: "Advisors", icon: <SquareKanban className={iconClass} /> },
+  { key: "compliance", label: "Team members", icon: <ShieldCheck className={iconClass} /> },
   { key: "templates", label: "Templates", icon: <FileText className={iconClass} /> },
-  { key: "auditlog", label: "Audit log", icon: <Logs className={iconClass} /> },
-  { key: "teammembers", label: "Team members", icon: <Users2 className={iconClass} /> },
+  { key: "help", label: "Help/FAQs", icon: <FileText className={iconClass} /> },
   { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
 
@@ -62,8 +57,12 @@ export default function DashboardPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
-  const activeSupportSection = supportSections.find((s) => s.key === active);
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
+
+  // Memoize the callback
+  const handleBreadcrumbChange = useCallback((path: BreadcrumbItem[]) => {
+    setBreadcrumbPath(path);
+  }, []);
 
   const [userName, setUserName] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
@@ -181,192 +180,93 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-[var(--background)] flex flex-col relative w-full max-w-full">
-      <MobileDashboardHeader
-        onOpenSidebar={() => setMobileSidebarOpen(true)}
-        sectionTitle={breadcrumbPath.length > 0 ? breadcrumbPath[breadcrumbPath.length-1].label : (activeSection?.label || activeSupportSection?.label || '')}
-        breadcrumb={breadcrumbPath}
-        avatarUrl={resolvedAvatarUrl}
-        userName={userName}
-        userRole={userRole}
-      />
-      <div className="w-full bg-[var(--background)] border-b-2 relative hidden sm:block" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
-        <div className="flex items-center h-20 pl-0 pr-8 justify-between bg-[var(--background)]">
-          <div className="w-64 flex-shrink-0 flex items-center h-full bg-[var(--background)]">
-            <button
-              className="ml-4 mr-2 p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10 sm:hidden"
-              aria-label="Open sidebar"
-              onClick={() => setMobileSidebarOpen(true)}
-              style={{
-                backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-              }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="7" x2="19" y2="7" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <line x1="5" y1="17" x2="19" y2="17" />
-              </svg>
-            </button>
-            <button
-              className="ml-4 mr-2 p-2 rounded-xl border border-zinc-200 dark:border-[var(--border)] transition flex items-center justify-center w-10 h-10"
-              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              onClick={() => setSidebarCollapsed((c) => !c)}
-              style={{
-                backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)',
-                borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = darkMode ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)';
-              }}
-            >
-              {sidebarCollapsed ? (
-                <PanelRightOpen className="w-7 h-7 text-zinc-500" />
-              ) : (
-                <PanelRightClose className="w-7 h-7 text-zinc-500" />
-              )}
-            </button>
-            <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto px-8" />
-          </div>
-          <div className={`flex-1 flex items-center h-full bg-[var(--background)] ${sidebarCollapsed ? 'pl-0' : 'pl-8'}`}>
-            {active === "clients" && breadcrumbPath.length > 0 ? (
-              <div className="flex items-center gap-2 py-2">
-                {breadcrumbPath.map((item, idx) => (
-                  <React.Fragment key={item.label}>
-                    {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
-                    {idx < breadcrumbPath.length - 1 && item.onClick ? (
-                      <button
-                        type="button"
-                        onClick={item.onClick}
-                        className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {item.icon && <span>{item.icon}</span>}
-                        <span>{item.label}</span>
-                      </button>
-                    ) : (
-                      <span
-                        className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
-                        style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
-                      >
-                        {item.icon && <span>{item.icon}</span>}
-                        <span>{item.label}</span>
-                      </span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            ) :
-                <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 ${sidebarCollapsed ? '-ml-5' : ''}`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label || activeSupportSection?.label}</div>
-            }
-          </div>
-          <DashboardHeaderUserSection
-            userName={userName}
-            userRole={userRole}
-            avatarUrl={resolvedAvatarUrl}
-            onGenerateRandomClients={() => {
-              if (active === "clients") {
-                setTriggerRandomClients(true);
-              }
-            }}
-            showGenerateButton={active === "clients" && !clientDetailsOpen}
-          />
-        </div>
-      </div>
+    <div className="flex h-screen bg-[var(--background)] w-full max-w-full">
+      {/* Sidebar drawer (now always available as overlay) */}
       <MobileSidebarDrawer
         open={mobileSidebarOpen}
         onClose={() => setMobileSidebarOpen(false)}
         onSectionSelect={setActive}
         activeSectionKey={active}
       />
-      <div className={`absolute top-0 bottom-0 w-0 border-l-2 z-40 pointer-events-none transition-all duration-200 hidden sm:block`} style={{ left: sidebarCollapsed ? 80 : 256, borderColor: darkMode ? '#52525b' : '#e4e4e7' }} />
-      <div className="flex flex-1 min-h-0">
-        <aside className={`${sidebarCollapsed ? 'w-20 pl-0' : 'w-64 pl-4 sm:pl-8'} bg-[var(--background)] flex-col select-none z-10 transition-all duration-200 hidden sm:flex`}>
-          <nav className="flex-1 flex flex-col gap-8">
-            <div>
-              <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest pt-8 transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>GENERAL</div>
-              <ul className="space-y-1">
-                {sections.map((section) => (
-                  <li
-                    key={section.key}
-                    className="w-full relative group"
-                    onClick={() => setActive(section.key)}
-                  >
-                    {active === section.key && (
-                      <span 
-                        className="absolute left-[-12px] right-2 top-0 bottom-0 rounded-xl -z-10" 
-                        aria-hidden="true"
-                        style={{ 
-                          backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
-                        }}
-                      />
-                    )}
-                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''} rounded-xl`}>
-                      {React.cloneElement(section.icon, {
-                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`,
-                        style: active === section.key ? {
-                          color: darkMode ? '#3b82f6' : '#2563eb'
-                        } : undefined
-                      })}
-                      <span 
-                        className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}
-                        style={active === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : undefined}
-                      >
-                        {section.label}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      {/* Main content area: header + content */}
+      <main className="flex-1 flex flex-col min-h-0">
+        {/* Header */}
+        <div className="w-full bg-[var(--background)] border-b-2 z-30" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
+          <div className="flex items-center h-20 px-8 justify-between bg-[var(--background)]">
+            <div className="flex items-center">
+              {/* Mobile sidebar open button */}
+              <button
+                className="p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10"
+                aria-label="Open sidebar"
+                onClick={() => setMobileSidebarOpen(true)}
+                style={{
+                  backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                  borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="7" x2="19" y2="7" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <line x1="5" y1="17" x2="19" y2="17" />
+                </svg>
+              </button>
+              {/* Breadcrumb/title flush next to hamburger */}
+              {active === "clients" && breadcrumbPath.length > 0 ? (
+                <div className="flex items-center gap-2 py-2 pl-4">
+                  {breadcrumbPath.map((item, idx) => (
+                    <React.Fragment key={item.label}>
+                      {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                      {idx < breadcrumbPath.length - 1 && item.onClick ? (
+                        <button
+                          type="button"
+                          onClick={item.onClick}
+                          className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {item.icon && <span>{item.icon}</span>}
+                          <span>{item.label}</span>
+                        </button>
+                      ) : (
+                        <span
+                          className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
+                          style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
+                        >
+                          {item.icon && <span>{item.icon}</span>}
+                          <span>{item.label}</span>
+                        </span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              ) :
+                  <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+              }
             </div>
-            <div className="mt-8">
-              <div className={`text-xs font-semibold text-zinc-400 mb-2 tracking-widest transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none' : ''}`}>SUPPORT</div>
-              <ul className="space-y-1">
-                {supportSections.map((section) => (
-                  <li
-                    key={section.key}
-                    className={`w-full relative group`}
-                    onClick={() => setActive(section.key)}
-                  >
-                    {active === section.key && (
-                      <span 
-                        className="absolute left-[-12px] right-2 top-0 bottom-0 rounded-xl -z-10" 
-                        aria-hidden="true"
-                        style={{ 
-                          backgroundColor: darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' 
-                        }}
-                      />
-                    )}
-                    <div className={`flex items-center gap-3 h-10 w-full cursor-pointer font-medium${sidebarCollapsed ? ' justify-center' : ''} rounded-xl`}>
-                      {React.cloneElement(section.icon, {
-                        className: `${iconClass} ${active === section.key ? 'text-blue-600' : 'text-zinc-400'}`,
-                        style: active === section.key ? {
-                          color: darkMode ? '#3b82f6' : '#2563eb'
-                        } : undefined
-                      })}
-                      <span 
-                        className={`transition-all duration-200 ${sidebarCollapsed ? 'opacity-0 pointer-events-none select-none w-0' : ''}`}
-                        style={active === section.key ? { color: darkMode ? '#60a5fa' : '#2563eb' } : undefined}
-                      >
-                        {section.label}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            {/* User section and logo right */}
+            <div className="flex items-center gap-6">
+              <DashboardHeaderUserSection
+                userName={userName}
+                userRole={userRole}
+                avatarUrl={resolvedAvatarUrl}
+                onGenerateRandomClients={() => {
+                  if (active === "clients") {
+                    setTriggerRandomClients(true);
+                  }
+                }}
+                showGenerateButton={active === "clients" && !clientDetailsOpen}
+              />
+              <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
             </div>
-          </nav>
-        </aside>
-        <div className="flex-1 flex flex-col bg-[var(--background)] w-full px-4 sm:px-0">
+          </div>
+        </div>
+        {/* Main content */}
+        <div className="flex-1 flex flex-col bg-[var(--background)] w-full px-4 sm:px-0 min-h-0">
           {active === "clients" ? (
             <Clients 
               detailsViewOpen={clientDetailsOpen} 
@@ -374,7 +274,7 @@ export default function DashboardPage() {
               onGenerateRandomClients={generateRandomClients}
               triggerRandomClients={triggerRandomClients}
               onRandomClientsGenerated={() => setTriggerRandomClients(false)}
-              onBreadcrumbChange={setBreadcrumbPath}
+              onBreadcrumbChange={handleBreadcrumbChange}
               onBackToClientList={handleBackToClientList}
             />
           ) : active === "dashboard" ? (
@@ -393,7 +293,7 @@ export default function DashboardPage() {
             <SettingsSection />
           ) : null}
         </div>
-      </div>
+      </main>
     </div>
   );
 } 

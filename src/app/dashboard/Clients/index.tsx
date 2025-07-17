@@ -1,5 +1,5 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, RefreshCw, Search as SearchIcon } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, RefreshCw, Search as SearchIcon, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
 import type { ClientFormData } from "./ClientModal";
@@ -37,6 +37,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     reviewerName: string;
   } | null>(null);
   const [documentOpen, setDocumentOpen] = useState(false);
+  const [viewingCaseIdx, setViewingCaseIdx] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   // 1. Add state for cases pagination at the Clients level
   const [casesCurrentPage, setCasesCurrentPage] = useState<number>(1);
@@ -130,17 +131,40 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
 
   const buildBreadcrumb = useCallback(() => {
     const path = [];
+    if (selectedClient) {
+      // Add back button as first breadcrumb item
+      path.push({ label: '', icon: <ArrowLeft className="w-4 h-4" />, onClick: goToClientList, isActive: false });
+    }
     const canGoBackToClientSection = !(showChecklistReview && reviewChecklistData);
     path.push({ label: 'Clients', icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />, onClick: canGoBackToClientSection ? () => { if (onDetailsViewChange) onDetailsViewChange(false); } : undefined, isActive: false });
     if (selectedClient) {
       path.push({ label: `Client: ${selectedClient.client}`, isActive: false });
       if (selectedTab === 'transfers' || selectedTab.startsWith('transfers/')) {
         path.push({ label: 'Cases', isActive: false });
+        // Only show case type if a case is actually being viewed
+        if (
+          selectedTab === 'transfers' &&
+          viewingCaseIdx !== null &&
+          selectedClient &&
+          Array.isArray((selectedClient as { cases?: { caseType: string }[] }).cases) &&
+          (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx]
+        ) {
+          path.push({ label: (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx].caseType, isActive: false });
+        }
         if (selectedTab.startsWith('transfers/')) {
-          const folders = selectedTab.replace('transfers/', '').split('/');
-          folders.forEach((folder) => {
-            path.push({ label: folder, isActive: false });
-          });
+          const rest = selectedTab.replace('transfers/', '');
+          if (rest) {
+            const segments = rest.split('/');
+            if (segments[0]) {
+              path.push({ label: segments[0], isActive: false });
+            }
+            // If there are deeper segments (e.g. folders/files), add them
+            for (let i = 1; i < segments.length; i++) {
+              if (segments[i]) {
+                path.push({ label: segments[i], isActive: false });
+              }
+            }
+          }
         }
       } else {
         path.push({ label: selectedTab === 'details' ? 'Client details' : selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1), isActive: false });
@@ -152,14 +176,23 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
       path[path.length-1].isActive = true;
     }
     return path;
-  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, onDetailsViewChange]);
+  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, onDetailsViewChange, viewingCaseIdx]);
+
+  const lastBreadcrumbPath = useRef<Array<{label: string, icon?: React.ReactNode, onClick?: () => void, isActive?: boolean}>>([]);
 
   useEffect(() => {
     if (onBreadcrumbChange) {
-      if (!selectedClient && !showChecklistReview) {
-        onBreadcrumbChange([]);
-      } else {
-        onBreadcrumbChange(buildBreadcrumb());
+      const newPath = !selectedClient && !showChecklistReview ? [] : buildBreadcrumb();
+      // Compare newPath to lastBreadcrumbPath.current
+      const isSame =
+        newPath.length === lastBreadcrumbPath.current.length &&
+        newPath.every((item, idx) =>
+          item.label === lastBreadcrumbPath.current[idx]?.label &&
+          item.isActive === lastBreadcrumbPath.current[idx]?.isActive
+        );
+      if (!isSame) {
+        onBreadcrumbChange(newPath);
+        lastBreadcrumbPath.current = newPath;
       }
     }
   }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, buildBreadcrumb, onBreadcrumbChange]);
@@ -240,6 +273,9 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
             onBackToClientList={goToClientList}
             casesCurrentPage={casesCurrentPage}
             setCasesCurrentPage={setCasesCurrentPage}
+            onCaseView={caseType => setSelectedTab(`transfers/${caseType}`)}
+            viewingCaseIdx={viewingCaseIdx}
+            setViewingCaseIdx={setViewingCaseIdx}
           />
         ) : (
           <>

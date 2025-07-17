@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, GripVertical, ArrowRight, Info } from "lucide-react";
+import { Check, GripVertical, ArrowRight, Info, Copy } from "lucide-react";
 import { useTheme } from "../../../theme-context";
 import {
   DndContext,
@@ -98,6 +98,16 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
     padding: isDragging ? '8px 8px' : undefined,
   };
 
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const valueToCopy = `${item.label}: ${values[idx] === '' ? '-' : values[idx]}`;
+    navigator.clipboard.writeText(valueToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -173,6 +183,7 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
           fontWeight: 500,
           padding: '0 20px',
           cursor: 'text',
+          position: 'relative',
         }}
         onClick={e => { e.stopPropagation(); setEditingIdx(idx); setInputValue(values[idx] || ''); }}
       >
@@ -195,8 +206,37 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
             placeholder="Enter value..."
           />
         ) : (
-          values[idx] === '' ? <span style={{ color: notFoundText }}>-</span> : values[idx]
+          <>
+            {values[idx] === '' ? <span style={{ color: notFoundText }}>-</span> : values[idx]}
+          </>
         )}
+      </div>
+      {/* Copy icon as its own segment */}
+      <div style={{
+        width: 40,
+        minWidth: 40,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: cardBg,
+        borderRadius: subtleRadius,
+      }}>
+        <button
+          onClick={handleCopy}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            verticalAlign: 'middle',
+          }}
+          tabIndex={0}
+          aria-label="Copy label and value"
+        >
+          {copied ? <Check size={18} color={badgeFound} /> : <Copy size={18} color={darkMode ? '#bbb' : '#888'} />}
+        </button>
       </div>
       <div style={{
         width: 56,
@@ -317,12 +357,13 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
 
   return (
     <div style={{ padding: 32, width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>CFR Checklist</h2>
+      <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>Ceding 1 Checklist</h2>
       <div style={{ borderRadius: 16, minHeight: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', fontWeight: 500, fontSize: 15, padding: '24px 40px 8px 40px', color: cardText, background: 'transparent', flexShrink: 0 }}>
           <div style={{ flex: 2 }}>Requested Information</div>
           <div style={{ width: 40 }}></div>
           <div style={{ flex: 2 }}>What we found</div>
+          <div style={{ width: 40 }}></div>
           <div style={{ width: 40 }}></div>
         </div>
         <DndContext
