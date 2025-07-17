@@ -1,10 +1,9 @@
 import React, { useRef, useState } from "react";
 import { CloudUpload, Trash } from "lucide-react";
 import Image from "next/image";
-import PersonalisedChecklistConfirmModal from "./PersonalisedChecklistConfirmModal";
-import { useTheme } from "../../../theme-context";
+import { useTheme } from "../../../../theme-context";
 
-interface UploadModalProps {
+interface CFRUploadModalProps {
   open: boolean;
   onClose: () => void;
   fileName?: string;
@@ -12,22 +11,28 @@ interface UploadModalProps {
   onNoPersonalisedChecklist?: () => void;
 }
 
-export default function UploadModal({ open, onClose, onShowReviewChecklist, onNoPersonalisedChecklist }: UploadModalProps) {
+export default function CFRUploadModal({ open, onClose, fileName, onShowReviewChecklist }: CFRUploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [checklistFiles, setChecklistFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<'source' | 'checklist'>('source');
-  const [showChecklistContent, setShowChecklistContent] = useState(false);
+  const [showChecklistContent, ] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const checklistInputRef = useRef<HTMLInputElement>(null);
 
-  const [showChecklistConfirm, setShowChecklistConfirm] = useState(false);
+  const [, setShowChecklistConfirm] = useState(false);
 
   const { darkMode } = useTheme();
 
   const modalBg = darkMode ? '#18181b' : '#fff';
   const modalText = darkMode ? '#f4f4f5' : '#18181b';
   const modalBorder = darkMode ? '#27272a' : '#e4e4e7';
+  const headerBg = darkMode ? '#232329' : '#f4f4f5';
+  const headerText = darkMode ? '#f4f4f5' : '#52525b';
+  const tabActiveBg = darkMode ? '#232329' : '#fff';
+  const tabInactiveBg = darkMode ? '#18181b' : '#f4f4f5';
+  const tabActiveText = darkMode ? '#f4f4f5' : '#18181b';
+  const tabInactiveText = darkMode ? '#71717a' : '#a1a1aa';
   const dragActiveBg = darkMode ? '#1e293b' : '#f0f6ff';
   const dragActiveBorder = darkMode ? '#2563eb' : '#3b82f6';
   const fileBoxBg = darkMode ? '#232329' : '#fff';
@@ -58,21 +63,21 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
     }
   };
 
-  const handleChecklistConfirm = () => {
-    setShowChecklistConfirm(false);
-    setShowChecklistContent(true);
-    setActiveTab('checklist');
-  };
+  // const handleChecklistConfirm = () => {
+  //   setShowChecklistConfirm(false);
+  //   setShowChecklistContent(true);
+  //   setActiveTab('checklist');
+  // };
 
-  const handleChecklistCancel = () => {
-    setShowChecklistConfirm(false);
-    if (onNoPersonalisedChecklist) {
-      onNoPersonalisedChecklist();
-    } else {
-      onClose();
-      if (onShowReviewChecklist) onShowReviewChecklist();
-    }
-  };
+  // const handleChecklistCancel = () => {
+  //   setShowChecklistConfirm(false);
+  //   if (onNoPersonalisedChecklist) {
+  //     onNoPersonalisedChecklist();
+  //   } else {
+  //     onClose();
+  //     if (onShowReviewChecklist) onShowReviewChecklist();
+  //   }
+  // };
 
   if (!open) return null;
 
@@ -146,6 +151,45 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
         className="rounded-2xl shadow-2xl w-full max-w-lg border flex flex-col overflow-hidden mx-auto my-4 sm:my-0 max-h-[90vh]"
         style={{ background: modalBg, color: modalText, borderColor: modalBorder }}
       >
+        <div
+          className="px-4 sm:px-6 py-3 border-b flex items-center font-medium text-base min-h-[48px]"
+          style={{ background: headerBg, color: headerText, borderColor: modalBorder }}
+        >
+          {fileName || "Upload file"}
+        </div>
+        <div className="flex justify-center w-full border-b py-2 gap-4 mb-4" style={{ borderColor: modalBorder }}>
+          <button
+            className="px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap"
+            style={{
+              background: activeTab === 'source' ? tabActiveBg : tabInactiveBg,
+              color: activeTab === 'source' ? tabActiveText : tabInactiveText,
+              borderColor: modalBorder,
+              opacity: activeTab === 'source' ? 1 : 0.7,
+            }}
+            onClick={activeTab === 'checklist' ? undefined : () => setActiveTab('source')}
+            tabIndex={0}
+            type="button"
+          >
+            Source file
+          </button>
+          <button
+            style={{
+              background: showChecklistContent && activeTab === 'checklist' ? tabActiveBg : tabInactiveBg,
+              color: showChecklistContent && activeTab === 'checklist' ? tabActiveText : tabInactiveText,
+              borderColor: modalBorder,
+              opacity: showChecklistContent ? 1 : 0.5,
+              cursor: showChecklistContent ? 'pointer' : 'not-allowed',
+            }}
+            className="px-3 py-2 text-sm font-medium rounded-[10px] border flex items-center gap-1 whitespace-nowrap"
+            aria-disabled={!showChecklistContent}
+            tabIndex={showChecklistContent ? 0 : -1}
+            type="button"
+            disabled={!showChecklistContent}
+            onClick={showChecklistContent && activeTab !== 'source' ? () => setActiveTab('checklist') : undefined}
+          >
+            Personalised checklist
+          </button>
+        </div>
         <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-6 sm:py-8 w-full overflow-y-auto" style={{ background: modalBg }}>
           {activeTab === 'checklist' && showChecklistContent ? (
             <>
@@ -186,7 +230,7 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
                   <span className="underline cursor-pointer" style={{ color: modalText }}>Click to upload</span> or drag and drop checklist documents here.
                 </div>
                 <div className="text-sm text-center mb-2" style={{ color: fileBoxSubText }}>
-                  Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
+                  Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: .PDF
                 </div>
               </label>
               {checklistFiles.length > 0 && (
@@ -203,11 +247,10 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
                         </div>
                         <button
                           className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
-                          aria-label="Remove file"
-                          onClick={() => setChecklistFiles(files => files.filter((_, i) => i !== idx))}
                           type="button"
+                          onClick={() => setChecklistFiles(files => files.filter((_, i) => i !== idx))}
                         >
-                          <Trash className="w-5 h-5 text-red-500" />
+                          <Trash className="w-4 h-4 text-red-500" />
                         </button>
                       </div>
                     ))}
@@ -249,11 +292,12 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
                   onChange={handleFileChange}
                   tabIndex={-1}
                 />
+                <div className="text-xl mb-2 text-center" style={{ color: modalText }}>Upload documents</div>
                 <div className="text-base mb-2 text-center" style={{ color: modalText }}>
-                  <span className="underline cursor-pointer" style={{ color: modalText }}>Click to upload</span> or drag and drop policy documents here.
+                  <span className="underline cursor-pointer" style={{ color: modalText }}>Click to upload</span> or drag and drop files here.
                 </div>
                 <div className="text-sm text-center mb-2" style={{ color: fileBoxSubText }}>
-                  Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
+                  Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: .PDF
                 </div>
               </label>
               {selectedFiles.length > 0 && (
@@ -270,11 +314,10 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
                         </div>
                         <button
                           className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
-                          aria-label="Remove file"
-                          onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== idx))}
                           type="button"
+                          onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== idx))}
                         >
-                          <Trash className="w-5 h-5 text-red-500" />
+                          <Trash className="w-4 h-4 text-red-500" />
                         </button>
                       </div>
                     ))}
@@ -284,48 +327,35 @@ export default function UploadModal({ open, onClose, onShowReviewChecklist, onNo
             </>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 border-t" style={{ background: modalBg, borderColor: modalBorder }}>
+        {/* Checklist confirm modal */}
+        {/* {showChecklistConfirm && (
+          <PersonalisedChecklistConfirmModal
+            open={showChecklistConfirm}
+            onCancel={handleChecklistCancel}
+            onContinue={handleChecklistConfirm}
+          />
+        )} */}
+        {/* Footer */}
+        <div className="flex justify-end gap-2 px-4 sm:px-6 py-3 border-t border-[var(--border)]" style={{ borderColor: modalBorder }}>
           <button
+            className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
+            style={{ background: buttonCancelBg, color: buttonCancelText, borderColor: modalBorder }}
             onClick={handleCancel}
-            className="px-4 sm:px-5 py-2 text-base font-medium transition border flex items-center justify-center"
-            style={{
-              color: buttonCancelText,
-              background: buttonCancelBg,
-              borderColor: modalBorder,
-              fontFamily: 'system-ui, sans-serif',
-              height: 40,
-              lineHeight: '24px',
-              borderRadius: '14px',
-            }}
+            type="button"
           >
             Cancel
           </button>
           <button
-            disabled={activeTab === 'source' ? selectedFiles.length === 0 : false}
-            className="px-4 sm:px-5 py-2 text-base font-medium transition border flex items-center justify-center"
-            style={{
-              color: buttonContinueText,
-              background: buttonContinueBg,
-              borderColor: modalBorder,
-              fontFamily: 'system-ui, sans-serif',
-              height: 40,
-              lineHeight: '24px',
-              borderRadius: '14px',
-              opacity: activeTab === 'source' && selectedFiles.length === 0 ? 0.6 : 1,
-              cursor: activeTab === 'source' && selectedFiles.length === 0 ? 'not-allowed' : 'pointer',
-            }}
+            className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
+            style={{ background: buttonContinueBg, color: buttonContinueText, borderColor: modalBorder, opacity: activeTab === 'source' && selectedFiles.length === 0 ? 0.7 : 1 }}
             onClick={handleContinue}
+            type="button"
+            disabled={activeTab === 'source' && selectedFiles.length === 0}
           >
             Continue
           </button>
         </div>
       </div>
-      <PersonalisedChecklistConfirmModal
-        open={showChecklistConfirm}
-        onConfirm={handleChecklistConfirm}
-        onCancel={() => setShowChecklistConfirm(false)}
-        onNo={handleChecklistCancel}
-      />
     </div>
   );
 } 

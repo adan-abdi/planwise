@@ -18,6 +18,9 @@ interface FileExplorerProps {
   handleUploadModal: () => void;
   setSelectedDocument: (item: TransferFolderItem) => void;
   clickableLineClass: string;
+  getDisplayName?: (name: string) => string;
+  getProviderName?: (name: string) => string | undefined;
+  onPlanFolderWithProvider?: (providerName: string) => void;
 }
 
 const FileExplorer: React.FC<FileExplorerProps> = ({
@@ -25,28 +28,74 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
   getFolderContents,
   handleEnterFolder,
   handleUploadModal,
-  setSelectedDocument,
   clickableLineClass,
+  getDisplayName = (name: string) => name,
+  getProviderName,
+  onPlanFolderWithProvider,
 }) => {
   const { darkMode } = useTheme();
+  // Helper to check if a folder is a plan/ceding folder
+  function isPlanFolder(name: string) {
+    return (
+      /^Ceding \d+$/.test(name) ||
+      /^Stocks & Shares Ceding \d+$/.test(name) ||
+      /^Cash ISA Ceding \d+$/.test(name)
+    );
+  }
   return (
-    <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        {transferPath.map((folder, idx) => (
-          <span key={folder} style={{ display: 'flex', alignItems: 'center', fontSize: 15, color: idx === transferPath.length - 1 ? (darkMode ? 'white' : '#18181b') : '#a1a1aa', fontWeight: idx === transferPath.length - 1 ? 600 : 400 }}>
-            {idx > 0 && <span style={{ margin: '0 6px' }}>/</span>}
-            {folder}
-          </span>
-        ))}
+    <div
+    >
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 16,
+        padding: '4px 0',
+        borderRadius: 8,
+      }}>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, maxHeight: 560, overflow: 'auto', paddingRight: 12, paddingBottom: 8, boxSizing: 'border-box' }}>
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 12,
+        maxHeight: 560,
+        overflow: 'auto',
+        paddingRight: 12,
+        paddingBottom: 8,
+        boxSizing: 'border-box',
+        background: darkMode ? '#222222' : 'none',
+        borderRadius: 10,
+        transition: 'background 0.2s, border 0.2s',
+      }}>
         {getFolderContents(transferPath).map(item => (
           <FolderDocumentBox
             key={item.name}
             item={item}
-            onClick={() => item.type === 'folder' ? handleEnterFolder(item.name) : undefined}
+            onClick={() => {
+              if (item.type === 'folder') {
+                if (isPlanFolder(item.name)) {
+                  const provider = getProviderName ? getProviderName(item.name) : undefined;
+                  if (provider && onPlanFolderWithProvider) {
+                    onPlanFolderWithProvider(provider);
+                    return;
+                  }
+                }
+                if (item.children && item.children.length > 0) {
+                  handleEnterFolder(item.name);
+                }
+              }
+            }}
+            style={{
+              boxShadow: darkMode
+                ? '0 1px 4px 0 #232329'
+                : '0 1px 4px 0 #e0e7ef',
+              border: `1.5px solid ${darkMode ? '#27272a' : '#e0e7ef'}`,
+              background: darkMode ? '#232329' : '#f9fafb',
+              color: darkMode ? '#f1f5f9' : '#18181b',
+              transition: 'background 0.2s, border 0.2s',
+            }}
           >
-            <>
+            <div>
               <div style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 40, width: 40 }}>
                 {item.type === 'folder' ? (
                   <Image src={DirectoryIcon} alt="Folder" width={40} height={40} />
@@ -55,18 +104,19 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
-                <span style={{ fontWeight: 600, fontSize: 16 }}>{item.name}</span>
-                {item.type === 'folder' && item.children && (
-                  <>
-                    <span style={{ color: '#a1a1aa', fontSize: 12, marginTop: 1 }}>No. of items: {item.children.length}</span>
-                    <span className={clickableLineClass} style={{ fontSize: 12 }} onClick={e => { e.stopPropagation(); handleUploadModal(); }}>Click to upload</span>
-                  </>
+                <span style={{ fontWeight: 700, fontSize: 16, color: darkMode ? '#f1f5f9' : '#18181b' }}>{getDisplayName(item.name)}</span>
+                {item.type === 'folder' && (
+                  getProviderName && getProviderName(item.name)
+                    ? <span style={{ fontSize: 12, color: darkMode ? '#a1a1aa' : '#64748b' }}>{getProviderName(item.name)}</span>
+                    : <span className={clickableLineClass} style={{ fontSize: 12, color: darkMode ? '#60a5fa' : '#2563eb', cursor: 'pointer' }} onClick={e => { e.stopPropagation(); handleUploadModal(); }}>Click to upload</span>
                 )}
                 {item.type === 'file' && (
-                  <span className={clickableLineClass} style={{ fontSize: 12 }} onClick={e => { e.stopPropagation(); setSelectedDocument(item); }}>Click to open</span>
+                  getProviderName && getProviderName(item.name)
+                    ? <span style={{ fontSize: 12, color: darkMode ? '#a1a1aa' : '#64748b' }}>{getProviderName(item.name)}</span>
+                    : <span className={clickableLineClass} style={{ fontSize: 12, color: darkMode ? '#60a5fa' : '#2563eb', cursor: 'pointer' }} onClick={e => { e.stopPropagation(); handleUploadModal(); }}>Click to upload</span>
                 )}
               </div>
-            </>
+            </div>
           </FolderDocumentBox>
         ))}
       </div>

@@ -1,7 +1,11 @@
 import React from "react";
 
 interface StepperProps {
+  steps: string[];
+  current: number; // index of current step
   darkMode: boolean;
+  onStepClick?: (idx: number) => void;
+  disabled?: boolean;
 }
 
 interface StepCircleProps {
@@ -10,7 +14,7 @@ interface StepCircleProps {
 }
 
 const StepCircle: React.FC<StepCircleProps> = ({ state, darkMode }) => {
-  const baseCircle = "w-5 h-5 flex items-center justify-center rounded-full text-xs font-semibold transition-colors duration-150";
+  const baseCircle = "w-6 h-6 flex items-center justify-center rounded-full text-xs font-semibold transition-colors duration-150";
   if (state === "completed") {
     return (
       <span className={`${baseCircle} bg-zinc-400 text-white dark:bg-zinc-600`}>
@@ -20,8 +24,8 @@ const StepCircle: React.FC<StepCircleProps> = ({ state, darkMode }) => {
   }
   if (state === "active") {
     return (
-      <span className={`${baseCircle} border-2 ${darkMode ? "border-blue-400 bg-transparent" : "border-blue-600 bg-transparent"} p-0 flex items-center justify-center`}> 
-        <span className={`block rounded-full ${darkMode ? "bg-blue-400" : "bg-blue-600"}`} style={{ width: '8px', height: '8px' }} />
+      <span className={`${baseCircle} border-2 ${darkMode ? "border-blue-400 bg-transparent" : "border-blue-600 bg-transparent"} p-0 flex items-center justify-center shadow-md`}>
+        <span className={`block rounded-full ${darkMode ? "bg-blue-400" : "bg-blue-600"}`} style={{ width: '10px', height: '10px' }} />
       </span>
     );
   }
@@ -30,22 +34,54 @@ const StepCircle: React.FC<StepCircleProps> = ({ state, darkMode }) => {
   );
 };
 
-const Stepper: React.FC<StepperProps> = ({ darkMode }) => (
-  <div className="flex items-center bg-white dark:bg-[var(--background)] border border-zinc-200 dark:border-zinc-700 rounded-full px-4 py-2 w-fit gap-2" style={{ borderColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-    <div className="flex items-center gap-2">
-      <StepCircle state="completed" darkMode={darkMode} />
-      <span className="text-base font-medium text-zinc-400">Upload documents</span>
-    </div>
-    <span className="mx-2 text-zinc-300">&#8250;</span>
-    <div className="flex items-center gap-2">
-      <StepCircle state="active" darkMode={darkMode} />
-      <span className={"text-base font-medium " + (darkMode ? "text-blue-400" : "text-blue-600")}>CFR Checklist</span>
-    </div>
-    <span className="mx-2 text-zinc-300">&#8250;</span>
-    <div className="flex items-center gap-2">
-      <StepCircle state="pending" darkMode={darkMode} />
-      <span className="text-zinc-400 font-medium">Review</span>
-    </div>
+const Stepper: React.FC<StepperProps> = ({ steps, current, darkMode, onStepClick, disabled }) => (
+  <div className="flex items-center justify-center w-full max-w-3xl mx-auto px-2 sm:px-0 py-2 gap-0 select-none">
+    {steps.map((step, idx) => {
+      const clickable = typeof onStepClick === 'function' && !disabled && idx !== current;
+      return (
+        <React.Fragment key={step}>
+          <button
+            type="button"
+            className={`group flex flex-col items-center flex-1 min-w-0 px-1 sm:px-2 py-0 bg-transparent border-none outline-none focus:outline-none transition relative ${clickable ? 'cursor-pointer' : 'cursor-default'} ${idx === current ? (darkMode ? 'z-10' : 'z-10') : ''}`}
+            style={{
+              background: 'none',
+              boxShadow: idx === current ? (darkMode ? '0 0 0 2px #2563eb33' : '0 0 0 2px #2563eb22') : undefined,
+              borderRadius: 12,
+              transition: 'box-shadow 0.2s',
+            }}
+            onClick={() => clickable && onStepClick && onStepClick(idx)}
+            disabled={disabled}
+            aria-current={idx === current ? 'step' : undefined}
+          >
+            <StepCircle
+              state={idx < current ? "completed" : idx === current ? "active" : "pending"}
+              darkMode={darkMode}
+            />
+            <span
+              className={
+                `mt-2 text-sm font-medium text-center truncate max-w-[90px] sm:max-w-[120px] transition-colors ` +
+                (idx < current
+                  ? "text-zinc-400"
+                  : idx === current
+                  ? (darkMode ? "text-blue-400" : "text-blue-600")
+                  : "text-zinc-400") +
+                (clickable ? ' group-hover:text-blue-500 underline' : '')
+              }
+              style={{
+                cursor: clickable ? 'pointer' : 'default',
+                textDecoration: clickable ? 'underline' : 'none',
+                transition: 'color 0.2s',
+              }}
+            >
+              {step}
+            </span>
+          </button>
+          {idx < steps.length - 1 && (
+            <span className="flex-0 mx-1 sm:mx-2 text-zinc-300" style={{ fontSize: 24, lineHeight: 1, userSelect: 'none' }}>&#8250;</span>
+          )}
+        </React.Fragment>
+      );
+    })}
   </div>
 );
 

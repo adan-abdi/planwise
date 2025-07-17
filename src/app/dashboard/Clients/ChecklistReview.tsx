@@ -3,7 +3,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useTheme } from "../../../theme-context";
-import Stepper from "./Stepper";
+// import Stepper from "./Stepper";
 import DocumentViewer from "./documentviewer/DocumentViewer";
 import ChecklistParser from "./ChecklistParser";
 
@@ -43,7 +43,7 @@ export default function ChecklistReview({ reviewerName, onBack }: ChecklistRevie
             <ArrowLeft className="w-5 h-5 text-[var(--foreground)]" />
           </button>
         )}
-        <Stepper darkMode={darkMode} />
+        {/* <Stepper darkMode={darkMode} /> */}
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden' }}>
         <div style={{ flex: 4, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
