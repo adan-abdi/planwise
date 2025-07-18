@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import FileExplorer from "../FileExplorer";
 import type { TransferFolderItem } from "../FileExplorer";
 import type { Transfer } from "../ClientDetails";
-import { useState } from "react";
 import type { FolderOrFile } from "./pensionNewMoneyStructure";
 import Stepper from "../Stepper";
 import UploadModal from "../UploadModal";
 import ChecklistReview from "../ChecklistReview";
+import { CloudUpload } from "lucide-react";
+import Image from "next/image";
 
 interface CaseDetailsViewProps {
   caseExplorerPath: string[];
@@ -38,21 +39,15 @@ function generatePensionTransferFolderContents(caseData: CaseDetailsViewProps["c
     // No children, not openable
   }));
 
-  // ESS Documents logic: move files to root
+  // Updated ESS Documents logic
   let essFiles: TransferFolderItem[] = [];
-  if (caseData.ess && caseData.essPartial) {
-    essFiles = [
-      { type: 'file', name: 'ESS Illustration (full + partial)' },
-      { type: 'file', name: 'ESS' },
-      { type: 'file', name: 'Partial ESS Breakdown' },
-    ];
-  } else if (!caseData.ess && caseData.essPartial) {
-    essFiles = [
-      { type: 'file', name: 'Partial ESS Breakdown' },
-    ];
-  } else if (caseData.ess && !caseData.essPartial) {
+  if (caseData.ess && !caseData.essPartial) {
     essFiles = [
       { type: 'file', name: 'ESS' },
+    ];
+  } else if (caseData.ess && caseData.essPartial) {
+    essFiles = [
+      { type: 'file', name: 'ESS Partial' },
     ];
   }
 
@@ -192,9 +187,9 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
   }
 
   return (
-    <div className="min-h-0 flex flex-col h-full w-full pl-4">
+    <div className="min-h-0 flex flex-col h-full w-full">
       {/* Progress Stepper */}
-      <div className="pt-6 pb-4 w-full">
+      <div className="px-8 w-full">
         <Stepper
           steps={stages}
           current={activeStageIdx}
@@ -202,50 +197,11 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
           onStepClick={idx => idx !== activeStageIdx && setActiveStageIdx(idx)}
         />
       </div>
+      <div className="h-px w-full bg-zinc-200 dark:bg-[var(--border)] mt-2 mb-2" />
       {/* Stage Content */}
       <div className="flex-1 min-h-0 flex flex-row w-full items-center justify-center">
         {activeStage === 'CFR' && (
-          <div className="flex flex-col w-full items-center justify-center p-8 gap-10">
-            {/* Section: Upload Final CFR */}
-            <div className="flex flex-col items-center gap-3 w-full max-w-md">
-              <div className="font-semibold text-2xl mb-0 text-center" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-                Are you happy with the CFR already?
-              </div>
-              <div className="text-zinc-500 text-base max-w-xs text-center mb-2" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-                Upload a final CFR for this case.
-              </div>
-              <button
-                type="button"
-                onClick={() => setCfrModalOpen(true)}
-                className="px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-              >
-                Upload Final CFR
-              </button>
-            </div>
-            <UploadModal open={cfrModalOpen} onClose={() => setCfrModalOpen(false)} />
-            {/* Divider between sections */}
-            <div className="flex items-center w-full max-w-md my-14">
-              <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
-              <span className="mx-4 text-zinc-400 text-sm select-none">or</span>
-              <div className="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
-            </div>
-            {/* Section: Upload V1 CFR */}
-            <div className="flex flex-col items-center gap-3 w-full max-w-md mt-2">
-              <div className="font-semibold text-2xl mb-0 text-center" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-                Do you want to check a CFR?
-              </div>
-              <div className="text-zinc-500 text-base max-w-xs text-center mb-2" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-                Upload a first version
-              </div>
-              <button
-                type="button"
-                onClick={() => setCfrModalOpen(true)}
-                className="px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-              >
-                Upload V1 CFR
-              </button>
-            </div>
-          </div>
+          <CfrUploadDropzones darkMode={darkMode} />
         )}
         {activeStage === 'Ceding Information' && (
           showChecklistReview ? (
@@ -471,3 +427,183 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
       </div>
       {/* Progress Navigation */}
     </div>)}
+
+// --- CFR Upload Dropzones Component ---
+function CfrUploadDropzones({ darkMode }: { darkMode: boolean }) {
+  // State for each dropzone
+  const [finalFiles, setFinalFiles] = useState<File[]>([]);
+  const [v1Files, setV1Files] = useState<File[]>([]);
+  const finalInputRef = useRef<HTMLInputElement>(null);
+  const v1InputRef = useRef<HTMLInputElement>(null);
+  const [finalDragActive, setFinalDragActive] = useState(false);
+  const [v1DragActive, setV1DragActive] = useState(false);
+
+  function handleDrop(e: React.DragEvent, setFiles: React.Dispatch<React.SetStateAction<File[]>>, setDrag: (v: boolean) => void) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDrag(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const newFiles = Array.from(e.dataTransfer.files);
+      setFiles(prev => {
+        const all = [...prev, ...newFiles];
+        const unique = all.filter((file, idx, arr) =>
+          arr.findIndex(f => f.name === file.name && f.size === file.size) === idx
+        );
+        return unique;
+      });
+    }
+  }
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setFiles(prev => {
+        const all = [...prev, ...newFiles];
+        const unique = all.filter((file, idx, arr) =>
+          arr.findIndex(f => f.name === file.name && f.size === file.size) === idx
+        );
+        return unique;
+      });
+      e.target.value = "";
+    }
+  }
+  function handleRemoveFile(idx: number, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
+    setFiles(files => files.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-12 sm:items-stretch sm:justify-center">
+      {/* Final CFR Column */}
+      <div className="flex flex-col flex-1 max-w-md mx-auto">
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+          Are you happy with the CFR already?
+        </div>
+        <div className="text-zinc-500 text-base max-w-xs text-center mb-3 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+          Upload a final CFR for this case.
+        </div>
+        <label
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white dark:bg-[var(--background)] ${finalDragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
+          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}
+          tabIndex={0}
+          onDragOver={e => { e.preventDefault(); setFinalDragActive(true); }}
+          onDragLeave={e => { e.preventDefault(); setFinalDragActive(false); }}
+          onDrop={e => handleDrop(e, setFinalFiles, setFinalDragActive)}
+          onClick={e => { if (e.target === e.currentTarget && finalInputRef.current) finalInputRef.current.click(); }}
+        >
+          <input
+            ref={finalInputRef}
+            type="file"
+            accept="application/pdf"
+            multiple
+            className="hidden"
+            onChange={e => handleFileChange(e, setFinalFiles)}
+          />
+          <div className="relative mb-6 flex items-center justify-center" style={{ height: 96 }}>
+            <Image src="/upload.svg" alt="Upload" width={96} height={96} className="mx-auto" />
+            <span className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 border-4 border-white" style={{ boxShadow: '0 2px 8px 0 rgba(24, 80, 255, 0.10)' }}>
+                <CloudUpload className="w-5 h-5 text-white" />
+              </span>
+            </span>
+          </div>
+          <div className="text-base mb-2 text-center">
+            <span className="underline cursor-pointer">Click to upload</span> or drag and drop the final CFR here.
+          </div>
+          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+            Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
+          </div>
+          {finalFiles.length > 0 && (
+            <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
+              <div className="space-y-3">
+                {finalFiles.map((file, idx) => (
+                  <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
+                    <span className="mr-3 text-zinc-400 dark:text-zinc-500">
+                      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
+                      <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                    </div>
+                    <button
+                      className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                      aria-label="Remove file"
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setFinalFiles); }}
+                      type="button"
+                    >
+                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </label>
+      </div>
+      {/* V1 CFR Column */}
+      <div className="flex flex-col flex-1 max-w-md mx-auto">
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+          Do you want to check a CFR?
+        </div>
+        <div className="text-zinc-500 text-base max-w-xs text-center mb-3 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+          Upload a first version
+        </div>
+        <label
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white dark:bg-[var(--background)] ${v1DragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
+          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}
+          tabIndex={0}
+          onDragOver={e => { e.preventDefault(); setV1DragActive(true); }}
+          onDragLeave={e => { e.preventDefault(); setV1DragActive(false); }}
+          onDrop={e => handleDrop(e, setV1Files, setV1DragActive)}
+          onClick={e => { if (e.target === e.currentTarget && v1InputRef.current) v1InputRef.current.click(); }}
+        >
+          <input
+            ref={v1InputRef}
+            type="file"
+            accept="application/pdf"
+            multiple
+            className="hidden"
+            onChange={e => handleFileChange(e, setV1Files)}
+          />
+          <div className="relative mb-6 flex items-center justify-center" style={{ height: 96 }}>
+            <Image src="/upload.svg" alt="Upload" width={96} height={96} className="mx-auto" />
+            <span className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 border-4 border-white" style={{ boxShadow: '0 2px 8px 0 rgba(24, 80, 255, 0.10)' }}>
+                <CloudUpload className="w-5 h-5 text-white" />
+              </span>
+            </span>
+          </div>
+          <div className="text-base mb-2 text-center">
+            <span className="underline cursor-pointer">Click to upload</span> or drag and drop the first version here.
+          </div>
+          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+            Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
+          </div>
+          {v1Files.length > 0 && (
+            <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
+              <div className="space-y-3">
+                {v1Files.map((file, idx) => (
+                  <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
+                    <span className="mr-3 text-zinc-400 dark:text-zinc-500">
+                      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
+                      <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                    </div>
+                    <button
+                      className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                      aria-label="Remove file"
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setV1Files); }}
+                      type="button"
+                    >
+                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </label>
+      </div>
+    </div>
+  );
+}

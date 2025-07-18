@@ -5,18 +5,14 @@ import {
   ShieldCheck,
   FileText,
   Settings,
-  PanelRightClose,
-  PanelRightOpen,
   LayoutDashboard,
   SquareUserRound,
   SquareKanban,
   ChevronRight,
-  ArrowLeft,
 } from "lucide-react";
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
 import Image from "next/image";
-import MobileDashboardHeader from "./MobileDashboardHeader";
 import DashboardHeaderUserSection from "./DashboardHeaderUserSection";
 import Dashboard from './Dashboard';
 import Plans from './Plans';
@@ -53,7 +49,6 @@ export default function DashboardPage() {
   }, []);
 
   const [active, setActive] = useState("clients");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
@@ -245,7 +240,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) :
-                  <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+                  <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
               }
             </div>
             {/* User section and logo right */}

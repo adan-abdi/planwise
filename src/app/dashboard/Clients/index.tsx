@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, RefreshCw, Search as SearchIcon, ArrowLeft } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, Search as SearchIcon, ArrowLeft } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -39,7 +39,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [documentOpen, setDocumentOpen] = useState(false);
   const [viewingCaseIdx, setViewingCaseIdx] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  // 1. Add state for cases pagination at the Clients level
   const [casesCurrentPage, setCasesCurrentPage] = useState<number>(1);
 
   React.useEffect(() => {
@@ -131,52 +130,96 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
 
   const buildBreadcrumb = useCallback(() => {
     const path = [];
+    // If a client is selected, show a back button as the first breadcrumb item
     if (selectedClient) {
-      // Add back button as first breadcrumb item
-      path.push({ label: '', icon: <ArrowLeft className="w-4 h-4" />, onClick: goToClientList, isActive: false });
-    }
-    const canGoBackToClientSection = !(showChecklistReview && reviewChecklistData);
-    path.push({ label: 'Clients', icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />, onClick: canGoBackToClientSection ? () => { if (onDetailsViewChange) onDetailsViewChange(false); } : undefined, isActive: false });
-    if (selectedClient) {
-      path.push({ label: `Client: ${selectedClient.client}`, isActive: false });
-      if (selectedTab === 'transfers' || selectedTab.startsWith('transfers/')) {
-        path.push({ label: 'Cases', isActive: false });
-        // Only show case type if a case is actually being viewed
-        if (
-          selectedTab === 'transfers' &&
-          viewingCaseIdx !== null &&
-          selectedClient &&
-          Array.isArray((selectedClient as { cases?: { caseType: string }[] }).cases) &&
-          (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx]
-        ) {
-          path.push({ label: (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx].caseType, isActive: false });
-        }
-        if (selectedTab.startsWith('transfers/')) {
-          const rest = selectedTab.replace('transfers/', '');
-          if (rest) {
-            const segments = rest.split('/');
-            if (segments[0]) {
-              path.push({ label: segments[0], isActive: false });
-            }
-            // If there are deeper segments (e.g. folders/files), add them
-            for (let i = 1; i < segments.length; i++) {
-              if (segments[i]) {
-                path.push({ label: segments[i], isActive: false });
-              }
-            }
+      path.push({
+        label: '',
+        icon: <ArrowLeft className="w-4 h-4" />,
+        onClick: () => {
+          if (viewingCaseIdx !== null) {
+            setViewingCaseIdx(null); // Go from case details to cases list
+            setSelectedTab('transfers');
+            if (onDetailsViewChange) onDetailsViewChange(true, selectedClient.client, 'transfers');
+          } else if (selectedTab === 'transfers' && viewingCaseIdx === null) {
+            // On cases list, go directly to clients list
+            setSelectedClientName(null);
+            setShowChecklistReview(false);
+            setSelectedTab('details');
+            setViewingCaseIdx(null);
+            if (onDetailsViewChange) onDetailsViewChange(false);
+            if (onBackToClientList) onBackToClientList();
+          } else if (selectedTab === 'transfers') {
+            setSelectedTab('details'); // Go from cases list to client details (fallback)
+            if (onDetailsViewChange) onDetailsViewChange(true, selectedClient.client, 'details');
+          } else {
+            setSelectedClientName(null); // Go from client details to clients list
+            setShowChecklistReview(false);
+            setSelectedTab('details');
+            setViewingCaseIdx(null);
+            if (onDetailsViewChange) onDetailsViewChange(false);
+            if (onBackToClientList) onBackToClientList();
           }
+        },
+        isActive: false,
+      });
+    }
+    // Always add Clients as the next breadcrumb segment
+    path.push({
+      label: 'Clients',
+      icon: <SquareUserRound className="w-4 h-4 text-zinc-400" />,
+      onClick: () => {
+        setSelectedClientName(null);
+        setShowChecklistReview(false);
+        setSelectedTab('details');
+        setViewingCaseIdx(null);
+        if (onDetailsViewChange) onDetailsViewChange(false);
+        if (onBackToClientList) onBackToClientList();
+      },
+      isActive: false,
+    });
+    if (selectedClient) {
+      // Add Client: [Name] as the second segment
+      path.push({
+        label: `Client: ${selectedClient.client}`,
+        onClick: () => {
+          setViewingCaseIdx(null);
+          setSelectedTab('details');
+          if (onDetailsViewChange) onDetailsViewChange(true, selectedClient.client, 'details');
+        },
+        isActive: false,
+      });
+      // If in transfers tab (cases list or case details)
+      if (selectedTab === 'transfers' || selectedTab.startsWith('transfers/')) {
+        // Add Cases as the third segment
+        path.push({
+          label: 'Cases',
+          onClick: () => {
+            setViewingCaseIdx(null);
+            setSelectedTab('transfers');
+            if (onDetailsViewChange) onDetailsViewChange(true, selectedClient.client, 'transfers');
+          },
+          isActive: false,
+        });
+        // If viewing a specific case, add the case type/name as the last segment
+        if (selectedTab === 'transfers' && viewingCaseIdx !== null && (selectedClient as { cases?: { caseType: string }[] }).cases && (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx]) {
+          path.push({
+            label: (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx].caseType,
+            isActive: true,
+          });
         }
       } else {
-        path.push({ label: selectedTab === 'details' ? 'Client details' : selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1), isActive: false });
+        // Not in transfers tab, just show the current tab as the last segment
+        path.push({
+          label: selectedTab === 'details' ? 'Client details' : selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1),
+          isActive: true,
+        });
       }
-    }
-    if (showChecklistReview && reviewChecklistData) {
-      path.push({ label: 'CFR Checklist', isActive: true });
-    } else if (path.length > 0) {
-      path[path.length-1].isActive = true;
+    } else {
+      // If not in a client, mark Clients as active
+      path[0].isActive = true;
     }
     return path;
-  }, [selectedClient, selectedTab, showChecklistReview, reviewChecklistData, onDetailsViewChange, viewingCaseIdx]);
+  }, [selectedClient, selectedTab, viewingCaseIdx, onDetailsViewChange, onBackToClientList]);
 
   const lastBreadcrumbPath = useRef<Array<{label: string, icon?: React.ReactNode, onClick?: () => void, isActive?: boolean}>>([]);
 
@@ -279,7 +322,10 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           />
         ) : (
           <>
-            <div className="w-full bg-white dark:bg-[var(--background)] flex-wrap gap-2 min-h-[64px] relative border-b" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
+            <div
+              className={`w-full bg-white dark:bg-[var(--background)] flex-wrap gap-2 min-h-[64px] relative border-b transition-opacity duration-200 ${selectedClient ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
+              style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}
+            >
               <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
               <div className="flex sm:hidden mb-1 pt-4 pb-4 justify-between w-full">
                 <div className="flex gap-2">
@@ -461,30 +507,6 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                     )}
                     Export
                   </button>
-                  {(selectedClientName === null && !showChecklistReview) && (
-                    <button
-                      onClick={onGenerateRandomClients}
-                      className="icon-btn border border-zinc-200 dark:border-[var(--border)] rounded-full p-2 bg-white dark:bg-[var(--muted)] hover:bg-zinc-100 dark:hover:bg-[var(--border)] transition flex items-center justify-center"
-                      title="Generate random clients"
-                      aria-label="Generate random clients"
-                      type="button"
-                      style={{
-                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                        color: darkMode ? 'var(--foreground)' : '#18181b',
-                        boxShadow: 'none',
-                        width: 36,
-                        height: 36,
-                        minWidth: 36,
-                        minHeight: 36,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                    </button>
-                  )}
                 </div>
               </div>
             </div>

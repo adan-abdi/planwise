@@ -50,6 +50,7 @@ ISA New money
 - [ ] ESS: cant be no and ESS partial be yes
 - 
 
+
 CYC Form Stages
 - [ ] Page 1
 - [ ] Plan 1 & provider name
@@ -65,12 +66,11 @@ Illustrations
 - [ ] transfers
 - [ ] Recommendations
 
-
 Sidebar
-- [ ] Plans becomes Parterns/onboaridng
-- [ ] Remove compliance
-- [ ] Support section move team members where compliance is
-- [ ] remove support heading 
-- [ ] Help/FAQs
-- [ ] menu button to open sidebar
-- [ ] Planwise logo on the right hand side
+- [x] Plans becomes Parterns/onboaridng
+- [x] Remove compliance
+- [x] Support section move team members where compliance is
+- [x] remove support heading 
+- [x] Help/FAQs
+- [x] menu button to open sidebar
+- [x] Planwise logo on the right hand side
