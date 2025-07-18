@@ -8,9 +8,8 @@ import {
   FolderTree,
   X,
   Check,
-  ArrowLeft,
   PlusCircle,
-  Loader2
+  Grid2x2Check,
 } from "lucide-react";
 import UploadModal from "./UploadModal";
 import { useTheme } from "../../../theme-context";
@@ -68,7 +67,7 @@ export type { Case };
 // Extend ClientItem to allow 'cases' property
 type ClientItem = OriginalClientItem & { cases?: Case[] };
 
-export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, onBackToClientList, transferPath: controlledTransferPath, casesCurrentPage, setCasesCurrentPage, onCaseView, viewingCaseIdx, setViewingCaseIdx }: ClientDetailsProps) {
+export default function ClientDetails({ client, onClientUpdate, checklist, onChecklistChange, onTabChange, onShowChecklistReviewTest, onDocumentOpen, transferPath: controlledTransferPath, casesCurrentPage, setCasesCurrentPage, onCaseView, viewingCaseIdx, setViewingCaseIdx }: ClientDetailsProps) {
   const { darkMode } = useTheme();
   const [activeTab, setActiveTab] = useState<'details' | 'activity' | 'transfers'>('transfers');
   const [openedTransfer] = useState<TransferType>(null);
@@ -245,140 +244,182 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [caseExplorerPath, setCaseExplorerPath] = useState<string[]>([]);
   const [caseSelectedDocument, setCaseSelectedDocument] = useState<TransferFolderItem | null>(null);
 
+  // Handler to generate 30 random cases
+  function handleHydrateCases() {
+    const caseTypes = ['Pension', 'ISA', 'Pension New Money', 'ISA New Money'];
+    const providers = ['Aviva', 'Legal & General', 'Royal London', 'Aegon', 'Scottish Widows', 'Standard Life'];
+    const transferTypes = ['pensionTransfer', 'isaTransfer', 'pensionNewMoney', 'isaNewMoney'] as const;
+    const randomCases = Array.from({ length: 30 }, (_, i) => ({
+      id: `case-${Date.now()}-${i}`,
+      createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000)).toISOString(),
+      caseType: caseTypes[Math.floor(Math.random() * caseTypes.length)],
+      transfers: [
+        {
+          transferType: transferTypes[Math.floor(Math.random() * transferTypes.length)],
+          provider: providers[Math.floor(Math.random() * providers.length)],
+        },
+      ],
+    }));
+    setCases(randomCases);
+    if (onClientUpdate) {
+      onClientUpdate({ ...client, cases: randomCases } as ClientItem);
+    }
+  }
+
   return (
     <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[var(--background)]">
-      <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 dark:border-zinc-700 min-h-[56px] bg-white dark:bg-[var(--background)] w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap"
-        style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
-      >
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-          {/* Back button removed from here */}
-          {/* Tabs here */}
-          <div className="flex gap-2 flex-nowrap">
-            <button
-              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'transfers' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
-              onClick={() => setActiveTab('transfers')}
-              style={{
-                backgroundColor: darkMode
-                  ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                  : (activeTab === 'transfers' ? '#f4f4f5' : 'white'),
-                border: darkMode
-                  ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
-                  : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
-                color: darkMode ? 'var(--foreground)' : '#18181b',
-                cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
-                fontWeight: activeTab === 'transfers' ? 600 : 500,
-                fontSize: '1.1rem',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode
-                  ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                  : (activeTab === 'transfers' ? '#f4f4f5' : 'white');
-              }}
-            >
-              <FolderTree className="w-4 h-4 mr-1" />
-              Cases
-            </button>
-            <button
-              className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'details' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
-              onClick={() => setActiveTab('details')}
-              style={{
-                backgroundColor: darkMode
-                  ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                  : (activeTab === 'details' ? '#f4f4f5' : 'white'),
-                border: darkMode
-                  ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
-                  : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
-                color: darkMode ? 'var(--foreground)' : '#18181b',
-                cursor: activeTab !== 'details' ? 'pointer' : 'default',
-                fontWeight: activeTab === 'details' ? 600 : 500,
-                fontSize: '1.1rem',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode
-                  ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                  : (activeTab === 'details' ? '#f4f4f5' : 'white');
-              }}
-            >
-              <FileText className="w-4 h-4 mr-1" />
-              Client details
-            </button>
+      {!(activeTab === 'transfers' && viewingCaseIdx !== null) && (
+        <div className="flex items-center justify-between px-2 sm:pl-8 sm:pr-8 py-3 border-b-1 border-zinc-200 dark:border-zinc-700 min-h-[56px] bg-white dark:bg-[var(--background)] w-full mb-4 flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap"
+          style={{ borderBottomColor: darkMode ? '#3f3f46' : '#e4e4e7' }}
+        >
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            {/* Back button removed from here */}
+            {/* Tabs here */}
+            <div className="flex gap-2 flex-nowrap">
+              <button
+                className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'transfers' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
+                onClick={() => setActiveTab('transfers')}
+                style={{
+                  backgroundColor: darkMode
+                    ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                    : (activeTab === 'transfers' ? '#f4f4f5' : 'white'),
+                  border: darkMode
+                    ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
+                    : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
+                  color: darkMode ? 'var(--foreground)' : '#18181b',
+                  cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
+                  fontWeight: activeTab === 'transfers' ? 600 : 500,
+                  fontSize: '1.1rem',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = darkMode
+                    ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
+                    : (activeTab === 'transfers' ? '#f4f4f5' : 'white');
+                }}
+              >
+                <FolderTree className="w-4 h-4 mr-1" />
+                Cases
+              </button>
+              <button
+                className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'details' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
+                onClick={() => setActiveTab('details')}
+                style={{
+                  backgroundColor: darkMode
+                    ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                    : (activeTab === 'details' ? '#f4f4f5' : 'white'),
+                  border: darkMode
+                    ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
+                    : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
+                  color: darkMode ? 'var(--foreground)' : '#18181b',
+                  cursor: activeTab !== 'details' ? 'pointer' : 'default',
+                  fontWeight: activeTab === 'details' ? 600 : 500,
+                  fontSize: '1.1rem',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = darkMode
+                    ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
+                    : (activeTab === 'details' ? '#f4f4f5' : 'white');
+                }}
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                Client details
+              </button>
+            </div>
           </div>
-        </div>
-        {/* Add new case button on far right, only for Cases tab */}
-        {activeTab === 'transfers' && (
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setCreateCaseModalOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-zinc-200 bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] font-medium text-sm shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 transition"
-              style={{ minHeight: 32 }}
-            >
-              <PlusCircle className="w-4 h-4" />
-              Add new case
-            </button>
-            {isCasesLoading && (
-              <span className="flex items-center gap-1 text-zinc-500 dark:text-zinc-300 animate-spin">
-                <Loader2 className="w-4 h-4" />
-                <span className="text-xs font-medium">Hydrating...</span>
-              </span>
+          {/* Add new case button on far right, only for Cases tab */}
+          {activeTab === 'transfers' && (
+            <div className="ml-auto flex items-center gap-2">
+              {cases.length < 30 && (
+                <button
+                  type="button"
+                  onClick={handleHydrateCases}
+                  className="icon-btn border border-zinc-200 dark:border-[var(--border)] rounded-full p-2 bg-white dark:bg-[var(--muted)] hover:bg-zinc-100 dark:hover:bg-[var(--border)] transition flex items-center justify-center"
+                  title="Hydrate cases"
+                  aria-label="Hydrate cases"
+                  style={{
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                    backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    boxShadow: 'none',
+                    width: 36,
+                    height: 36,
+                    minWidth: 36,
+                    minHeight: 36,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Grid2x2Check className="w-5 h-5" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setCreateCaseModalOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-zinc-200 bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] font-medium text-sm shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 transition"
+                style={{ minHeight: 32 }}
+              >
+                <PlusCircle className="w-4 h-4" />
+                Add new case
+              </button>
+            </div>
+          )}
+          <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
+            {hasUnsavedChanges && (
+              <button
+                className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
+                onClick={handleCancel}
+                type="button"
+                aria-label="Cancel"
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: darkMode ? '#18181b' : 'white',
+                  border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
+                  color: darkMode ? '#f87171' : '#dc2626',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#3a2323' : '#f4f4f5';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
+                }}
+              >
+                <X className="w-4 h-4" style={{ color: darkMode ? '#f87171' : '#dc2626' }} />
+                <span>Cancel</span>
+              </button>
+            )}
+            {hasUnsavedChanges && (
+              <button
+                className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
+                onClick={handleSave}
+                type="button"
+                aria-label="Save Changes"
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: darkMode ? '#18181b' : '#e6fbe8',
+                  border: `1px solid ${darkMode ? '#166534' : '#a7f3d0'}`,
+                  color: darkMode ? '#4ade80' : '#166534',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#1a3a23' : '#bbf7d0';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : '#e6fbe8';
+                }}
+              >
+                <Check className="w-4 h-4" style={{ color: darkMode ? '#4ade80' : '#166534' }} />
+                <span>Save</span>
+              </button>
             )}
           </div>
-        )}
-        <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
-          {hasUnsavedChanges && (
-            <button
-              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
-              onClick={handleCancel}
-              type="button"
-              aria-label="Cancel"
-              style={{
-                cursor: 'pointer',
-                backgroundColor: darkMode ? '#18181b' : 'white',
-                border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
-                color: darkMode ? '#f87171' : '#dc2626',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#3a2323' : '#f4f4f5';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
-              }}
-            >
-              <X className="w-4 h-4" style={{ color: darkMode ? '#f87171' : '#dc2626' }} />
-              <span>Cancel</span>
-            </button>
-          )}
-          {hasUnsavedChanges && (
-            <button
-              className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
-              onClick={handleSave}
-              type="button"
-              aria-label="Save Changes"
-              style={{
-                cursor: 'pointer',
-                backgroundColor: darkMode ? '#18181b' : '#e6fbe8',
-                border: `1px solid ${darkMode ? '#166534' : '#a7f3d0'}`,
-                color: darkMode ? '#4ade80' : '#166534',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#1a3a23' : '#bbf7d0';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : '#e6fbe8';
-              }}
-            >
-              <Check className="w-4 h-4" style={{ color: darkMode ? '#4ade80' : '#166534' }} />
-              <span>Save</span>
-            </button>
-          )}
         </div>
-      </div>
+      )}
       {activeTab === 'details' && (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <div style={{ minWidth: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>

@@ -12,7 +12,7 @@ export default function EmptyCasesState({ onAddNewCase }: EmptyCasesStateProps) 
     <div
       className="flex flex-col items-center justify-center py-16 px-4 text-center w-full h-full"
       style={{
-        background: darkMode ? "#18181b" : "#fff",
+        background: darkMode ? "#222222" : "#fff",
         color: darkMode ? "#e4e4e7" : "#18181b",
         transition: "background 0.2s, color 0.2s"
       }}
