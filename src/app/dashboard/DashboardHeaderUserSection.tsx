@@ -55,7 +55,7 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
   }
 
   return (
-    <div className="flex items-stretch gap-3 rounded-xl bg-white dark:bg-[var(--background)] px-3 py-1 min-h-0">
+    <div className="flex items-stretch gap-3 rounded-xl px-3 py-1 min-h-0" style={{ backgroundColor: darkMode ? 'var(--background)' : 'white' }}>
       {showGenerateButton && onGenerateRandomClients && (
         <button 
           className="w-8 h-8 flex items-center justify-center rounded-full transition"

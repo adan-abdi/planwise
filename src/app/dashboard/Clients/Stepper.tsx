@@ -60,7 +60,7 @@ const Stepper: React.FC<StepperProps> = ({ steps, current, darkMode, onStepClick
             disabled={disabled}
             aria-current={idx === current ? 'step' : undefined}
           >
-            <StepCircle state={state as any} darkMode={darkMode} />
+            <StepCircle state={state} darkMode={darkMode} />
             <span
               className={`mt-2 text-base font-medium text-center break-words transition-colors ${state === "active"
                 ? (darkMode ? "text-blue-400 font-bold" : "text-blue-600 font-bold")
