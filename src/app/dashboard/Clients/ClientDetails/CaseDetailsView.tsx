@@ -187,10 +187,10 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
   }
 
   return (
-    <div className="min-h-0 flex flex-col h-full w-full">
+    <div className="min-h-0 flex flex-col h-full w-full overflow-hidden">
       {/* Progress Stepper */}
-      <div className="w-full px-8 pt-4">
-        <div className="px-0 sm:px-6">
+      <div className="w-full sm:px-8 sm:ml-16 pt-2">
+        <div className="px-0 sm:pl-2 sm:pr-6 max-w-[98%]">
             <Stepper
               steps={stages}
               current={activeStageIdx}
@@ -199,11 +199,12 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
             />
           </div>
       </div>
-      <div className="h-px w-full bg-zinc-200 dark:bg-[var(--border)] mt-2 mb-2" />
       {/* Stage Content */}
-      <div className="flex-1 min-h-0 flex flex-row w-full items-center justify-center">
+      <div className="flex-1 min-h-0 flex flex-row w-full sm:px-8 sm:ml-16 overflow-hidden">
         {activeStage === 'CFR' && (
-          <CfrUploadDropzones darkMode={darkMode} />
+          <div className="w-full">
+            <CfrUploadDropzones darkMode={darkMode} />
+          </div>
         )}
         {activeStage === 'Ceding Information' && (
           showChecklistReview ? (
@@ -260,7 +261,7 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
                     ))}
                   </nav>
                 </div>
-                <div style={{ flex: 1, overflow: 'auto', padding: 16, paddingTop: 8 }}>
+                <div style={{ flex: 1, padding: 16, paddingTop: 8 }}>
                   <FileExplorer
                     transferPath={caseExplorerPath}
                     getFolderContents={getFolderContents}
@@ -342,7 +343,7 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
           )
         )}
         {activeStage === 'CYC' && (
-          <div className="flex flex-col w-full items-center justify-center p-8 gap-10">
+          <div className="flex flex-col w-full p-8 gap-10">
             {/* Section: Upload Final CYC */}
             <div className="flex flex-col items-center gap-3 w-full max-w-md">
               <div className="font-semibold text-2xl mb-0 text-center" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -382,7 +383,7 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
           </div>
         )}
         {activeStage === 'Illustration' && (
-          <div className="flex flex-col w-full items-center justify-center p-8 gap-10">
+          <div className="flex flex-col w-full p-8 gap-10">
             {/* Section: Upload Final Illustration */}
             <div className="flex flex-col items-center gap-3 w-full max-w-md">
               <div className="font-semibold text-2xl mb-0 text-center" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -422,7 +423,7 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
           </div>
         )}
         {activeStage === 'Suitability' && (
-          <div className="flex flex-col w-full items-center justify-center p-8 text-center text-lg text-zinc-400">
+          <div className="flex flex-col w-full p-8 text-center text-lg text-zinc-400">
             <div>Suitability stage coming soon.</div>
           </div>
         )}
@@ -473,15 +474,15 @@ function CfrUploadDropzones({ darkMode }: { darkMode: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-12 sm:items-stretch sm:justify-center">
+    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center">
       {/* Final CFR Column */}
-      <div className="flex flex-col flex-1 max-w-md mx-auto">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-          Are you happy with the CFR already?
-        </div>
-        <div className="text-zinc-500 text-base max-w-xs text-center mb-3 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-          Upload a final CFR for this case.
-        </div>
+      <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
+                  <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+            Are you happy with the CFR already?
+          </div>
+          <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+            Upload a final CFR for this case.
+          </div>
         <label
           className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white dark:bg-[var(--background)] ${finalDragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
           style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}
@@ -541,13 +542,13 @@ function CfrUploadDropzones({ darkMode }: { darkMode: boolean }) {
         </label>
       </div>
       {/* V1 CFR Column */}
-      <div className="flex flex-col flex-1 max-w-md mx-auto">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-          Do you want to check a CFR?
-        </div>
-        <div className="text-zinc-500 text-base max-w-xs text-center mb-3 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-          Upload a first version
-        </div>
+      <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
+                  <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+            Do you want to check a CFR?
+          </div>
+          <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+            Upload a first version
+          </div>
         <label
           className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white dark:bg-[var(--background)] ${v1DragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
           style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}

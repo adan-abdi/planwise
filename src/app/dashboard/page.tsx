@@ -301,7 +301,7 @@ export default function DashboardPage() {
         </div>
       </main>
       {/* Left Sidebar */}
-      <div className="fixed left-2 sm:left-8 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
+      <div className="absolute left-2 sm:left-8 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
         {/* Sidebar Content */}
         <div 
           className="h-full rounded-lg overflow-hidden" 
