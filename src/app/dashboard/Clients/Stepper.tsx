@@ -31,7 +31,7 @@ const StepCircle: React.FC<StepCircleProps & { state: "completed" | "active" | "
     );
   }
   return (
-    <span className={`w-7 h-7 flex items-center justify-center rounded-full border-2 border-zinc-200 bg-white dark:bg-zinc-900`} />
+    <span className={`w-7 h-7 flex items-center justify-center rounded-full border-2 border-zinc-200 bg-white dark:bg-zinc-900`} style={{ backgroundColor: darkMode ? '#18181b' : '#ffffff' }} />
   );
 };
 
@@ -43,18 +43,30 @@ const Stepper: React.FC<StepperProps> = ({ steps, current, darkMode, onStepClick
       let boxBg = "";
       if (state === "active") boxBg = darkMode ? "bg-blue-900/20" : "bg-blue-50";
       if (state === "completed") boxBg = darkMode ? "bg-green-900/20" : "bg-green-50";
+      if (state === "pending") boxBg = darkMode ? "bg-zinc-900" : "bg-white";
       return (
         <React.Fragment key={step}>
           <button
             type="button"
-            className={`group flex flex-col items-center justify-center flex-1 min-w-0 px-2 py-2 border-none outline-none focus:outline-none transition relative rounded-lg ${boxBg} ${clickable ? 'cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800' : 'cursor-default'} ${idx === current ? (darkMode ? 'z-10' : 'z-10') : ''}`}
+            className={`group flex flex-col items-center justify-center flex-1 min-w-0 px-2 py-2 border-none outline-none focus:outline-none transition relative rounded-lg ${boxBg} ${clickable ? 'cursor-pointer' : 'cursor-default'} ${idx === current ? (darkMode ? 'z-10' : 'z-10') : ''}`}
             style={{
               border: idx === current
                 ? `2px solid ${darkMode ? '#60a5fa' : '#2563eb'}`
                 : `1.5px solid ${darkMode ? '#27272a' : '#e4e4e7'}`,
               borderRadius: 10,
-              transition: 'box-shadow 0.2s, border 0.2s',
+              transition: 'box-shadow 0.2s, border 0.2s, background-color 0.2s',
               boxShadow: idx === current ? (darkMode ? '0 0 0 2px #2563eb33' : '0 0 0 2px #2563eb22') : undefined,
+              backgroundColor: clickable && state === 'pending' ? (darkMode ? '#18181b' : '#ffffff') : 'transparent',
+            }}
+            onMouseEnter={(e) => {
+              if (clickable) {
+                e.currentTarget.style.backgroundColor = darkMode ? '#27272a' : '#fafafa';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (clickable) {
+                e.currentTarget.style.backgroundColor = state === 'pending' ? (darkMode ? '#18181b' : '#ffffff') : 'transparent';
+              }
             }}
             onClick={() => clickable && onStepClick && onStepClick(idx)}
             disabled={disabled}
