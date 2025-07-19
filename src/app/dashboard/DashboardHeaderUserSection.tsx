@@ -10,9 +10,13 @@ interface DashboardHeaderUserSectionProps {
   avatarUrl: string;
   onGenerateRandomClients?: () => void;
   showGenerateButton?: boolean;
+  headerBgColor?: string;
+  setHeaderBgColor?: (color: string) => void;
 }
 
-const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({ userName, userRole, avatarUrl, onGenerateRandomClients, showGenerateButton }) => {
+const cubeColors = ['#000000', '#ffffff', '#F8531F', '#14442c', '#252b4d'];
+
+const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({ userName, userRole, avatarUrl, onGenerateRandomClients, showGenerateButton, headerBgColor, setHeaderBgColor }) => {
   const { darkMode, toggleDarkMode } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -68,6 +72,33 @@ const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({
           <Grid2x2Check className="w-5 h-5" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
         </button>
       )}
+      {/* 5 tiny cubes before dark mode toggle */}
+      <div className="flex items-center gap-[2px] mr-1">
+        {cubeColors.map((color) => (
+          <button
+            key={color}
+            type="button"
+            aria-label={`Set header background to ${color}`}
+            onClick={() => setHeaderBgColor && setHeaderBgColor(color)}
+            style={{
+              width: 14,
+              height: 14,
+              background: color,
+              borderRadius: 3,
+              border: headerBgColor === color
+                ? '1.5px solid #18181b'
+                : color === '#ffffff'
+                  ? '1px solid #d1d5db'
+                  : '1px solid #e5e7eb',
+              outline: 'none',
+              padding: 0,
+              margin: 0,
+              cursor: 'pointer',
+            }}
+            tabIndex={0}
+          />
+        ))}
+      </div>
       <button
         className="w-8 h-8 flex items-center justify-center rounded-full transition"
         aria-label="Toggle dark mode"

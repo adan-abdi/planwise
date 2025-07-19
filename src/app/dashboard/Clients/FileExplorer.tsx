@@ -75,6 +75,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({
               if (item.type === 'folder') {
                 if (isPlanFolder(item.name)) {
                   const provider = getProviderName ? getProviderName(item.name) : undefined;
+                  // Only call onPlanFolderWithProvider if you want to show a checklist, not upload modal
                   if (provider && onPlanFolderWithProvider) {
                     onPlanFolderWithProvider(provider);
                     return;

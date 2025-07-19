@@ -11,14 +11,12 @@ import {
   PlusCircle,
   Grid2x2Check,
   ArrowUpDown,
-  Filter as FilterIcon,
   Search as SearchIcon,
   ChevronDown,
 } from "lucide-react";
 import UploadModal from "./UploadModal";
 import { useTheme } from "../../../theme-context";
 import CreateNewCase from './CreateNewCase';
-import ClientFooter from "./ClientFooter";
 import type { Dispatch, SetStateAction } from 'react';
 import CasesTable from './ClientDetails/CasesTable';
 import CaseDetailsView from './ClientDetails/CaseDetailsView';
@@ -144,7 +142,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   }, [cases]);
 
   // 4. Pagination and sorting for cases
-  const pageSize = 12;
+  const pageSize = 16;
   const [sortState, setSortState] = useState<{ column: string | null; order: 'asc' | 'desc' | null }>({ column: null, order: null });
   const [sortedCases, setSortedCases] = useState<Case[]>(cases);
   // Add state for search value
@@ -251,20 +249,45 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
 
   // Handler to generate 30 random cases
   function handleHydrateCases() {
-    const caseTypes = ['Pension', 'ISA', 'Pension New Money', 'ISA New Money'];
+    const caseTypes = ['Pension Transfer', 'ISA Transfer', 'Pension New Money', 'ISA New Money'];
     const providers = ['Aviva', 'Legal & General', 'Royal London', 'Aegon', 'Scottish Widows', 'Standard Life'];
     const transferTypes = ['pensionTransfer', 'isaTransfer', 'pensionNewMoney', 'isaNewMoney'] as const;
-    const randomCases = Array.from({ length: 30 }, (_, i) => ({
-      id: `case-${Date.now()}-${i}`,
-      createdAt: new Date(Date.now() - Math.floor(Math.random() * 1000000000)).toISOString(),
-      caseType: caseTypes[Math.floor(Math.random() * caseTypes.length)],
-      transfers: [
-        {
-          transferType: transferTypes[Math.floor(Math.random() * transferTypes.length)],
+    const randomCases = Array.from({ length: 40 }, (_, i) => {
+      const caseType = caseTypes[Math.floor(Math.random() * caseTypes.length)];
+      const createdAt = new Date(Date.now() - Math.floor(Math.random() * 1000000000)).toISOString();
+      if (caseType === 'Pension Transfer') {
+        // Generate 1-3 transfers for pension transfer
+        const numTransfers = Math.floor(Math.random() * 3) + 1;
+        const transfers = Array.from({ length: numTransfers }, () => ({
+          transferType: 'pensionTransfer' as const,
           provider: providers[Math.floor(Math.random() * providers.length)],
-        },
-      ],
-    }));
+        }));
+        // Randomize ess and essPartial
+        const ess = Math.random() > 0.5;
+        const essPartial = ess ? Math.random() > 0.5 : false;
+        return {
+          id: `case-${Date.now()}-${i}`,
+          createdAt,
+          caseType,
+          transfers,
+          ess,
+          essPartial,
+        };
+      }
+      // Default for other case types
+      const randomTransferType = transferTypes[Math.floor(Math.random() * transferTypes.length)];
+      return {
+        id: `case-${Date.now()}-${i}`,
+        createdAt,
+        caseType,
+        transfers: [
+          {
+            transferType: randomTransferType,
+            provider: providers[Math.floor(Math.random() * providers.length)],
+          },
+        ],
+      };
+    });
     setCases(randomCases);
     if (onClientUpdate) {
       onClientUpdate({ ...client, cases: randomCases } as ClientItem);
@@ -547,24 +570,27 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
               </div>
             </div>
             <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
+              {/* LEFT: Navigation/tab buttons only */}
               <div className="flex items-center gap-2">
                 <button
                   className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
                   onClick={() => setActiveTab('transfers')}
                   style={{
-                    backgroundColor: activeTab === 'transfers' 
-                      ? (darkMode ? 'var(--muted)' : 'white')
+                    backgroundColor: activeTab === 'transfers'
+                      ? (darkMode ? '#1e293b' : '#eff6ff')
                       : (darkMode ? 'var(--background)' : 'white'),
                     borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    color: activeTab === 'transfers'
+                      ? (darkMode ? '#60a5fa' : '#2563eb')
+                      : (darkMode ? 'var(--foreground)' : '#18181b'),
                     cursor: 'pointer',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = activeTab === 'transfers' 
-                      ? (darkMode ? 'var(--muted)' : 'white')
+                    e.currentTarget.style.backgroundColor = activeTab === 'transfers'
+                      ? (darkMode ? '#1e293b' : '#eff6ff')
                       : (darkMode ? 'var(--background)' : 'white');
                   }}
                 >
@@ -575,25 +601,31 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
                   onClick={() => setActiveTab('details')}
                   style={{
-                    backgroundColor: activeTab === 'details' 
-                      ? (darkMode ? 'var(--muted)' : 'white')
+                    backgroundColor: activeTab === 'details'
+                      ? (darkMode ? '#1e293b' : '#eff6ff')
                       : (darkMode ? 'var(--background)' : 'white'),
                     borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    color: activeTab === 'details'
+                      ? (darkMode ? '#60a5fa' : '#2563eb')
+                      : (darkMode ? 'var(--foreground)' : '#18181b'),
                     cursor: 'pointer',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = activeTab === 'details' 
-                      ? (darkMode ? 'var(--muted)' : 'white')
+                    e.currentTarget.style.backgroundColor = activeTab === 'details'
+                      ? (darkMode ? '#1e293b' : '#eff6ff')
                       : (darkMode ? 'var(--background)' : 'white');
                   }}
                 >
                   <FileText className="w-4 h-4" />
                   Client details
                 </button>
+              </div>
+              {/* RIGHT: All table-related actions */}
+              <div className="flex items-center gap-2">
+                {/* Sort button */}
                 <button 
                   className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
                   style={{
@@ -610,7 +642,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   <ArrowUpDown className="w-4 h-4" />
                   Sort
                 </button>
-                {/* Custom filter dropdown */}
+                {/* Filter dropdown */}
                 <div className="relative" data-filter-dropdown>
                   <button
                     type="button"
@@ -668,7 +700,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     </div>
                   )}
                 </div>
-                {/* Search input for desktop */}
+                {/* Search input */}
                 <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
                     <SearchIcon className="w-5 h-5" />
@@ -682,7 +714,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
                   />
                 </div>
-                {/* Pagination for desktop */}
+                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center ml-4">
                     <button
@@ -727,8 +759,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     </button>
                   </div>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
+                {/* Add/Generate case actions (only for transfers tab) */}
                 {activeTab === 'transfers' && (
                   <>
                     {cases.length < 30 && (
@@ -769,6 +800,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     </button>
                   </>
                 )}
+                {/* Save/Cancel (if unsaved changes) */}
                 {hasUnsavedChanges && (
                   <>
                     <button 
@@ -814,7 +846,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         </>
       )}
       {activeTab === 'details' && (
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div className="ml-24" style={{ display: 'flex', flexDirection: 'row' }}>
           <div style={{ minWidth: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}>
             <div style={{ width: '100%', maxWidth: 700, minWidth: 320, paddingLeft: 32, paddingTop: 24 }}>
               <EditableRow icon={<Users className="w-5 h-5 text-zinc-400" />} label="Client name" value={editValues.client || ''} editing={editingField==='client'} onEdit={() => handleEdit('client')} onChange={v => handleChange('client', v)} onBlur={handleBlur} onKeyDown={handleKeyDown} />
@@ -828,46 +860,48 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
       )}
       {activeTab === 'transfers' && (
         viewingCaseIdx !== null ? (
-          <CaseDetailsView
-            caseExplorerPath={caseExplorerPath}
-            setCaseExplorerPath={setCaseExplorerPath}
-            caseSelectedDocument={caseSelectedDocument}
-            setCaseSelectedDocument={setCaseSelectedDocument}
-            darkMode={darkMode}
-            onUploadModal={() => setUploadModalOpen(true)}
-            caseData={filteredCases[viewingCaseIdx]}
-            onAddTransfer={transfer => {
-              // Find the case in the main cases array (not filteredCases)
-              const caseId = filteredCases[viewingCaseIdx].id;
-              setCases(prevCases => {
-                const updated = prevCases.map(c => {
-                  if (c.id !== caseId) return c;
-                  // Handle Pension New Money and ISA New Money
-                  if (c.caseType === 'Pension New Money') {
-                    const newTransfers = [...c.transfers, transfer];
-                    return {
-                      ...c,
-                      transfers: newTransfers,
-                      documents: generatePensionNewMoneyStructure({ ...c, transfers: newTransfers })
-                    };
-                  } else if (c.caseType === 'ISA New Money') {
-                    const newTransfers = [...c.transfers, transfer];
-                    return {
-                      ...c,
-                      transfers: newTransfers,
-                      documents: generateIsaNewMoneyStructure({ ...c, transfers: newTransfers })
-                    };
-                  } else {
-                    // Default: just add transfer
-                    return { ...c, transfers: [...c.transfers, transfer] };
-                  }
+          <div style={{ paddingLeft: 24, paddingRight: 24 }} className="sm:px-12">
+            <CaseDetailsView
+              caseExplorerPath={caseExplorerPath}
+              setCaseExplorerPath={setCaseExplorerPath}
+              caseSelectedDocument={caseSelectedDocument}
+              setCaseSelectedDocument={setCaseSelectedDocument}
+              darkMode={darkMode}
+              onUploadModal={() => setUploadModalOpen(true)}
+              caseData={filteredCases[viewingCaseIdx]}
+              onAddTransfer={transfer => {
+                // Find the case in the main cases array (not filteredCases)
+                const caseId = filteredCases[viewingCaseIdx].id;
+                setCases(prevCases => {
+                  const updated = prevCases.map(c => {
+                    if (c.id !== caseId) return c;
+                    // Handle Pension New Money and ISA New Money
+                    if (c.caseType === 'Pension New Money') {
+                      const newTransfers = [...c.transfers, transfer];
+                      return {
+                        ...c,
+                        transfers: newTransfers,
+                        documents: generatePensionNewMoneyStructure({ ...c, transfers: newTransfers })
+                      };
+                    } else if (c.caseType === 'ISA New Money') {
+                      const newTransfers = [...c.transfers, transfer];
+                      return {
+                        ...c,
+                        transfers: newTransfers,
+                        documents: generateIsaNewMoneyStructure({ ...c, transfers: newTransfers })
+                      };
+                    } else {
+                      // Default: just add transfer
+                      return { ...c, transfers: [...c.transfers, transfer] };
+                    }
+                  });
+                  // Persist to client
+                  onClientUpdate({ ...((editValues as object)), cases: updated } as ClientItem);
+                  return updated;
                 });
-                // Persist to client
-                onClientUpdate({ ...((editValues as object)), cases: updated } as ClientItem);
-                return updated;
-              });
-            }}
-          />
+              }}
+            />
+          </div>
         ) : (
           filteredCases.length === 0 ? (
             <EmptyCasesState onAddNewCase={() => setCreateCaseModalOpen(true)} />

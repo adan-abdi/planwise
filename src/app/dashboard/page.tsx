@@ -39,20 +39,25 @@ const sections = [
 type BreadcrumbItem = { label: string; icon?: React.ReactNode; onClick?: () => void; isActive?: boolean };
 
 export default function DashboardPage() {
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        window.location.href = '/';
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       window.location.href = '/';
+  //     }
+  //   }
+  // }, []);
 
   const [active, setActive] = useState("clients");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
+  const [headerBgColor, setHeaderBgColor] = useState<string>("");
+
+  // Add a helper to determine if a custom color is selected
+  const customHeaderColorsDark = ['#000000', '#F8531F', '#14442c', '#252b4d'];
+  const isCustomHeaderColorDark = customHeaderColorsDark.includes(headerBgColor);
 
   // Memoize the callback
   const handleBreadcrumbChange = useCallback((path: BreadcrumbItem[]) => {
@@ -201,7 +206,13 @@ export default function DashboardPage() {
       <main className="flex-1 flex flex-col min-h-0">
         {/* Header */}
         <div className="w-full px-2 sm:px-8 pt-2"> {/* pt-2 instead of pt-4 for less space */}
-          <div className="rounded-lg bg-white dark:bg-[var(--background)] p-2 sm:p-4 border border-zinc-200" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7', backgroundColor: darkMode ? 'var(--background)' : 'white' }}> {/* mb-2 instead of mb-4, bg-white */}
+          <div
+            className="rounded-lg bg-white dark:bg-[var(--background)] p-2 sm:p-4 border border-zinc-200"
+            style={{
+              borderColor: darkMode ? '#52525b' : '#e4e4e7',
+              backgroundColor: headerBgColor || (darkMode ? 'var(--background)' : 'white'),
+            }}
+          >
             <div className="flex items-center h-10 px-2 sm:px-0 justify-between">
               <div className="flex items-center">
                 {/* Mobile sidebar open button */}
@@ -227,7 +238,7 @@ export default function DashboardPage() {
                   </svg>
                 </button>
                 {/* Logo right after menu button */}
-                <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto ml-3" />
+                <Image src={isCustomHeaderColorDark || darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto ml-3" />
                 {/* Breadcrumb/title flush next to logo */}
                 {active === "clients" && breadcrumbPath.length > 0 ? (
                   <div className="flex items-center gap-2 py-2 pl-4">
@@ -239,7 +250,7 @@ export default function DashboardPage() {
                             type="button"
                             onClick={item.onClick}
                             className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                            style={{ cursor: 'pointer' }}
+                            style={{ cursor: 'pointer', color: isCustomHeaderColorDark || darkMode ? 'white' : undefined }}
                           >
                             {item.icon && <span>{item.icon}</span>}
                             <span>{item.label}</span>
@@ -247,7 +258,7 @@ export default function DashboardPage() {
                         ) : (
                           <span
                             className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
-                            style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
+                            style={item.isActive ? { color: isCustomHeaderColorDark || darkMode ? 'white' : 'black' } : undefined}
                           >
                             {item.icon && <span>{item.icon}</span>}
                             <span>{item.label}</span>
@@ -257,7 +268,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) :
-                    <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+                    <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif", color: isCustomHeaderColorDark || darkMode ? 'white' : undefined }}>{activeSection?.label}</div>
                 }
               </div>
               {/* User section only */}
@@ -266,6 +277,8 @@ export default function DashboardPage() {
                   userName={userName}
                   userRole={userRole}
                   avatarUrl={resolvedAvatarUrl}
+                  headerBgColor={headerBgColor}
+                  setHeaderBgColor={setHeaderBgColor}
                 />
               </div>
             </div>
@@ -311,7 +324,7 @@ export default function DashboardPage() {
             border: `1px solid ${darkMode ? '#52525b' : '#e4e4e7'}`
           }}
         >
-          <nav className="h-full flex flex-col items-center justify-center space-y-2 py-4">
+          <nav className="h-full flex flex-col items-center justify-start space-y-2 py-4">
             {sections.map((section) => (
               <button
                 key={section.key}
