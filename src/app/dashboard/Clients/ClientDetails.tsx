@@ -10,6 +10,10 @@ import {
   Check,
   PlusCircle,
   Grid2x2Check,
+  ArrowUpDown,
+  Filter as FilterIcon,
+  Search as SearchIcon,
+  ChevronDown,
 } from "lucide-react";
 import UploadModal from "./UploadModal";
 import { useTheme } from "../../../theme-context";
@@ -176,8 +180,9 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   React.useEffect(() => {
     if (!filterModalOpen) return;
     function handleClick(e: MouseEvent) {
-      const modal = document.getElementById('case-filter-modal');
-      if (modal && !modal.contains(e.target as Node)) {
+      // Check if click is outside the filter dropdown
+      const filterDropdown = document.querySelector('[data-filter-dropdown]');
+      if (filterDropdown && !filterDropdown.contains(e.target as Node)) {
         setFilterModalOpen(false);
       }
     }
@@ -269,156 +274,544 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   return (
     <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[var(--background)]">
       {!(activeTab === 'transfers' && viewingCaseIdx !== null) && (
-        <div className="w-full px-2 sm:px-8 pt-4">
-          <div className="flex items-center justify-between flex-nowrap gap-x-2 gap-y-2 flex-wrap sm:flex-nowrap min-h-[56px] w-full">
-              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                {/* Back button removed from here */}
-                {/* Tabs here */}
-                <div className="flex gap-2 flex-nowrap">
+        <>
+          {/* Client details subheader - matching clients list subheader */}
+          <div className="w-full flex-wrap gap-2 min-h-[64px] relative transition-opacity duration-200 mt-1">
+            <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
+            <div className="flex sm:hidden mb-1 pt-2 pb-4 justify-between w-full">
+              <div className="flex gap-2">
+                <button
+                  className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] text-[11px] font-medium transition" 
+                  onClick={() => setActiveTab('transfers')}
+                  style={{
+                    backgroundColor: activeTab === 'transfers' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white'),
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = activeTab === 'transfers' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white');
+                  }}
+                >
+                  <FolderTree className="w-4 h-4" />
+                  <span>Cases</span>
+                </button>
+                <button
+                  className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] text-[11px] font-medium transition" 
+                  onClick={() => setActiveTab('details')}
+                  style={{
+                    backgroundColor: activeTab === 'details' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white'),
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = activeTab === 'details' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white');
+                  }}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Details</span>
+                </button>
+                <button 
+                  className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                  aria-label="Sort"
+                  style={{
+                    backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                  }}
+                >
+                  <ArrowUpDown className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                  <span className="dark:text-[var(--foreground)]">Sort</span>
+                </button>
+                {/* Custom filter dropdown for mobile */}
+                <div className="relative" data-filter-dropdown>
                   <button
-                    className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'transfers' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
-                    onClick={() => setActiveTab('transfers')}
+                    type="button"
+                    className="flex items-center p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] text-[11px] font-medium transition justify-between"
                     style={{
-                      backgroundColor: darkMode
-                        ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                        : (activeTab === 'transfers' ? '#f4f4f5' : 'white'),
-                      border: darkMode
-                        ? (activeTab === 'transfers' ? '1px solid #3f3f46' : '1px solid transparent')
-                        : (activeTab === 'transfers' ? '1px solid #d4d4d8' : '1px solid transparent'),
+                      minWidth: 120,
+                      maxWidth: 160,
+                      width: '100%',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                      background: darkMode ? 'var(--muted)' : 'white',
                       color: darkMode ? 'var(--foreground)' : '#18181b',
-                      cursor: activeTab !== 'transfers' ? 'pointer' : 'default',
-                      fontWeight: activeTab === 'transfers' ? 600 : 500,
-                      fontSize: '1.1rem',
                     }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
+                    onClick={() => setFilterModalOpen(v => !v)}
+                    aria-haspopup="listbox"
+                    aria-expanded={filterModalOpen}
+                    tabIndex={0}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
                     }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.backgroundColor = darkMode
-                        ? (activeTab === 'transfers' ? 'var(--muted)' : 'var(--background)')
-                        : (activeTab === 'transfers' ? '#f4f4f5' : 'white');
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
                     }}
                   >
-                    <FolderTree className="w-4 h-4 mr-1" />
-                    Cases
+                    <span className="truncate text-left w-full text-[11px]" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>{activeCaseTypeFilters[0]}</span>
+                    <ChevronDown className="w-3 h-3 ml-1 flex-shrink-0" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
                   </button>
-                  <button
-                    className={`px-3 py-2 text-sm rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap font-medium${activeTab === 'details' ? ' bg-zinc-100 dark:bg-[var(--muted)] border-zinc-200 dark:border-[var(--border)]' : ''}`}
-                    onClick={() => setActiveTab('details')}
-                    style={{
-                      backgroundColor: darkMode
-                        ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                        : (activeTab === 'details' ? '#f4f4f5' : 'white'),
-                      border: darkMode
-                        ? (activeTab === 'details' ? '1px solid #3f3f46' : '1px solid transparent')
-                        : (activeTab === 'details' ? '1px solid #d4d4d8' : '1px solid transparent'),
-                      color: darkMode ? 'var(--foreground)' : '#18181b',
-                      cursor: activeTab !== 'details' ? 'pointer' : 'default',
-                      fontWeight: activeTab === 'details' ? 600 : 500,
-                      fontSize: '1.1rem',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f4f4f5';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.backgroundColor = darkMode
-                        ? (activeTab === 'details' ? 'var(--muted)' : 'var(--background)')
-                        : (activeTab === 'details' ? '#f4f4f5' : 'white');
-                    }}
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    Client details
-                  </button>
-                </div>
-              </div>
-              {/* Add new case button on far right, only for Cases tab */}
-              {activeTab === 'transfers' && (
-                <div className="ml-auto flex items-center gap-2">
-                  {cases.length < 30 && (
-                    <button
-                      type="button"
-                      onClick={handleHydrateCases}
-                      className="icon-btn border border-zinc-200 dark:border-[var(--border)] rounded-full p-2 bg-white dark:bg-[var(--muted)] hover:bg-zinc-100 dark:hover:bg-[var(--border)] transition flex items-center justify-center"
-                      title="Hydrate cases"
-                      aria-label="Hydrate cases"
+                  {filterModalOpen && (
+                    <div
+                      className="absolute z-10 mt-1 border rounded-md shadow-lg"
                       style={{
+                        minWidth: 120,
+                        maxWidth: 160,
+                        width: '100%',
                         borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                        color: darkMode ? 'var(--foreground)' : '#18181b',
-                        boxShadow: 'none',
-                        width: 36,
-                        height: 36,
-                        minWidth: 36,
-                        minHeight: 36,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        background: darkMode ? 'var(--muted)' : 'white',
                       }}
                     >
-                      <Grid2x2Check className="w-5 h-5" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
-                    </button>
+                      {["All", "Pension Transfer", "ISA Transfer", "Pension New Money", "ISA New Money"].map(option => (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`w-full text-left px-2 py-1 text-[11px] hover:bg-blue-50 dark:hover:bg-zinc-800 ${option === activeCaseTypeFilters[0] ? 'font-semibold' : ''}`}
+                          style={{
+                            color: option === activeCaseTypeFilters[0]
+                              ? (darkMode ? '#60a5fa' : '#2563eb')
+                              : (darkMode ? 'var(--foreground)' : '#18181b'),
+                            background: darkMode ? 'var(--muted)' : 'white',
+                          }}
+                          onClick={() => { setActiveCaseTypeFilters([option]); setFilterModalOpen(false); }}
+                          tabIndex={0}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setCreateCaseModalOpen(true)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-zinc-200 bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] font-medium text-sm shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 transition"
-                    style={{ minHeight: 32 }}
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Add new case
-                  </button>
                 </div>
-              )}
-              <div className="flex gap-1 sm:gap-2 ml-2 flex-shrink-0">
-                {hasUnsavedChanges && (
-                  <button
-                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
-                    onClick={handleCancel}
-                    type="button"
-                    aria-label="Cancel"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: darkMode ? '#18181b' : 'white',
-                      border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
-                      color: darkMode ? '#f87171' : '#dc2626',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#3a2323' : '#f4f4f5';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : 'white';
-                    }}
-                  >
-                    <X className="w-4 h-4" style={{ color: darkMode ? '#f87171' : '#dc2626' }} />
-                    <span>Cancel</span>
-                  </button>
+                {/* Search input for mobile */}
+                <div className="relative ml-2" style={{ minWidth: 160, maxWidth: 240 }}>
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                    <SearchIcon className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="text"
+                    value={caseSearch}
+                    onChange={e => setCaseSearch(e.target.value)}
+                    placeholder="Search cases..."
+                    className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
+                    style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
+                  />
+                </div>
+                {/* Pagination for mobile */}
+                {totalPages > 1 && (
+                  <div className="flex items-center ml-2">
+                    <button
+                      className="h-6 w-6 flex items-center justify-center border border-zinc-200 dark:border-[var(--border)] border-r-0 rounded-l-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCasesCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={casesCurrentPage === 1}
+                      aria-label="Previous page"
+                      style={{ 
+                        borderTopRightRadius: 0, 
+                        borderBottomRightRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                    <span
+                      className="h-6 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 dark:border-[var(--border)] text-xs font-medium select-none px-2"
+                      style={{ 
+                        borderRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white',
+                        color: darkMode ? '#e4e4e7' : '#18181b'
+                      }}
+                    >
+                      <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{casesCurrentPage}</span>
+                      <span className="font-normal ml-0.5" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
+                    </span>
+                    <button
+                      className="h-6 w-6 flex items-center justify-center border border-zinc-200 dark:border-[var(--border)] border-l-0 rounded-r-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCasesCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={casesCurrentPage === totalPages}
+                      aria-label="Next page"
+                      style={{ 
+                        borderTopLeftRadius: 0, 
+                        borderBottomLeftRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {activeTab === 'transfers' && (
+                  <>
+                    {cases.length < 30 && (
+                      <button 
+                        onClick={handleHydrateCases}
+                        className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                        aria-label="Generate cases"
+                        style={{
+                          backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                          borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                        }}
+                      >
+                        <Grid2x2Check className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                        <span className="dark:text-[var(--foreground)]">Generate</span>
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setCreateCaseModalOpen(true)} 
+                      className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                      aria-label="Add new case"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <PlusCircle className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                      <span className="dark:text-[var(--foreground)]">Add Case</span>
+                    </button>
+                  </>
                 )}
                 {hasUnsavedChanges && (
-                  <button
-                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition"
-                    onClick={handleSave}
-                    type="button"
-                    aria-label="Save Changes"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: darkMode ? '#18181b' : '#e6fbe8',
-                      border: `1px solid ${darkMode ? '#166534' : '#a7f3d0'}`,
-                      color: darkMode ? '#4ade80' : '#166534',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#1a3a23' : '#bbf7d0';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#18181b' : '#e6fbe8';
-                    }}
-                  >
-                    <Check className="w-4 h-4" style={{ color: darkMode ? '#4ade80' : '#166534' }} />
-                    <span>Save</span>
-                  </button>
+                  <>
+                    <button 
+                      onClick={handleCancel} 
+                      className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                      aria-label="Cancel"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <X className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                      <span className="dark:text-[var(--foreground)]">Cancel</span>
+                    </button>
+                    <button 
+                      onClick={handleSave} 
+                      className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                      aria-label="Save changes"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <Check className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                      <span className="dark:text-[var(--foreground)]">Save</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
-        </div>
+            <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
+              <div className="flex items-center gap-2">
+                <button
+                  className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
+                  onClick={() => setActiveTab('transfers')}
+                  style={{
+                    backgroundColor: activeTab === 'transfers' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white'),
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = activeTab === 'transfers' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white');
+                  }}
+                >
+                  <FolderTree className="w-4 h-4" />
+                  Cases
+                </button>
+                <button
+                  className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
+                  onClick={() => setActiveTab('details')}
+                  style={{
+                    backgroundColor: activeTab === 'details' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white'),
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                    color: darkMode ? 'var(--foreground)' : '#18181b',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = activeTab === 'details' 
+                      ? (darkMode ? 'var(--muted)' : 'white')
+                      : (darkMode ? 'var(--background)' : 'white');
+                  }}
+                >
+                  <FileText className="w-4 h-4" />
+                  Client details
+                </button>
+                <button 
+                  className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                  style={{
+                    backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                  }}
+                >
+                  <ArrowUpDown className="w-4 h-4" />
+                  Sort
+                </button>
+                {/* Custom filter dropdown */}
+                <div className="relative" data-filter-dropdown>
+                  <button
+                    type="button"
+                    className="flex items-center border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition justify-between"
+                    style={{
+                      minWidth: 180,
+                      maxWidth: 240,
+                      width: '100%',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                      background: darkMode ? 'var(--muted)' : 'white',
+                      color: darkMode ? 'var(--foreground)' : '#18181b',
+                    }}
+                    onClick={() => setFilterModalOpen(v => !v)}
+                    aria-haspopup="listbox"
+                    aria-expanded={filterModalOpen}
+                    tabIndex={0}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    }}
+                  >
+                    <span className="truncate text-left w-full" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>{activeCaseTypeFilters[0]}</span>
+                    <ChevronDown className="w-4 h-4 ml-2 flex-shrink-0" style={{ color: darkMode ? '#a1a1aa' : '#71717a' }} />
+                  </button>
+                  {filterModalOpen && (
+                    <div
+                      className="absolute z-10 mt-1 border rounded-lg shadow-lg"
+                      style={{
+                        minWidth: 180,
+                        maxWidth: 240,
+                        width: '100%',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                        background: darkMode ? 'var(--muted)' : 'white',
+                      }}
+                    >
+                      {["All", "Pension Transfer", "ISA Transfer", "Pension New Money", "ISA New Money"].map(option => (
+                        <button
+                          key={option}
+                          type="button"
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-zinc-800 ${option === activeCaseTypeFilters[0] ? 'font-semibold' : ''}`}
+                          style={{
+                            color: option === activeCaseTypeFilters[0]
+                              ? (darkMode ? '#60a5fa' : '#2563eb')
+                              : (darkMode ? 'var(--foreground)' : '#18181b'),
+                            background: darkMode ? 'var(--muted)' : 'white',
+                          }}
+                          onClick={() => { setActiveCaseTypeFilters([option]); setFilterModalOpen(false); }}
+                          tabIndex={0}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Search input for desktop */}
+                <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                    <SearchIcon className="w-5 h-5" />
+                  </span>
+                  <input
+                    type="text"
+                    value={caseSearch}
+                    onChange={e => setCaseSearch(e.target.value)}
+                    placeholder="Search cases..."
+                    className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
+                    style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
+                  />
+                </div>
+                {/* Pagination for desktop */}
+                {totalPages > 1 && (
+                  <div className="flex items-center ml-4">
+                    <button
+                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 dark:border-[var(--border)] border-r-0 rounded-l-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCasesCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={casesCurrentPage === 1}
+                      aria-label="Previous page"
+                      style={{ 
+                        borderTopRightRadius: 0, 
+                        borderBottomRightRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                    <span
+                      className="h-8 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 dark:border-[var(--border)] text-sm font-medium select-none px-3"
+                      style={{ 
+                        borderRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white',
+                        color: darkMode ? '#e4e4e7' : '#18181b'
+                      }}
+                    >
+                      <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{casesCurrentPage}</span>
+                      <span className="font-normal ml-1" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
+                    </span>
+                    <button
+                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 dark:border-[var(--border)] border-l-0 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCasesCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={casesCurrentPage === totalPages}
+                      aria-label="Next page"
+                      style={{ 
+                        borderTopLeftRadius: 0, 
+                        borderBottomLeftRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {activeTab === 'transfers' && (
+                  <>
+                    {cases.length < 30 && (
+                      <button 
+                        onClick={handleHydrateCases}
+                        className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                        style={{
+                          backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                          borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                        }}
+                      >
+                        <Grid2x2Check className="w-4 h-4" />
+                        Generate
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setCreateCaseModalOpen(true)} 
+                      className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Add case
+                    </button>
+                  </>
+                )}
+                {hasUnsavedChanges && (
+                  <>
+                    <button 
+                      onClick={handleCancel} 
+                      className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={handleSave} 
+                      className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                      style={{
+                        backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                        borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      }}
+                    >
+                      <Check className="w-4 h-4" />
+                      Save
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+        </>
       )}
       {activeTab === 'details' && (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -480,7 +873,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
             <EmptyCasesState onAddNewCase={() => setCreateCaseModalOpen(true)} />
           ) : (
             <div className="flex flex-col h-full min-h-0">
-              <div className="flex-1 px-4 min-h-0 flex flex-col">
+              <div className="flex-1 sm:px-8 sm:ml-16 sm:mt-0 min-h-0 flex flex-col">
                 <CasesTable
                   cases={filteredCases}
                   selectedRows={selectedRows}
@@ -499,10 +892,6 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   pageSize={pageSize}
                   currentPage={casesCurrentPage}
                   darkMode={darkMode}
-                  onSearch={setCaseSearch}
-                  searchValue={caseSearch}
-                  onFilterChange={val => setActiveCaseTypeFilters([val])}
-                  filterValue={activeCaseTypeFilters[0]}
                 />
                 {/* Render the modal OUTSIDE the table, not inside .map or any <tr> */}
                 {actionModalOpen && actionRowIdx !== null && actionModalPos && (
@@ -527,18 +916,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   />
                 )}
               </div>
-              <ClientFooter
-                selectedClient={null}
-                currentPage={casesCurrentPage}
-                totalPages={totalPages}
-                setCurrentPage={setCasesCurrentPage}
-                isEmpty={false}
-                showFooterActions={false}
-                invisible={false}
-                forceWhiteBg={false}
-                greyBg={false}
-                showTransferDocumentActions={false}
-              />
+
             </div>
             // End refactor
           )
