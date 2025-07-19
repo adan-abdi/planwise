@@ -42,6 +42,7 @@ const gap = 16;
 
 interface ChecklistParserProps {
   showFooterActions?: boolean;
+  checklistTitle?: string;
 }
 
 interface SortableChecklistItemProps {
@@ -276,7 +277,7 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
   );
 }
 
-const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) => {
+const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, checklistTitle }) => {
   const { darkMode } = useTheme();
   const [items, setItems] = useState(checklistData.map((_, i) => i));
   const [checked, setChecked] = useState(checklistData.map(item => !!item.found));
@@ -357,7 +358,7 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions }) 
 
   return (
     <div style={{ padding: 32, width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>Ceding 1 Checklist</h2>
+      <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
       <div style={{ borderRadius: 16, minHeight: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', fontWeight: 500, fontSize: 15, padding: '24px 40px 8px 40px', color: cardText, background: 'transparent', flexShrink: 0 }}>
           <div style={{ flex: 2 }}>Requested Information</div>

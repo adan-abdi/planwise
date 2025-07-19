@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, ArrowDown, ArrowUpDown, Check, MoreHorizontal, ChevronDown } from "lucide-react";
+import React from "react";
+import { ArrowUp, ArrowDown, ArrowUpDown, Check, MoreHorizontal } from "lucide-react";
 import type { Case } from "../ClientDetails";
 
 interface CasesTableProps {
@@ -12,6 +12,21 @@ interface CasesTableProps {
   pageSize: number;
   currentPage: number;
   darkMode: boolean;
+}
+
+// Helper to format date as '!7th June 2025'
+function formatFancyDate(dateString: string) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  // Ordinal suffix
+  const j = day % 10, k = day % 100;
+  let suffix = 'th';
+  if (j === 1 && k !== 11) suffix = 'st';
+  else if (j === 2 && k !== 12) suffix = 'nd';
+  else if (j === 3 && k !== 13) suffix = 'rd';
+  return `${day}${suffix} ${month} ${year}`;
 }
 
 export default function CasesTable({ cases, selectedRows, onSelectRow, onSort, sortState, onAction, pageSize, currentPage, darkMode }: CasesTableProps) {
@@ -109,7 +124,7 @@ export default function CasesTable({ cases, selectedRows, onSelectRow, onSort, s
                 </button>
               </td>
               <td className="p-2 align-middle border-r border-zinc-200">
-                <div className="text-zinc-600 text-xs">{new Date(caseObj.createdAt).toLocaleDateString()}</div>
+                <div className="text-zinc-600 text-xs">{formatFancyDate(caseObj.createdAt)}</div>
               </td>
               <td className="p-2 align-middle border-r border-zinc-200">
                 <div className="font-semibold text-zinc-900">{caseObj.caseType}</div>
@@ -256,7 +271,7 @@ export default function CasesTable({ cases, selectedRows, onSelectRow, onSort, s
                 </button>
               </td>
               <td className="p-2 align-middle border-r border-zinc-700">
-                <div className="text-zinc-400 text-xs">{new Date(caseObj.createdAt).toLocaleDateString()}</div>
+                <div className="text-zinc-400 text-xs">{formatFancyDate(caseObj.createdAt)}</div>
               </td>
               <td className="p-2 align-middle border-r border-zinc-700">
                 <div className="font-semibold text-[var(--foreground)]">{caseObj.caseType}</div>

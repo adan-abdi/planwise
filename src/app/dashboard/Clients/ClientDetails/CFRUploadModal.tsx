@@ -29,10 +29,6 @@ export default function CFRUploadModal({ open, onClose, fileName, onShowReviewCh
   const modalBorder = darkMode ? '#27272a' : '#e4e4e7';
   const headerBg = darkMode ? '#232329' : '#f4f4f5';
   const headerText = darkMode ? '#f4f4f5' : '#52525b';
-  const tabActiveBg = darkMode ? '#232329' : '#fff';
-  const tabInactiveBg = darkMode ? '#18181b' : '#f4f4f5';
-  const tabActiveText = darkMode ? '#f4f4f5' : '#18181b';
-  const tabInactiveText = darkMode ? '#71717a' : '#a1a1aa';
   const dragActiveBg = darkMode ? '#1e293b' : '#f0f6ff';
   const dragActiveBorder = darkMode ? '#2563eb' : '#3b82f6';
   const fileBoxBg = darkMode ? '#232329' : '#fff';
@@ -53,14 +49,8 @@ export default function CFRUploadModal({ open, onClose, fileName, onShowReviewCh
   };
 
   const handleContinue = () => {
-    if (activeTab === 'source') {
-      setShowChecklistConfirm(true);
-    } else if (activeTab === 'checklist') {
-      if (checklistFiles.length > 0) {
-        onClose();
-        if (onShowReviewChecklist) onShowReviewChecklist();
-      }
-    }
+    onClose();
+    if (onShowReviewChecklist) onShowReviewChecklist();
   };
 
   // const handleChecklistConfirm = () => {
@@ -157,39 +147,7 @@ export default function CFRUploadModal({ open, onClose, fileName, onShowReviewCh
         >
           {fileName || "Upload file"}
         </div>
-        <div className="flex justify-center w-full border-b py-2 gap-4 mb-4" style={{ borderColor: modalBorder }}>
-          <button
-            className="px-3 py-2 text-sm font-medium rounded-[10px] border transition-colors flex items-center gap-1 whitespace-nowrap"
-            style={{
-              background: activeTab === 'source' ? tabActiveBg : tabInactiveBg,
-              color: activeTab === 'source' ? tabActiveText : tabInactiveText,
-              borderColor: modalBorder,
-              opacity: activeTab === 'source' ? 1 : 0.7,
-            }}
-            onClick={activeTab === 'checklist' ? undefined : () => setActiveTab('source')}
-            tabIndex={0}
-            type="button"
-          >
-            Source file
-          </button>
-          <button
-            style={{
-              background: showChecklistContent && activeTab === 'checklist' ? tabActiveBg : tabInactiveBg,
-              color: showChecklistContent && activeTab === 'checklist' ? tabActiveText : tabInactiveText,
-              borderColor: modalBorder,
-              opacity: showChecklistContent ? 1 : 0.5,
-              cursor: showChecklistContent ? 'pointer' : 'not-allowed',
-            }}
-            className="px-3 py-2 text-sm font-medium rounded-[10px] border flex items-center gap-1 whitespace-nowrap"
-            aria-disabled={!showChecklistContent}
-            tabIndex={showChecklistContent ? 0 : -1}
-            type="button"
-            disabled={!showChecklistContent}
-            onClick={showChecklistContent && activeTab !== 'source' ? () => setActiveTab('checklist') : undefined}
-          >
-            Personalised checklist
-          </button>
-        </div>
+        {/* Tabs removed: only show upload area */}
         <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-6 sm:py-8 w-full overflow-y-auto" style={{ background: modalBg }}>
           {activeTab === 'checklist' && showChecklistContent ? (
             <>
@@ -347,10 +305,10 @@ export default function CFRUploadModal({ open, onClose, fileName, onShowReviewCh
           </button>
           <button
             className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors"
-            style={{ background: buttonContinueBg, color: buttonContinueText, borderColor: modalBorder, opacity: activeTab === 'source' && selectedFiles.length === 0 ? 0.7 : 1 }}
+            style={{ background: buttonContinueBg, color: buttonContinueText, borderColor: modalBorder, opacity: selectedFiles.length === 0 ? 0.7 : 1 }}
             onClick={handleContinue}
             type="button"
-            disabled={activeTab === 'source' && selectedFiles.length === 0}
+            disabled={selectedFiles.length === 0}
           >
             Continue
           </button>

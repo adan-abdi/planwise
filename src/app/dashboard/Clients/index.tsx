@@ -11,6 +11,21 @@ import ClientFooter from "./ClientFooter";
 import ClientEmptyState from "./ClientEmptyState";
 import { useTheme } from "../../../theme-context";
 
+// Helper to format date as '25th June 2025'
+function formatFancyDate(dateString: string) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  // Ordinal suffix
+  const j = day % 10, k = day % 100;
+  let suffix = 'th';
+  if (j === 1 && k !== 11) suffix = 'st';
+  else if (j === 2 && k !== 12) suffix = 'nd';
+  else if (j === 3 && k !== 13) suffix = 'rd';
+  return `${day}${suffix} ${month} ${year}`;
+}
+
 export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenerateRandomClients, triggerRandomClients, onRandomClientsGenerated, onBreadcrumbChange, onBackToClientList }: { 
   detailsViewOpen?: boolean; 
   onDetailsViewChange?: (open: boolean, name?: string, tab?: string) => void;
@@ -209,9 +224,10 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           isActive: false,
         });
         // If viewing a specific case, add the case type/name as the last segment
-        if (selectedTab === 'transfers' && viewingCaseIdx !== null && (selectedClient as { cases?: { caseType: string }[] }).cases && (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx]) {
+        if (selectedTab === 'transfers' && viewingCaseIdx !== null && (selectedClient as { cases?: { caseType: string, createdAt: string }[] }).cases && (selectedClient as { cases?: { caseType: string, createdAt: string }[] }).cases![viewingCaseIdx]) {
+          const caseObj = (selectedClient as { cases?: { caseType: string, createdAt: string }[] }).cases![viewingCaseIdx];
           path.push({
-            label: (selectedClient as { cases?: { caseType: string }[] }).cases![viewingCaseIdx].caseType,
+            label: `${caseObj.caseType} on ${formatFancyDate(caseObj.createdAt)}`,
             isActive: true,
           });
         }
@@ -493,99 +509,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                 </div>
               </div>
               <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
-                <div className="flex items-center gap-2">
-                  <button 
-                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
-                    style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-                    }}
-                  >
-                    <ArrowUpDown className="w-4 h-4" />
-                    Sort
-                  </button>
-                  <button 
-                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
-                    style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-                    }}
-                  >
-                    <FilterIcon className="w-4 h-4" />
-                    Filter
-                  </button>
-                  {/* Search input for desktop */}
-                  <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
-                      <SearchIcon className="w-5 h-5" />
-                    </span>
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
-                      placeholder="Search clients"
-                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
-                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
-                    />
-                  </div>
-                  {/* Pagination for desktop */}
-                  {totalPages > 1 && (
-                    <div className="flex items-center ml-4">
-                      <button
-                        className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        aria-label="Previous page"
-                        style={{ 
-                          borderTopRightRadius: 0, 
-                          borderBottomRightRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white'
-                        }}
-                      >
-                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
-                      </button>
-                      <span
-                        className="h-8 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-sm font-medium select-none px-3"
-                        style={{ 
-                          borderRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white',
-                          color: darkMode ? '#e4e4e7' : '#18181b'
-                        }}
-                      >
-                        <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
-                        <span className="font-normal ml-1" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
-                      </span>
-                      <button
-                        className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        aria-label="Next page"
-                        style={{ 
-                          borderTopLeftRadius: 0, 
-                          borderBottomLeftRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white'
-                        }}
-                      >
-                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* LEFT: Main action buttons */}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={handleOpenModal} 
@@ -642,6 +566,100 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                     )}
                     Export
                   </button>
+                </div>
+                {/* RIGHT: Table actions (sort, filter, search, pagination always present) */}
+                <div className="flex items-center gap-2">
+                  {/* Sort button */}
+                  <button 
+                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    style={{
+                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    }}
+                  >
+                    <ArrowUpDown className="w-4 h-4" />
+                    Sort
+                  </button>
+                  {/* Filter button */}
+                  <button 
+                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    style={{
+                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    }}
+                  >
+                    <FilterIcon className="w-4 h-4" />
+                    Filter
+                  </button>
+                  {/* Search input */}
+                  <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                      <SearchIcon className="w-5 h-5" />
+                    </span>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Search clients"
+                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
+                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
+                    />
+                  </div>
+                  {/* Pagination always present */}
+                  <div className="flex items-center ml-4">
+                    <button
+                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      style={{ 
+                        borderTopRightRadius: 0, 
+                        borderBottomRightRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                    <span
+                      className="h-8 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-sm font-medium select-none px-3"
+                      style={{ 
+                        borderRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white',
+                        color: darkMode ? '#e4e4e7' : '#18181b'
+                      }}
+                    >
+                      <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
+                      <span className="font-normal ml-1" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
+                    </span>
+                    <button
+                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                      style={{ 
+                        borderTopLeftRadius: 0, 
+                        borderBottomLeftRadius: 0, 
+                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                        backgroundColor: darkMode ? '#27272a' : 'white'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
