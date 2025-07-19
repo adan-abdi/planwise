@@ -152,18 +152,32 @@ export default function DashboardPage() {
   const { darkMode } = useTheme();
 
   const generateRandomClients = () => {
-    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas'];
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson'];
-    const advisors = ['Robert Fox', 'Sarah Johnson', 'Michael Brown', 'Emma Davis', 'David Wilson'];
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas', 'Christopher', 'Amanda', 'Daniel', 'Ashley', 'Matthew', 'Jessica', 'Joshua', 'Nicole', 'Andrew', 'Stephanie', 'Ryan', 'Rebecca', 'Brandon', 'Laura', 'Justin', 'Heather', 'Kevin', 'Michelle', 'Brian', 'Emily'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright'];
+    const advisors = ['Robert Fox', 'Sarah Johnson', 'Michael Brown', 'Emma Davis', 'David Wilson', 'Jennifer Lee', 'Christopher Chen', 'Amanda Rodriguez'];
     
-    const randomClients = Array.from({ length: 30 }, () => {
+    const formatDate = (date: Date) => {
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear();
+      return `${day} ${month}, ${year}`;
+    };
+    
+    const randomClients = Array.from({ length: 35 }, () => {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const advisor = advisors[Math.floor(Math.random() * advisors.length)];
+      
+      // Generate random date within the last 2 years
+      const now = new Date();
+      const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+      const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
+      const randomDate = new Date(randomTime);
+      
       return {
         client: `${firstName} ${lastName}`,
         advisor,
-        date: '',
+        date: formatDate(randomDate),
         type: 'N/A',
         cfr: 'N/A',
         plans: 0,
@@ -175,7 +189,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[var(--background)] w-full max-w-full">
+    <div className="flex h-screen bg-gray-50 dark:bg-[var(--background)] w-full max-w-full">
       {/* Sidebar drawer (now always available as overlay) */}
       <MobileSidebarDrawer
         open={mobileSidebarOpen}
@@ -186,82 +200,79 @@ export default function DashboardPage() {
       {/* Main content area: header + content */}
       <main className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="w-full bg-[var(--background)] border-b-2 z-30" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}>
-          <div className="flex items-center h-20 px-8 justify-between bg-[var(--background)]">
-            <div className="flex items-center">
-              {/* Mobile sidebar open button */}
-              <button
-                className="p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10"
-                aria-label="Open sidebar"
-                onClick={() => setMobileSidebarOpen(true)}
-                style={{
-                  backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                  borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-                }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="7" x2="19" y2="7" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <line x1="5" y1="17" x2="19" y2="17" />
-                </svg>
-              </button>
-              {/* Breadcrumb/title flush next to hamburger */}
-              {active === "clients" && breadcrumbPath.length > 0 ? (
-                <div className="flex items-center gap-2 py-2 pl-4">
-                  {breadcrumbPath.map((item, idx) => (
-                    <React.Fragment key={item.label}>
-                      {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
-                      {idx < breadcrumbPath.length - 1 && item.onClick ? (
-                        <button
-                          type="button"
-                          onClick={item.onClick}
-                          className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {item.icon && <span>{item.icon}</span>}
-                          <span>{item.label}</span>
-                        </button>
-                      ) : (
-                        <span
-                          className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
-                          style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
-                        >
-                          {item.icon && <span>{item.icon}</span>}
-                          <span>{item.label}</span>
-                        </span>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </div>
-              ) :
-                  <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
-              }
-            </div>
-            {/* User section and logo right */}
-            <div className="flex items-center gap-6">
-              <DashboardHeaderUserSection
-                userName={userName}
-                userRole={userRole}
-                avatarUrl={resolvedAvatarUrl}
-                onGenerateRandomClients={() => {
-                  if (active === "clients") {
-                    setTriggerRandomClients(true);
-                  }
-                }}
-                showGenerateButton={active === "clients" && !clientDetailsOpen}
-              />
-              <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
+        <div className="w-full px-2 sm:px-8 pt-2"> {/* pt-2 instead of pt-4 for less space */}
+          <div className="rounded-lg bg-white dark:bg-[var(--background)] p-2 sm:p-4 border border-zinc-200" style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7', backgroundColor: darkMode ? 'var(--background)' : 'white' }}> {/* mb-2 instead of mb-4, bg-white */}
+            <div className="flex items-center h-10 px-2 sm:px-0 justify-between">
+              <div className="flex items-center">
+                {/* Mobile sidebar open button */}
+                <button
+                  className="p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10"
+                  aria-label="Open sidebar"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  style={{
+                    backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="7" x2="19" y2="7" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <line x1="5" y1="17" x2="19" y2="17" />
+                  </svg>
+                </button>
+                {/* Logo right after menu button */}
+                <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto ml-3" />
+                {/* Breadcrumb/title flush next to logo */}
+                {active === "clients" && breadcrumbPath.length > 0 ? (
+                  <div className="flex items-center gap-2 py-2 pl-4">
+                    {breadcrumbPath.map((item, idx) => (
+                      <React.Fragment key={item.label}>
+                        {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                        {idx < breadcrumbPath.length - 1 && item.onClick ? (
+                          <button
+                            type="button"
+                            onClick={item.onClick}
+                            className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {item.icon && <span>{item.icon}</span>}
+                            <span>{item.label}</span>
+                          </button>
+                        ) : (
+                          <span
+                            className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
+                            style={item.isActive ? { color: darkMode ? 'white' : 'black' } : undefined}
+                          >
+                            {item.icon && <span>{item.icon}</span>}
+                            <span>{item.label}</span>
+                          </span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                ) :
+                    <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif" }}>{activeSection?.label}</div>
+                }
+              </div>
+              {/* User section only */}
+              <div className="flex items-center">
+                <DashboardHeaderUserSection
+                  userName={userName}
+                  userRole={userRole}
+                  avatarUrl={resolvedAvatarUrl}
+                />
+              </div>
             </div>
           </div>
         </div>
         {/* Main content */}
-        <div className="flex-1 flex flex-col bg-[var(--background)] w-full px-4 sm:px-0 min-h-0">
+        <div className="flex-1 flex flex-col w-full px-4 sm:px-0 min-h-0">
           {active === "clients" ? (
             <Clients 
               detailsViewOpen={clientDetailsOpen} 
@@ -289,6 +300,56 @@ export default function DashboardPage() {
           ) : null}
         </div>
       </main>
+      {/* Left Sidebar */}
+      <div className="fixed left-2 sm:left-8 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
+        {/* Sidebar Content */}
+        <div 
+          className="h-full rounded-lg overflow-hidden" 
+          style={{ 
+            backgroundColor: darkMode ? 'var(--background)' : 'white',
+            borderColor: darkMode ? '#52525b' : '#e4e4e7',
+            border: `1px solid ${darkMode ? '#52525b' : '#e4e4e7'}`
+          }}
+        >
+          <nav className="h-full flex flex-col items-center justify-center space-y-2 py-4">
+            {sections.map((section) => (
+              <button
+                key={section.key}
+                onClick={() => setActive(section.key)}
+                className="w-8 h-8 rounded-lg transition-all duration-200 flex items-center justify-center group relative"
+                style={{
+                  backgroundColor: active === section.key 
+                    ? (darkMode ? '#1e3a8a' : '#eff6ff') // blue-900 for dark, blue-50 for light
+                    : 'transparent',
+                  color: active === section.key
+                    ? (darkMode ? '#93c5fd' : '#2563eb') // blue-300 for dark, blue-600 for light
+                    : (darkMode ? '#9ca3af' : '#6b7280'), // gray-400 for dark, gray-500 for light (classic gray)
+                  border: active === section.key
+                    ? `1px solid ${darkMode ? '#1e40af' : '#bfdbfe'}` // blue-800 for dark, blue-200 for light
+                    : '1px solid transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (active !== section.key) {
+                    e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6'; // gray-700 for dark, gray-100 for light
+                    e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b'; // gray-200 for dark, gray-900 for light
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (active !== section.key) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280'; // gray-400 for dark, gray-500 for light (classic gray)
+                  }
+                }}
+                title={section.label}
+              >
+                {React.cloneElement(section.icon, {
+                  className: "w-5 h-5 transition-colors duration-200"
+                })}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
     </div>
   );
 } 

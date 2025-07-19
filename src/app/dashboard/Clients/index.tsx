@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, Search as SearchIcon, ArrowLeft } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, Search as SearchIcon, ArrowLeft, Grid2x2Check } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -29,7 +29,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
   const [showChecklistReview, setShowChecklistReview] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 13;
+  const pageSize = 14;
   const totalPages = Math.max(1, Math.ceil(clients.length / pageSize));
   const { darkMode } = useTheme();
   const [reviewChecklistData, setReviewChecklistData] = useState<{
@@ -114,6 +114,14 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     }
   };
   const handleCloseUploadModal = () => setUploadModalOpen(false);
+
+  const handleGenerateRandomClients = () => {
+    if (onGenerateRandomClients) {
+      const randomClients = onGenerateRandomClients();
+      setClients(randomClients);
+      setCurrentPage(1); // Reset to first page
+    }
+  };
 
   const handleShowReviewChecklist = () => {
     if (selectedClient) {
@@ -266,7 +274,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
-      <div className="sm:px-8 sm:pt-4">
+      <div className="sm:px-8 sm:ml-16 sm:mt-0">
         <ClientList
           clients={paginatedClients}
           onViewDetails={handleViewDetails}
@@ -293,7 +301,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   }, [selectedClient, showReviewChecklist, showChecklistReview, reviewChecklistData]);
 
   return (
-    <div className="flex flex-col h-full" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-[var(--background)]" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <ClientModal open={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
       <div className="flex-1 min-h-0 flex flex-col" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {showChecklistReview && reviewChecklistData ? (
@@ -322,12 +330,12 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           />
         ) : (
           <>
+            {/* Client list subheader - no box styling */}
             <div
-              className={`w-full bg-white dark:bg-[var(--background)] flex-wrap gap-2 min-h-[64px] relative border-b transition-opacity duration-200 ${selectedClient ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
-              style={{ borderColor: darkMode ? '#52525b' : '#e4e4e7' }}
+              className={`w-full flex-wrap gap-2 min-h-[64px] relative transition-opacity duration-200 mt-1 ${selectedClient ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
             >
               <div className="block sm:hidden absolute left-1/2 -translate-x-1/2 w-screen bottom-0 h-px bg-zinc-200 dark:bg-[var(--border)]" />
-              <div className="flex sm:hidden mb-1 pt-4 pb-4 justify-between w-full">
+              <div className="flex sm:hidden mb-1 pt-2 pb-4 justify-between w-full">
                 <div className="flex gap-2">
                   <button 
                     className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
@@ -373,9 +381,55 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                       placeholder="Search clients"
-                      className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                      className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
+                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
                     />
                   </div>
+                  {/* Pagination for mobile */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center ml-2">
+                      <button
+                        className="h-6 w-6 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        aria-label="Previous page"
+                        style={{ 
+                          borderTopRightRadius: 0, 
+                          borderBottomRightRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white'
+                        }}
+                      >
+                        <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+                      </button>
+                      <span
+                        className="h-6 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-xs font-medium select-none px-2"
+                        style={{ 
+                          borderRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white',
+                          color: darkMode ? '#e4e4e7' : '#18181b'
+                        }}
+                      >
+                        <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
+                        <span className="font-normal ml-0.5" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
+                      </span>
+                      <button
+                        className="h-6 w-6 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        aria-label="Next page"
+                        style={{ 
+                          borderTopLeftRadius: 0, 
+                          borderBottomLeftRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white'
+                        }}
+                      >
+                        <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <button 
@@ -395,6 +449,24 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   >
                     <UserPlus className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Add Client</span>
+                  </button>
+                  <button 
+                    onClick={handleGenerateRandomClients}
+                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                    aria-label="Generate random clients"
+                    style={{
+                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    }}
+                  >
+                    <Grid2x2Check className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
+                    <span className="dark:text-[var(--foreground)]">Generate</span>
                   </button>
                   <button 
                     className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
@@ -420,7 +492,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   </button>
                 </div>
               </div>
-              <div className="hidden sm:flex w-full items-center justify-between border-b border-zinc-200 dark:border-[var(--border)] px-8 py-4 bg-white dark:bg-[var(--background)]">
+              <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
                 <div className="flex items-center gap-2">
                   <button 
                     className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
@@ -464,9 +536,55 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                       placeholder="Search clients"
-                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
+                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
                     />
                   </div>
+                  {/* Pagination for desktop */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center ml-4">
+                      <button
+                        className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        aria-label="Previous page"
+                        style={{ 
+                          borderTopRightRadius: 0, 
+                          borderBottomRightRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white'
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+                      </button>
+                      <span
+                        className="h-8 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-sm font-medium select-none px-3"
+                        style={{ 
+                          borderRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white',
+                          color: darkMode ? '#e4e4e7' : '#18181b'
+                        }}
+                      >
+                        <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
+                        <span className="font-normal ml-1" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
+                      </span>
+                      <button
+                        className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        aria-label="Next page"
+                        style={{ 
+                          borderTopLeftRadius: 0, 
+                          borderBottomLeftRadius: 0, 
+                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
+                          backgroundColor: darkMode ? '#27272a' : 'white'
+                        }}
+                      >
+                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
@@ -485,6 +603,23 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   >
                     <UserPlus className="w-4 h-4" />
                     Add client
+                  </button>
+                  <button 
+                    onClick={handleGenerateRandomClients}
+                    className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    style={{
+                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
+                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    }}
+                  >
+                    <Grid2x2Check className="w-4 h-4" />
+                    Generate
                   </button>
                   <button 
                     className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
@@ -510,7 +645,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                 </div>
               </div>
             </div>
-            <div className="w-full pt-0 pb-0 flex-1 flex flex-col min-h-0">{clientContent}</div>
+            <div className="w-full pt-0 pb-0 flex-1 flex flex-col min-h-0 -mt-1">{clientContent}</div>
           </>
         )}
         <UploadModal
@@ -541,7 +676,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           checklistItems={reviewChecklistData?.checklistItems || checklistItems}
         />
       </div>
-      {(clients.length > 0 && !selectedClient) || (showChecklistReview && !!reviewChecklistData) || (selectedTab.startsWith('transfers') && documentOpen) ? (
+      {(showChecklistReview && !!reviewChecklistData) || (selectedTab.startsWith('transfers') && documentOpen) ? (
         <ClientFooter
           selectedClient={selectedClient}
           currentPage={currentPage}
@@ -549,7 +684,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           setCurrentPage={setCurrentPage}
           isEmpty={false}
           showFooterActions={showChecklistReview}
-          forceWhiteBg={clients.length > 0 && !selectedClient}
+          forceWhiteBg={false}
           greyBg={selectedTab.startsWith('transfers') && documentOpen}
           showTransferDocumentActions={selectedTab.startsWith('transfers') && documentOpen}
           onSaveDraft={showChecklistReview ? handleChecklistReviewBack : undefined}

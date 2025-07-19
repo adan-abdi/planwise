@@ -189,13 +189,15 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
   return (
     <div className="min-h-0 flex flex-col h-full w-full">
       {/* Progress Stepper */}
-      <div className="px-8 w-full">
-        <Stepper
-          steps={stages}
-          current={activeStageIdx}
-          darkMode={darkMode}
-          onStepClick={idx => idx !== activeStageIdx && setActiveStageIdx(idx)}
-        />
+      <div className="w-full px-8 pt-4">
+        <div className="px-0 sm:px-6">
+            <Stepper
+              steps={stages}
+              current={activeStageIdx}
+              darkMode={darkMode}
+              onStepClick={idx => idx !== activeStageIdx && setActiveStageIdx(idx)}
+            />
+          </div>
       </div>
       <div className="h-px w-full bg-zinc-200 dark:bg-[var(--border)] mt-2 mb-2" />
       {/* Stage Content */}
