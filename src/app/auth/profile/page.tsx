@@ -22,6 +22,10 @@ export default function ProfilePage() {
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
   const { darkMode, themePreference, setThemePreference } = useTheme()
+  
+  // Track original values to detect changes
+  const [originalName, setOriginalName] = useState('')
+  const [originalProfileUrl, setOriginalProfileUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -53,12 +57,29 @@ export default function ProfilePage() {
   // Load existing profile data
   useEffect(() => {
     const loadProfile = async () => {
+      console.log('Loading profile...');
       try {
-        const response = await getProfile() as UpdateProfileResponse;
+        // Add a timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile loading timeout')), 10000)
+        );
+        
+        const response = await Promise.race([
+          getProfile() as Promise<UpdateProfileResponse>,
+          timeoutPromise
+        ]) as UpdateProfileResponse;
+        
+        console.log('Profile response:', response);
         if (response.status && response.data) {
-          setName(response.data.fullName || '');
-          if (response.data.profilePictureUrl) {
-            setProfilePreview(response.data.profilePictureUrl);
+          const fullName = response.data.fullName || '';
+          const profileUrl = response.data.profilePictureUrl;
+          
+          setName(fullName);
+          setOriginalName(fullName);
+          
+          if (profileUrl) {
+            setProfilePreview(profileUrl);
+            setOriginalProfileUrl(profileUrl);
           }
         }
       } catch (err) {
@@ -67,17 +88,34 @@ export default function ProfilePage() {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.full_name) {
           setName(user.full_name);
+          setOriginalName(user.full_name);
         }
         if (user.profilePictureUrl) {
           setProfilePreview(user.profilePictureUrl);
+          setOriginalProfileUrl(user.profilePictureUrl);
         }
       } finally {
+        console.log('Setting isLoadingProfile to false');
         setIsLoadingProfile(false);
       }
     };
 
     loadProfile();
   }, []);
+  
+
+  
+  // Fallback to ensure loading state is resolved
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoadingProfile) {
+        console.log('Force setting isLoadingProfile to false due to timeout');
+        setIsLoadingProfile(false);
+      }
+    }, 15000); // 15 second fallback
+    
+    return () => clearTimeout(timer);
+  }, [isLoadingProfile]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -102,6 +140,18 @@ export default function ProfilePage() {
     setLoading(true)
     setError('')
     setSuccess('')
+    
+    // Check if any profile data has actually changed
+    const nameChanged = name !== originalName;
+    const profileChanged = profileFile !== null || (originalProfileUrl && !profilePreview) || (!originalProfileUrl && profilePreview);
+    
+    // If only theme changed or nothing changed, just redirect to dashboard
+    if (!nameChanged && !profileChanged) {
+      setLoading(false);
+      router.push('/dashboard');
+      return;
+    }
+    
     try {
       const result: UpdateProfileResponse = await updateUserProfile(name, profileFile || undefined)
       if (result.status && result.data) {
@@ -242,12 +292,20 @@ export default function ProfilePage() {
         {/* Theme Preferences Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium mb-2" style={{ color: darkMode ? 'var(--foreground)' : '#374151' }}>
-            Theme Preferences
+            Theme Preferences {isLoadingProfile && <span className="text-blue-500">(Loading...)</span>}
           </label>
           <button
             type="button"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out flex items-center justify-between"
+            onClick={() => {
+              console.log('Theme dropdown clicked, current state:', dropdownOpen, 'isLoadingProfile:', isLoadingProfile);
+              if (!isLoadingProfile) {
+                setDropdownOpen(!dropdownOpen);
+              }
+            }}
+            disabled={isLoadingProfile}
+            className={`w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out flex items-center justify-between ${
+              isLoadingProfile ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             style={{
               background: darkMode ? 'var(--muted)' : 'white',
               color: darkMode ? 'var(--foreground)' : '#18181b',

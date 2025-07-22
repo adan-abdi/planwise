@@ -36,7 +36,6 @@ const sections = [
   { key: "compliance", label: "Team members", icon: <PersonStanding className={iconClass} /> },
   { key: "templates", label: "Templates", icon: <SquareDashedKanban className={iconClass} /> },
   { key: "help", label: "Help/FAQs", icon: <BadgeQuestionMark className={iconClass} /> },
-  { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
 
 type BreadcrumbItem = { label: string; icon?: React.ReactNode; onClick?: () => void; isActive?: boolean };
@@ -404,7 +403,7 @@ export default function DashboardPage() {
             ))}
           </nav>
           
-          {/* Bottom Links - Logout and Edit Profile */}
+          {/* Bottom Links - Settings, Edit Profile, and Logout */}
           <div className="border-t py-4 flex flex-col items-center space-y-2" style={{ 
             borderColor: darkMode 
               ? 'rgba(161, 161, 170, 0.3)' 
@@ -412,6 +411,72 @@ export default function DashboardPage() {
             backdropFilter: 'blur(16px) saturate(180%)',
             WebkitBackdropFilter: 'blur(16px) saturate(180%)'
           }}>
+            <button
+              onClick={() => setActive("settings")}
+              className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
+              style={{
+                backgroundColor: active === "settings" 
+                  ? (darkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.15)')
+                  : 'transparent',
+                color: active === "settings"
+                  ? (darkMode ? '#60a5fa' : '#2563eb')
+                  : (darkMode ? '#9ca3af' : '#6b7280'),
+                border: active === "settings"
+                  ? `1px solid ${darkMode ? 'rgba(96, 165, 250, 0.3)' : 'rgba(37, 99, 235, 0.3)'}`
+                  : '1px solid transparent',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)'
+              }}
+              onMouseEnter={(e) => {
+                if (active !== "settings") {
+                  e.currentTarget.style.backgroundColor = darkMode 
+                    ? 'rgba(55, 65, 81, 0.2)' 
+                    : 'rgba(243, 244, 246, 0.3)';
+                  e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b';
+                }
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = darkMode 
+                  ? '0 8px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                  : '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
+                
+                // Icon hover effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1.05)';
+                  icon.style.filter = active === "settings"
+                    ? (darkMode ? 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.4))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.3))')
+                    : (darkMode ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.3))' : 'drop-shadow(0 0 6px rgba(0, 0, 0, 0.2))');
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (active !== "settings") {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+                }
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                
+                // Reset icon effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1)';
+                  icon.style.filter = active === "settings" 
+                    ? (darkMode ? 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.4))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.3))')
+                    : 'none';
+                }
+              }}
+              title="Settings"
+            >
+              <Settings className="w-5 h-5 transition-all duration-300 ease-out" style={{
+                filter: active === "settings" 
+                  ? (darkMode ? 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.4))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.3))')
+                  : 'none',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }} />
+            </button>
             <button
               onClick={() => window.location.href = '/auth/profile'}
               className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
@@ -456,7 +521,7 @@ export default function DashboardPage() {
                   icon.style.filter = 'none';
                 }
               }}
-              title="Edit Profile Preferences"
+              title="Edit Profile"
             >
               <UserPen className="w-5 h-5 transition-all duration-300 ease-out" style={{
                 filter: 'none',

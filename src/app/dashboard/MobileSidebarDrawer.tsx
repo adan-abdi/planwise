@@ -12,7 +12,6 @@ const sections = [
   { key: "compliance", label: "Team members", icon: <PersonStanding className={iconClass} /> },
   { key: "templates", label: "Templates", icon: <SquareDashedKanban className={iconClass} /> },
   { key: "help", label: "Help/FAQs", icon: <BadgeQuestionMark className={iconClass} /> },
-  { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
 
 export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, activeSectionKey }: {
@@ -121,11 +120,43 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
             </div>
           </nav>
           
-          {/* Bottom Links - Logout and Edit Profile */}
+          {/* Bottom Links - Settings, Edit Profile, and Logout */}
           <div className="border-t p-4 flex-shrink-0" style={{ 
             borderColor: darkMode ? 'rgba(161, 161, 170, 0.3)' : 'rgba(161, 161, 170, 0.4)'
           }}>
             <div className="space-y-1">
+              <button
+                onClick={() => { onSectionSelect("settings"); onClose(); }}
+                className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium"
+                style={{
+                  backgroundColor: activeSectionKey === "settings" 
+                    ? (darkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)')
+                    : 'transparent',
+                  color: activeSectionKey === "settings"
+                    ? (darkMode ? '#60a5fa' : '#2563eb')
+                    : (darkMode ? '#9ca3af' : '#6b7280'),
+                  border: activeSectionKey === "settings"
+                    ? `1px solid ${darkMode ? 'rgba(96, 165, 250, 0.2)' : 'rgba(37, 99, 235, 0.2)'}`
+                    : '1px solid transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeSectionKey !== "settings") {
+                    e.currentTarget.style.backgroundColor = darkMode 
+                      ? 'rgba(55, 65, 81, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.3)';
+                    e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeSectionKey !== "settings") {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+                  }
+                }}
+              >
+                <Settings className="w-5 h-5 transition-colors duration-200" />
+                <span className="text-sm font-medium">Settings</span>
+              </button>
               <button
                 onClick={() => { window.location.href = '/auth/profile'; onClose(); }}
                 className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium"
@@ -146,7 +177,7 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
                 }}
               >
                 <UserPen className="w-5 h-5 transition-colors duration-200" />
-                <span className="text-sm font-medium">Edit Profile Preferences</span>
+                <span className="text-sm font-medium">Edit Profile</span>
               </button>
               <button
                 onClick={() => { handleLogout(); onClose(); }}
