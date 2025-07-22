@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, GripVertical, ArrowRight, Info, Copy, Grid2x2Check } from "lucide-react";
+import { Check, GripVertical, ArrowRight, Info, Copy } from "lucide-react";
 import { useTheme } from "../../../theme-context";
 import {
   DndContext,

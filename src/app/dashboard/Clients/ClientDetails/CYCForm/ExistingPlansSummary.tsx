@@ -39,7 +39,6 @@ const ExistingPlansSummary: React.FC<ExistingPlansSummaryProps> = ({
   onAddAnotherPlan, 
   onFinish, 
   onBack, 
-  onClose, 
   onAddESS, 
   onEditESS, 
   onRemovePlan, 

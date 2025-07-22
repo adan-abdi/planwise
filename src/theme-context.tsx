@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 
 type ThemePreference = 'system' | 'dark' | 'light';
 
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   // Function to determine if dark mode should be active
-  const shouldUseDarkMode = () => {
+  const shouldUseDarkMode = useCallback(() => {
     switch (themePreference) {
       case 'dark':
         return true;
@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       default:
         return false;
     }
-  };
+  }, [themePreference]);
 
   // Initialize theme preference from localStorage
   useEffect(() => {
@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       html.classList.remove("dark");
     }
-  }, [themePreference]);
+  }, [themePreference, shouldUseDarkMode]);
 
   // Listen for system preference changes
   useEffect(() => {
@@ -71,7 +71,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [themePreference]);
+  }, [themePreference, shouldUseDarkMode]);
 
   const setThemePreferenceHandler = (preference: ThemePreference) => {
     setThemePreference(preference);
