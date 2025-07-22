@@ -14,7 +14,7 @@ interface DashboardHeaderUserSectionProps {
   setHeaderBgColor?: (color: string) => void;
 }
 
-const cubeColors = ['#000000', '#ffffff', '#F8531F', '#14442c', '#252b4d'];
+const cubeColors = ['#000000', '#ffffff', '#F8531F', '#14442c', '#4a03ac'];
 
 const DashboardHeaderUserSection: React.FC<DashboardHeaderUserSectionProps> = ({ userName, userRole, avatarUrl, onGenerateRandomClients, showGenerateButton, headerBgColor, setHeaderBgColor }) => {
   const { darkMode, toggleDarkMode } = useTheme();

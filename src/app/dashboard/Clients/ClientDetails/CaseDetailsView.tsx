@@ -6,9 +6,9 @@ import Stepper from "../Stepper";
 import ChecklistReview from "../ChecklistReview";
 import { CloudUpload } from "lucide-react";
 import Image from "next/image";
-import CYCForm from './CYCForm';
 import IllustrationForm from './IllustrationForm';
 import CedingInformationStage from "./CedingInformationStage";
+import CYCFlowManager from './CYCForm/CYCFlowManager';
 
 interface CaseDetailsViewProps {
   caseExplorerPath: string[];
@@ -97,6 +97,18 @@ function getDisplayName(name: string): string {
   return name;
 }
 
+function mapTransfersToPlans(transfers: Transfer[] | undefined) {
+  return (transfers || []).map(t => ({
+    planName: t.provider || '',
+    planNumber: '',
+    fundValue: '',
+    transferValue: '',
+    regularContribution: '',
+    frequency: '',
+    complete: false,
+  }));
+}
+
 export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath, setCaseSelectedDocument, darkMode, caseData, onAddTransfer }: CaseDetailsViewProps) {
   const [addTransferModalOpen, setAddTransferModalOpen] = useState(false);
   const [, setAddTransferType] = useState<'stocksAndShares' | 'cashIsa' | null>(null);
@@ -105,10 +117,11 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
   const [activeStageIdx, setActiveStageIdx] = useState(0);
   const activeStage = stages[activeStageIdx];
   const [showChecklistReview, setShowChecklistReview] = useState<null | string>(null); // provider name or null
-  const [showCycGoSection, setShowCycGoSection] = useState(false);
   const [showIllustrationSection, setShowIllustrationSection] = useState(false);
   // New state for CFR checklist review
   const [showCfrChecklistReview, setShowCfrChecklistReview] = useState(false);
+  // New state for CYC stage
+  const [showCycGoSection, setShowCycGoSection] = useState(false);
 
   function handlePlanFolderWithProvider(providerName: string) {
     setShowChecklistReview(providerName);
@@ -273,11 +286,19 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
             </div>
           )}
           {activeStage === 'CYC' && (
-            <div className="h-full w-full flex">{showCycGoSection ? (
-              <CYCForm darkMode={darkMode} />
-            ) : (
-              <CycUploadDropzones darkMode={darkMode} onGoClick={() => setShowCycGoSection(true)} />
-            )}</div>
+            <div className="h-full w-full flex px-2">
+              {showCycGoSection ? (
+                <CYCFlowManager 
+                  initialPlans={mapTransfersToPlans(caseData.transfers)} 
+                  caseData={caseData}
+                  darkMode={darkMode} 
+                  onFinish={() => setActiveStageIdx(3)} // Navigate to Illustration stage
+                  onBack={() => setActiveStageIdx(1)} // Navigate to Ceding Information stage
+                />
+              ) : (
+                <CycUploadDropzones darkMode={darkMode} onGoClick={() => setShowCycGoSection(true)} />
+              )}
+            </div>
           )}
           {activeStage === 'Illustration' && (
             <div className="h-full w-full flex">{showIllustrationSection ? (
@@ -339,7 +360,7 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
   }
 
   return (
-    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between h-full">
+    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between h-full relative">
       {/* Final CFR Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
                   <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -424,6 +445,16 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
           )}
         </label>
       </div>
+      
+      {/* Vertical separator line with drop shadow */}
+      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
+        height: '90%',
+        minHeight: '500px',
+        boxShadow: darkMode 
+          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
+          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
+      }}></div>
+      
       {/* V1 CFR Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
                   <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -552,7 +583,7 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center">
+    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center relative">
       {/* Final CYC Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
         <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -581,7 +612,7 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
           <div className="relative mb-6 flex items-center justify-center" style={{ height: 96 }}>
             <Image src="/upload.svg" alt="Upload" width={96} height={96} className="mx-auto" />
             <span className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4">
-              <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 border-4 border-white" style={{ boxShadow: '0 2px 8px 0 rgba(24, 80, 255, 0.10)' }}>
+              <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 border-4 border-white" style={{ boxShadow: '0 2px 8px 0 rgba(24,80,255,0.10)' }}>
                 <CloudUpload className="w-5 h-5 text-white" />
               </span>
             </span>
@@ -620,8 +651,8 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
               <button
                 type="button"
                 className="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-lg shadow hover:bg-blue-700 transition"
-                onClick={() => { console.log('Continue Final CFR clicked'); }}
-                aria-label="Continue with Final CFR"
+                onClick={() => { console.log('Continue Final CYC clicked'); }}
+                aria-label="Continue with Final CYC"
               >
                 Continue
               </button>
@@ -629,6 +660,16 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
           )}
         </label>
       </div>
+      
+      {/* Vertical separator line with drop shadow */}
+      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
+        height: '90%',
+        minHeight: '500px',
+        boxShadow: darkMode 
+          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
+          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
+      }}></div>
+      
       {/* Help me complete the CYC Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto items-center">
         <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -686,7 +727,7 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center">
+    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center relative">
       {/* Final Illustration Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
         <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
@@ -763,6 +804,16 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
           )}
         </label>
       </div>
+      
+      {/* Vertical separator line with drop shadow */}
+      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
+        height: '90%',
+        minHeight: '500px',
+        boxShadow: darkMode 
+          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
+          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
+      }}></div>
+      
       {/* Help me complete the Illustration Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto items-center">
         <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>

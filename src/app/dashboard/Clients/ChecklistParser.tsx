@@ -358,7 +358,39 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
 
   return (
     <div style={{ padding: 32, width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <h2 style={{ fontSize: 20, marginBottom: 16, color: cardText }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, color: cardText, margin: 0 }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button style={{
+            border: `1.5px solid ${borderColor}`,
+            borderRadius: 8,
+            background: 'transparent',
+            color: cardText,
+            fontWeight: 500,
+            fontSize: 14,
+            padding: '8px 16px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            transition: 'all 0.15s',
+          }}>Add Item</button>
+          <button style={{
+            border: `1.5px solid ${borderColor}`,
+            borderRadius: 8,
+            background: 'transparent',
+            color: cardText,
+            fontWeight: 500,
+            fontSize: 14,
+            padding: '8px 16px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            transition: 'all 0.15s',
+          }}>Export Missing Info</button>
+        </div>
+      </div>
       <div style={{ borderRadius: 16, minHeight: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', fontWeight: 500, fontSize: 15, padding: '24px 40px 8px 40px', color: cardText, background: 'transparent', flexShrink: 0 }}>
           <div style={{ flex: 2 }}>Requested Information</div>

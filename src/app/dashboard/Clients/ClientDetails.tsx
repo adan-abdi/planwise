@@ -274,6 +274,54 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
           essPartial,
         };
       }
+      if (caseType === 'Pension New Money') {
+        // Generate 1-3 transfers for pension new money
+        const numTransfers = Math.floor(Math.random() * 3) + 1;
+        const transfers = Array.from({ length: numTransfers }, () => ({
+          transferType: 'pensionNewMoney' as const,
+          provider: providers[Math.floor(Math.random() * providers.length)],
+        }));
+        // Randomize ess and essPartial
+        const ess = Math.random() > 0.5;
+        const essPartial = ess ? Math.random() > 0.5 : false;
+        // Randomize single and regular
+        const single = { checked: Math.random() > 0.5, type: (Math.random() > 0.5 ? 'personal' : (Math.random() > 0.5 ? 'employer' : null)) as 'personal' | 'employer' | null };
+        const regular = { checked: Math.random() > 0.5, type: (Math.random() > 0.5 ? 'personal' : (Math.random() > 0.5 ? 'employer' : null)) as 'personal' | 'employer' | null };
+        const carryForward = Math.random() > 0.5;
+        const caseObj = {
+          id: `case-${Date.now()}-${i}`,
+          createdAt,
+          caseType,
+          transfers,
+          ess,
+          essPartial,
+          single,
+          regular,
+          carryForward,
+        };
+        return {
+          ...caseObj,
+          documents: generatePensionNewMoneyStructure(caseObj),
+        };
+      }
+      if (caseType === 'ISA New Money') {
+        // Generate 1-2 transfers for ISA new money
+        const numTransfers = Math.floor(Math.random() * 2) + 1;
+        const transfers = Array.from({ length: numTransfers }, () => ({
+          transferType: 'isaNewMoney' as const,
+          provider: providers[Math.floor(Math.random() * providers.length)],
+        }));
+        const caseObj = {
+          id: `case-${Date.now()}-${i}`,
+          createdAt,
+          caseType,
+          transfers,
+        };
+        return {
+          ...caseObj,
+          documents: generateIsaNewMoneyStructure(caseObj),
+        };
+      }
       // Default for other case types
       const randomTransferType = transferTypes[Math.floor(Math.random() * transferTypes.length)];
       return {

@@ -52,17 +52,17 @@ ISA New money
 
 
 CYC Form Stages
-- [ ] Page 1
-- [ ] Plan 1 & provider name
-- [ ] Plan 2.3,4
-- [ ] ESS
-- [ ] ESS Partial
-- [ ] Recommendations
-- [ ] Results
-- [ ] Upload final CYC 
+- [x] Page 1
+- [x] Plan 1 & provider name
+- [x] Plan 2.3,4
+- [x] ESS
+- [x] ESS Partial
+- [x] Recommendations
+- [x] Results
+- [x] Upload final CYC 
 
 Illustrations
-- [ ] Page 1 Basic details
+- [-] Page 1 Basic details (In Progress)
 - [ ] transfers
 - [ ] Recommendations
 
@@ -74,3 +74,26 @@ Sidebar
 - [x] Help/FAQs
 - [x] menu button to open sidebar
 - [x] Planwise logo on the right hand side
+
+
+TODO:
+- [x] Ensure dummy cases generated have transfers
+- [x] Back button for CYCForm
+- [x] CYC Form Stage names
+- [x] Footer for forms (CYC/Illustrations): Additional notes text area, Save and Save & Continue buttons
+- [ ] Stages stepper styling
+- [ ] ChecklistReview styling
+- [ ] Styling for CYCForm stages
+- [ ] Adding page 2 form
+- [ ] Aggregating all blues/primary colors up to one globalcss var that can be changed by the header colors
+- [ ] 
+
+
+
+
+Changes:
+- [ ] User avatar to be replaced by logo
+- [ ] Purple brand
+- [ ] Drawer to right and hover
+- [ ] Adding new checklist item field to checklist parser which saved
+- [ ] line between to show 
