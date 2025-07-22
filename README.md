@@ -81,19 +81,22 @@ TODO:
 - [x] Back button for CYCForm
 - [x] CYC Form Stage names
 - [x] Footer for forms (CYC/Illustrations): Additional notes text area, Save and Save & Continue buttons
-- [ ] Stages stepper styling
-- [ ] ChecklistReview styling
-- [ ] Styling for CYCForm stages
+- [x] Stages stepper styling
+- [x] ChecklistReview styling
+- [x] Styling for CYCForm stages
 - [ ] Adding page 2 form
 - [ ] Aggregating all blues/primary colors up to one globalcss var that can be changed by the header colors
 - [ ] 
 
 
 
-
 Changes:
-- [ ] User avatar to be replaced by logo
+- [x] User avatar to be replaced by logo
 - [ ] Purple brand
-- [ ] Drawer to right and hover
-- [ ] Adding new checklist item field to checklist parser which saved
-- [ ] line between to show 
+- [x] Drawer to right and hover
+- [x] Adding new checklist item field to checklist parser which saved
+- [x] line between to show 
+- [ ] accuracy score for CFR
+
+- [ ] Output only for all forms
+- [ ] Inputs to have copy

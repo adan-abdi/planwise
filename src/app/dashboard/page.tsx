@@ -2,37 +2,40 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  ShieldCheck,
-  FileText,
+  PersonStanding,
+  SquareDashedKanban,
+  BadgeQuestionMark,
   Settings,
   LayoutDashboard,
   SquareUserRound,
-  SquareKanban,
+  BookUser,
   ChevronRight,
+  LogOut,
+  UserPen,
 } from "lucide-react";
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
 import Image from "next/image";
-import DashboardHeaderUserSection from "./DashboardHeaderUserSection";
+
 import Dashboard from './Dashboard';
-import Plans from './Plans';
+import Advisors from './Advisors';
 import Compliance from './Compliance';
 import Templates from './Templates';
 import Auditlog from './Auditlog';
 import Teammembers from './Teammembers';
 import SettingsSection from './Settings';
 import { useTheme } from "../../theme-context";
-import { getProfile } from '../../api/services/auth';
+import { logout } from '../../api/services/auth';
 
 const iconClass = "w-5 h-5";
 
 const sections = [
   { key: "dashboard", label: "Dashboard", icon: <LayoutDashboard className={iconClass} /> },
   { key: "clients", label: "Clients", icon: <SquareUserRound className={iconClass} /> },
-  { key: "plans", label: "Advisors", icon: <SquareKanban className={iconClass} /> },
-  { key: "compliance", label: "Team members", icon: <ShieldCheck className={iconClass} /> },
-  { key: "templates", label: "Templates", icon: <FileText className={iconClass} /> },
-  { key: "help", label: "Help/FAQs", icon: <FileText className={iconClass} /> },
+  { key: "advisors", label: "Advisors", icon: <BookUser className={iconClass} /> },
+  { key: "compliance", label: "Team members", icon: <PersonStanding className={iconClass} /> },
+  { key: "templates", label: "Templates", icon: <SquareDashedKanban className={iconClass} /> },
+  { key: "help", label: "Help/FAQs", icon: <BadgeQuestionMark className={iconClass} /> },
   { key: "settings", label: "Settings", icon: <Settings className={iconClass} /> },
 ];
 
@@ -53,81 +56,12 @@ export default function DashboardPage() {
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const activeSection = sections.find((s) => s.key === active);
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
-  const [headerBgColor, setHeaderBgColor] = useState<string>("");
 
-  // Add a helper to determine if a custom color is selected
-  const customHeaderColorsDark = ['#000000', '#F8531F', '#14442c', '#252b4d'];
-  const isCustomHeaderColorDark = customHeaderColorsDark.includes(headerBgColor);
 
   // Memoize the callback
   const handleBreadcrumbChange = useCallback((path: BreadcrumbItem[]) => {
     setBreadcrumbPath(path);
   }, []);
-
-  const [userName, setUserName] = useState<string>("");
-  const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const userRole = "Paraplanner";
-
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const profile: unknown = await getProfile();
-        if (
-          profile &&
-          typeof profile === 'object' &&
-          profile !== null &&
-          'data' in profile &&
-          typeof (profile as { data?: unknown }).data === 'object' &&
-          (profile as { data?: unknown }).data !== null
-        ) {
-          const data = (profile as { data: unknown }).data;
-          setUserName((typeof data === 'object' && data !== null && 'fullName' in data && typeof (data as { fullName?: string }).fullName === 'string'
-            ? (data as { fullName: string }).fullName
-            : typeof data === 'object' && data !== null && 'full_name' in data && typeof (data as { full_name?: string }).full_name === 'string'
-            ? (data as { full_name: string }).full_name
-            : typeof data === 'object' && data !== null && 'email' in data && typeof (data as { email?: string }).email === 'string'
-            ? (data as { email: string }).email
-            : ""));
-          setAvatarUrl((typeof data === 'object' && data !== null && 'profilePictureUrl' in data && typeof (data as { profilePictureUrl?: string }).profilePictureUrl === 'string'
-            ? (data as { profilePictureUrl: string }).profilePictureUrl
-            : typeof data === 'object' && data !== null && 'profile_picture_url' in data && typeof (data as { profile_picture_url?: string }).profile_picture_url === 'string'
-            ? (data as { profile_picture_url: string }).profile_picture_url
-            : ""));
-          const user = {
-            ...(typeof data === 'object' && data !== null ? data : {}),
-            full_name:
-              (typeof data === 'object' && data !== null && 'fullName' in data && typeof (data as { fullName?: string }).fullName === 'string'
-                ? (data as { fullName: string }).fullName
-                : typeof data === 'object' && data !== null && 'full_name' in data && typeof (data as { full_name?: string }).full_name === 'string'
-                ? (data as { full_name: string }).full_name
-                : undefined),
-            profilePictureUrl:
-              (typeof data === 'object' && data !== null && 'profilePictureUrl' in data && typeof (data as { profilePictureUrl?: string }).profilePictureUrl === 'string'
-                ? (data as { profilePictureUrl: string }).profilePictureUrl
-                : typeof data === 'object' && data !== null && 'profile_picture_url' in data && typeof (data as { profile_picture_url?: string }).profile_picture_url === 'string'
-                ? (data as { profile_picture_url: string }).profile_picture_url
-                : undefined),
-          };
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-      } catch {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          setUserName(user.full_name || user.fullName || user.email);
-          setAvatarUrl(user.profilePictureUrl || user.profile_picture_url || "");
-        }
-      }
-    }
-    fetchProfile();
-    function handleFocus() {
-      fetchProfile();
-    }
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
-
-  const resolvedAvatarUrl = avatarUrl || "/logo.svg";
 
   const handleBackToClientList = () => setClientDetailsOpen(false);
 
@@ -155,6 +89,11 @@ export default function DashboardPage() {
   }, []);
 
   const { darkMode } = useTheme();
+
+  // Logout handler
+  const handleLogout = () => {
+    logout();
+  };
 
   const generateRandomClients = () => {
     const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Lisa', 'Robert', 'Mary', 'William', 'Anna', 'Richard', 'Jennifer', 'Thomas', 'Christopher', 'Amanda', 'Daniel', 'Ashley', 'Matthew', 'Jessica', 'Joshua', 'Nicole', 'Andrew', 'Stephanie', 'Ryan', 'Rebecca', 'Brandon', 'Laura', 'Justin', 'Heather', 'Kevin', 'Michelle', 'Brian', 'Emily'];
@@ -205,30 +144,60 @@ export default function DashboardPage() {
       {/* Main content area: header + content */}
       <main className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="w-full px-2 sm:px-8 pt-2"> {/* pt-2 instead of pt-4 for less space */}
-          <div
-            className="rounded-lg bg-white dark:bg-[var(--background)] p-2 sm:p-4 border border-zinc-200"
-            style={{
-              borderColor: darkMode ? '#52525b' : '#e4e4e7',
-              backgroundColor: headerBgColor || (darkMode ? 'var(--background)' : 'white'),
-            }}
-          >
+        <div className="w-full px-2 sm:px-4 pt-2"> {/* pt-2 instead of pt-4 for less space */}
+                  <div 
+          className="backdrop-blur-xl p-2 sm:p-4 border"
+          style={{ 
+            backgroundColor: darkMode 
+              ? 'rgba(30, 30, 30, 0.9)' 
+              : 'rgba(255, 255, 255, 0.95)',
+            borderColor: darkMode 
+              ? 'rgba(255, 255, 255, 0.15)' 
+              : 'rgba(255, 255, 255, 0.3)',
+            border: `1px solid ${darkMode 
+              ? 'rgba(255, 255, 255, 0.15)' 
+              : 'rgba(255, 255, 255, 0.3)'}`,
+            boxShadow: darkMode
+              ? '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+            backdropFilter: 'blur(12px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+            borderRadius: '5px'
+          }}
+        >
             <div className="flex items-center h-10 px-2 sm:px-0 justify-between">
               <div className="flex items-center">
                 {/* Mobile sidebar open button */}
                 <button
-                  className="p-2 rounded-[12px] border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] transition flex items-center justify-center w-10 h-10"
+                  className="p-2 rounded-xl border transition-all duration-300 ease-out flex items-center justify-center w-10 h-10 backdrop-blur-lg"
                   aria-label="Open sidebar"
                   onClick={() => setMobileSidebarOpen(true)}
                   style={{
-                    backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                    backgroundColor: darkMode 
+                      ? 'rgba(55, 65, 81, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.3)',
+                    borderColor: darkMode 
+                      ? 'rgba(255, 255, 255, 0.15)' 
+                      : 'rgba(255, 255, 255, 0.4)',
+                    backdropFilter: 'blur(12px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                    e.currentTarget.style.backgroundColor = darkMode 
+                      ? 'rgba(75, 85, 99, 0.3)' 
+                      : 'rgba(255, 255, 255, 0.5)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = darkMode 
+                      ? '0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                      : '0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                    e.currentTarget.style.backgroundColor = darkMode 
+                      ? 'rgba(55, 65, 81, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.3)';
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c8592" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -237,28 +206,35 @@ export default function DashboardPage() {
                     <line x1="5" y1="17" x2="19" y2="17" />
                   </svg>
                 </button>
-                {/* Logo right after menu button */}
-                <Image src={isCustomHeaderColorDark || darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto ml-3" />
-                {/* Breadcrumb/title flush next to logo */}
+                {/* Breadcrumb/title flush next to menu button */}
                 {active === "clients" && breadcrumbPath.length > 0 ? (
                   <div className="flex items-center gap-2 py-2 pl-4">
                     {breadcrumbPath.map((item, idx) => (
                       <React.Fragment key={item.label}>
-                        {idx > 0 && <ChevronRight className="w-3 h-3 text-zinc-300" />}
+                        {idx > 0 && <ChevronRight className="w-3 h-3" style={{ color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)' }} />}
                         {idx < breadcrumbPath.length - 1 && item.onClick ? (
                           <button
                             type="button"
                             onClick={item.onClick}
-                            className="flex items-center gap-1 text-base font-medium text-zinc-400 bg-transparent border-none p-0 m-0 hover:underline focus:outline-none"
-                            style={{ cursor: 'pointer', color: isCustomHeaderColorDark || darkMode ? 'white' : undefined }}
+                            className="flex items-center gap-1 text-base font-medium bg-transparent border-none p-0 m-0 hover:underline focus:outline-none transition-all duration-200"
+                            style={{ 
+                              cursor: 'pointer', 
+                              color: darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                              textShadow: darkMode ? '0 1px 2px rgba(0, 0, 0, 0.3)' : '0 1px 2px rgba(255, 255, 255, 0.5)'
+                            }}
                           >
                             {item.icon && <span>{item.icon}</span>}
                             <span>{item.label}</span>
                           </button>
                         ) : (
                           <span
-                            className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : 'text-zinc-400'}`}
-                            style={item.isActive ? { color: isCustomHeaderColorDark || darkMode ? 'white' : 'black' } : undefined}
+                            className={`flex items-center gap-1 text-base font-medium ${item.isActive ? 'font-semibold' : ''}`}
+                            style={{ 
+                              color: item.isActive 
+                                ? (darkMode ? 'rgba(255, 255, 255, 1)' : 'rgba(0, 0, 0, 0.9)')
+                                : (darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'),
+                              textShadow: darkMode ? '0 1px 2px rgba(0, 0, 0, 0.3)' : '0 1px 2px rgba(255, 255, 255, 0.5)'
+                            }}
                           >
                             {item.icon && <span>{item.icon}</span>}
                             <span>{item.label}</span>
@@ -268,18 +244,30 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) :
-                    <div className={`text-3xl text-[var(--foreground)] transition-all duration-200 pt-1 pl-3`} style={{ fontFamily: "'Gloock', serif", color: isCustomHeaderColorDark || darkMode ? 'white' : undefined }}>{activeSection?.label}</div>
+                    <div className="text-3xl transition-all duration-200 pt-1 pl-3" style={{ 
+                      fontFamily: "'Gloock', serif", 
+                      color: darkMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.9)',
+                      textShadow: darkMode ? '0 2px 4px rgba(0, 0, 0, 0.3)' : '0 2px 4px rgba(255, 255, 255, 0.5)'
+                    }}>{activeSection?.label}</div>
                 }
               </div>
-              {/* User section only */}
+              {/* Logo on the right side */}
               <div className="flex items-center">
-                <DashboardHeaderUserSection
-                  userName={userName}
-                  userRole={userRole}
-                  avatarUrl={resolvedAvatarUrl}
-                  headerBgColor={headerBgColor}
-                  setHeaderBgColor={setHeaderBgColor}
-                />
+                <div className="rounded-xl p-2 backdrop-blur-lg" style={{
+                  backgroundColor: darkMode 
+                    ? 'rgba(55, 65, 81, 0.1)' 
+                    : 'rgba(255, 255, 255, 0.2)',
+                  borderColor: darkMode 
+                    ? 'rgba(255, 255, 255, 0.1)' 
+                    : 'rgba(255, 255, 255, 0.3)',
+                  border: `1px solid ${darkMode 
+                    ? 'rgba(255, 255, 255, 0.1)' 
+                    : 'rgba(255, 255, 255, 0.3)'}`,
+                  backdropFilter: 'blur(12px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(12px) saturate(150%)'
+                }}>
+                  <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
+                </div>
               </div>
             </div>
           </div>
@@ -298,8 +286,8 @@ export default function DashboardPage() {
             />
           ) : active === "dashboard" ? (
             <Dashboard />
-          ) : active === "plans" ? (
-            <Plans />
+          ) : active === "advisors" ? (
+            <Advisors />
           ) : active === "compliance" ? (
             <Compliance />
           ) : active === "templates" ? (
@@ -314,53 +302,219 @@ export default function DashboardPage() {
         </div>
       </main>
       {/* Left Sidebar */}
-      <div className="absolute left-2 sm:left-8 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
+      <div className="absolute left-2 sm:left-4 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
         {/* Sidebar Content */}
         <div 
-          className="h-full rounded-lg overflow-hidden" 
+          className="h-full overflow-hidden flex flex-col" 
           style={{ 
-            backgroundColor: darkMode ? 'var(--background)' : 'white',
-            borderColor: darkMode ? '#52525b' : '#e4e4e7',
-            border: `1px solid ${darkMode ? '#52525b' : '#e4e4e7'}`
+            backgroundColor: darkMode 
+              ? 'rgba(20, 20, 20, 0.6)' 
+              : 'rgba(255, 255, 255, 0.7)',
+            borderColor: darkMode 
+              ? 'rgba(255, 255, 255, 0.2)' 
+              : 'rgba(255, 255, 255, 0.4)',
+            border: `1px solid ${darkMode 
+              ? 'rgba(255, 255, 255, 0.2)' 
+              : 'rgba(255, 255, 255, 0.4)'}`,
+            boxShadow: darkMode
+              ? '0 12px 40px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+              : '0 12px 40px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(32px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(32px) saturate(200%)',
+            borderRadius: '5px'
           }}
         >
-          <nav className="h-full flex flex-col items-center justify-start space-y-2 py-4">
+          {/* Main Navigation */}
+          <nav className="flex-1 flex flex-col items-center justify-start space-y-2 py-4">
             {sections.map((section) => (
               <button
                 key={section.key}
                 onClick={() => setActive(section.key)}
-                className="w-8 h-8 rounded-lg transition-all duration-200 flex items-center justify-center group relative"
+                className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
                 style={{
                   backgroundColor: active === section.key 
-                    ? (darkMode ? '#1e3a8a' : '#eff6ff') // blue-900 for dark, blue-50 for light
+                    ? (darkMode 
+                        ? 'rgba(59, 130, 246, 0.2)' 
+                        : 'rgba(59, 130, 246, 0.15)')
                     : 'transparent',
                   color: active === section.key
-                    ? (darkMode ? '#93c5fd' : '#2563eb') // blue-300 for dark, blue-600 for light
-                    : (darkMode ? '#9ca3af' : '#6b7280'), // gray-400 for dark, gray-500 for light (classic gray)
+                    ? (darkMode ? '#60a5fa' : '#2563eb')
+                    : (darkMode ? '#9ca3af' : '#6b7280'),
                   border: active === section.key
-                    ? `1px solid ${darkMode ? '#1e40af' : '#bfdbfe'}` // blue-800 for dark, blue-200 for light
-                    : '1px solid transparent'
+                    ? `1px solid ${darkMode 
+                        ? 'rgba(96, 165, 250, 0.3)' 
+                        : 'rgba(37, 99, 235, 0.3)'}`
+                    : '1px solid transparent',
+                  transform: 'scale(1)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  backdropFilter: 'blur(16px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(16px) saturate(180%)'
                 }}
                 onMouseEnter={(e) => {
                   if (active !== section.key) {
-                    e.currentTarget.style.backgroundColor = darkMode ? '#374151' : '#f3f4f6'; // gray-700 for dark, gray-100 for light
-                    e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b'; // gray-200 for dark, gray-900 for light
+                    e.currentTarget.style.backgroundColor = darkMode 
+                      ? 'rgba(55, 65, 81, 0.3)' 
+                      : 'rgba(243, 244, 246, 0.4)';
+                    e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b';
+                  }
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.boxShadow = darkMode 
+                    ? '0 12px 32px rgba(0, 0, 0, 0.3), 0 6px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)' 
+                    : '0 12px 32px rgba(0, 0, 0, 0.1), 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
+                  
+                  // Icon hover effects
+                  const icon = e.currentTarget.querySelector('svg');
+                  if (icon) {
+                    icon.style.transform = 'scale(1.05)';
+                    icon.style.filter = darkMode 
+                      ? 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))' 
+                      : 'drop-shadow(0 0 8px rgba(0, 0, 0, 0.3))';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (active !== section.key) {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280'; // gray-400 for dark, gray-500 for light (classic gray)
+                    e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+                  }
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  
+                  // Reset icon effects
+                  const icon = e.currentTarget.querySelector('svg');
+                  if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.filter = active === section.key 
+                      ? (darkMode ? 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.4))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.3))')
+                      : 'none';
                   }
                 }}
                 title={section.label}
               >
                 {React.cloneElement(section.icon, {
-                  className: "w-5 h-5 transition-colors duration-200"
+                  className: "w-5 h-5 transition-all duration-300 ease-out",
+                  style: {
+                    filter: active === section.key 
+                      ? (darkMode ? 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.4))' : 'drop-shadow(0 0 8px rgba(37, 99, 235, 0.3))')
+                      : 'none',
+                    transform: 'scale(1)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }
                 })}
               </button>
             ))}
           </nav>
+          
+          {/* Bottom Links - Logout and Edit Profile */}
+          <div className="border-t py-4 flex flex-col items-center space-y-2" style={{ 
+            borderColor: darkMode 
+              ? 'rgba(161, 161, 170, 0.3)' 
+              : 'rgba(161, 161, 170, 0.4)',
+            backdropFilter: 'blur(16px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(180%)'
+          }}>
+            <button
+              onClick={() => window.location.href = '/auth/profile'}
+              className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
+              style={{
+                backgroundColor: 'transparent',
+                color: darkMode ? '#9ca3af' : '#6b7280',
+                border: '1px solid transparent',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode 
+                  ? 'rgba(55, 65, 81, 0.2)' 
+                  : 'rgba(243, 244, 246, 0.3)';
+                e.currentTarget.style.color = darkMode ? '#e5e7eb' : '#18181b';
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = darkMode 
+                  ? '0 8px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                  : '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
+                
+                // Icon hover effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1.05)';
+                  icon.style.filter = darkMode 
+                    ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.3))' 
+                    : 'drop-shadow(0 0 6px rgba(0, 0, 0, 0.2))';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                
+                // Reset icon effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1)';
+                  icon.style.filter = 'none';
+                }
+              }}
+              title="Edit Profile Preferences"
+            >
+              <UserPen className="w-5 h-5 transition-all duration-300 ease-out" style={{
+                filter: 'none',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }} />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
+              style={{
+                backgroundColor: 'transparent',
+                color: darkMode ? '#9ca3af' : '#6b7280',
+                border: '1px solid transparent',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = darkMode ? '#dc2626' : '#fef2f2';
+                e.currentTarget.style.color = darkMode ? '#fca5a5' : '#dc2626';
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = darkMode 
+                  ? '0 8px 25px rgba(220, 38, 38, 0.3), 0 4px 10px rgba(220, 38, 38, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                  : '0 8px 25px rgba(220, 38, 38, 0.2), 0 4px 10px rgba(220, 38, 38, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
+                
+                // Icon hover effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1.05)';
+                  icon.style.filter = darkMode 
+                    ? 'drop-shadow(0 0 6px rgba(252, 165, 165, 0.4))' 
+                    : 'drop-shadow(0 0 6px rgba(220, 38, 38, 0.3))';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                
+                // Reset icon effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.transform = 'scale(1)';
+                  icon.style.filter = 'none';
+                }
+              }}
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5 transition-all duration-300 ease-out" style={{
+                filter: 'none',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

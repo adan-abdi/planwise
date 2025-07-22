@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CYCForm from './CYCForm';
-import CYCEntrypoint from './CYCEntrypoint';
+import ExistingPlansSummary from './ExistingPlansSummary';
 import ESSForm from './ESSForm';
 import type { Transfer } from '../../ClientDetails';
 import type { FolderOrFile } from '../pensionNewMoneyStructure';
@@ -27,6 +27,7 @@ interface CYCFlowManagerProps {
   darkMode: boolean;
   onFinish: () => void;
   onBack: () => void;
+  onBackToRoot?: () => void;
 }
 
 interface CaseData {
@@ -131,7 +132,7 @@ function mapCaseDataToESSPlans(caseData: CaseData): ESS[] {
   return essPlans;
 }
 
-export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFinish, onBack }: CYCFlowManagerProps) {
+export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFinish, onBack, onBackToRoot }: CYCFlowManagerProps) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [essPlans, setEssPlans] = useState<ESS[]>(mapCaseDataToESSPlans(caseData));
   const [currentPlanIndex, setCurrentPlanIndex] = useState<number | null>(0); // null = not editing, show summary
@@ -236,7 +237,7 @@ export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFin
       }
       return newESSPlans;
     });
-    setCurrentESSIndex(null); // Go back to summary (CYCEntrypoint)
+    setCurrentESSIndex(null); // Go back to summary (ExistingPlansSummary)
   };
 
   // Handler to cancel ESS editing
@@ -268,6 +269,14 @@ export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFin
         darkMode={darkMode}
         plan={plans[currentPlanIndex]}
         onSave={handleSavePlan}
+        onBack={() => {
+          // Go back to CYC root (CycUploadDropzones)
+          setCurrentPlanIndex(null);
+          // Call the parent onBackToRoot to set showCycGoSection to false
+          if (onBackToRoot) {
+            onBackToRoot();
+          }
+        }}
         initialStage={lastFormStage}
       />
     );
@@ -281,14 +290,22 @@ export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFin
         darkMode={darkMode}
         plan={plans[0] || { planName: '', planNumber: '', fundValue: '', transferValue: '', regularContribution: '', frequency: '', complete: false }}
         onSave={handleSavePlan}
+        onBack={() => {
+          // Go back to CYC root (CycUploadDropzones)
+          setCurrentPlanIndex(null);
+          // Call the parent onBackToRoot to set showCycGoSection to false
+          if (onBackToRoot) {
+            onBackToRoot();
+          }
+        }}
         initialStage={0}
       />
     );
   }
 
-  // Otherwise, show the summary (CYCEntrypoint)
+  // Otherwise, show the summary (ExistingPlansSummary)
   return (
-    <CYCEntrypoint
+    <ExistingPlansSummary
       plans={plans}
       essPlans={essPlans}
       onEditPlan={handleEditPlan}

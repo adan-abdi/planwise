@@ -15,8 +15,8 @@ const FolderDocumentBox: React.FC<FolderDocumentBoxProps> = ({ onClick, children
       onClick={onClick}
       style={{
         border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
-        background: darkMode ? '#18181b' : 'white',
-        color: darkMode ? 'white' : '#18181b',
+        background: darkMode ? '#2a2a2a' : 'white',
+        color: darkMode ? '#f1f5f9' : '#18181b',
         minHeight: 80,
         minWidth: 220,
         maxWidth: 230,
@@ -29,6 +29,7 @@ const FolderDocumentBox: React.FC<FolderDocumentBoxProps> = ({ onClick, children
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
+        transition: 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out',
         ...style,
       }}
       {...rest}

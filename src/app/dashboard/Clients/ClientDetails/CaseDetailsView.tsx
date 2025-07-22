@@ -204,28 +204,26 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
   }
 
   return (
-    <div className="min-h-0 flex flex-col w-full box-border overflow-y-hidden sm:ml-16 sm:mr-8 max-w-[calc(1536px+20px)]">
-      {/* Progress Stepper */}
-      <div className="w-full box-border">
-        <div className="px-0 sm:pl-2 sm:pr-6 max-w-full">
-            <Stepper
-              steps={stages}
-              current={activeStageIdx}
-              darkMode={darkMode}
-              onStepClick={idx => idx !== activeStageIdx && setActiveStageIdx(idx)}
-            />
-          </div>
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-[var(--background)] sm:ml-16">
+      {/* Progress Stepper - positioned to match dashboard header exactly */}
+      <div className="w-full box-border px-0 pt-0 flex-shrink-0">
+        <div className="w-full flex justify-between">
+          <Stepper
+            steps={stages}
+            current={activeStageIdx}
+            darkMode={darkMode}
+            onStepClick={idx => idx !== activeStageIdx && setActiveStageIdx(idx)}
+          />
+        </div>
       </div>
-      {/* Stage Content */}
-      <div className="flex-1 min-h-0 min-h-[80vh] flex flex-col w-full box-border">
-        {/* Header Section (add your sub-header or title here if needed) */}
-        <div></div>
-        {/* Content Section (centered) */}
-        <div className="flex-1 flex items-center justify-center">
+
+      {/* Stage Content - redesigned layout */}
+      <div className="flex-1 min-h-0 flex flex-col w-full box-border h-full">
+        <div className="flex-1 min-h-0 flex flex-col h-full">
           {activeStage === 'CFR' && (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="flex-1 min-h-0 flex flex-col h-full min-h-[740px]">
               {showCfrChecklistReview ? (
-                <div className="min-h-0 flex w-full h-full border border-zinc-200 ml-2 rounded-md">
+                <div className="flex-1 min-h-0 flex flex-col border border-zinc-200 dark:border-[var(--border)] overflow-hidden bg-white dark:bg-[var(--muted)] rounded-lg">
                   <ChecklistReview
                     checklistItems={[]}
                     reviewerName={"CFR"}
@@ -236,29 +234,17 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
                   />
                 </div>
               ) : (
-                <div className="min-h-0 flex w-full h-full items-center justify-center">
+                <div className="flex-1 min-h-0 flex items-center justify-center">
                   <CfrUploadDropzones darkMode={darkMode} setActiveStageIdx={setActiveStageIdx} setShowCfrChecklistReview={setShowCfrChecklistReview} />
                 </div>
               )}
             </div>
           )}
+          
           {activeStage === 'Ceding Information' && (
-            <div
-              style={{
-                minHeight: 700,
-                flex: 1,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                border: '2px solid #e4e4e7', // zinc-200
-                borderRadius: 6,
-                background: '#fff',
-                position: 'relative',
-                ...(showChecklistReview ? {} : { marginTop: -48 }),
-              }}
-            >
+            <div className="flex-1 min-h-0 flex flex-col h-full min-h-[740px]">
               {showChecklistReview ? (
-                <div style={{ flex: 1, minHeight: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div className="flex-1 min-h-0 flex flex-col border border-zinc-200 dark:border-[var(--border)] overflow-hidden bg-white dark:bg-[var(--muted)] rounded-lg">
                   <ChecklistReview
                     checklistItems={[]}
                     reviewerName={showChecklistReview}
@@ -267,55 +253,79 @@ export default function CaseDetailsView({ caseExplorerPath, setCaseExplorerPath,
                   />
                 </div>
               ) : (
-                <CedingInformationStage
-                  caseExplorerPath={caseExplorerPath}
-                  setCaseExplorerPath={setCaseExplorerPath}
-                  setCaseSelectedDocument={setCaseSelectedDocument}
-                  darkMode={darkMode}
-                  getFolderContents={getFolderContents}
-                  getDisplayName={getDisplayName}
-                  getProviderName={getProviderName}
-                  showChecklistReview={showChecklistReview}
-                  setShowChecklistReview={setShowChecklistReview}
-                  handlePlanFolderWithProvider={handlePlanFolderWithProvider}
-                  addTransferModalOpen={addTransferModalOpen}
-                  setAddTransferModalOpen={setAddTransferModalOpen}
-                  handleAddTransfer={handleAddTransfer}
-                />
+                <div className="flex-1 min-h-0 flex flex-col border border-zinc-200 dark:border-[var(--border)] rounded-lg overflow-hidden bg-white dark:bg-[var(--muted)]">
+                  <CedingInformationStage
+                    caseExplorerPath={caseExplorerPath}
+                    setCaseExplorerPath={setCaseExplorerPath}
+                    setCaseSelectedDocument={setCaseSelectedDocument}
+                    darkMode={darkMode}
+                    getFolderContents={getFolderContents}
+                    getDisplayName={getDisplayName}
+                    getProviderName={getProviderName}
+                    showChecklistReview={showChecklistReview}
+                    setShowChecklistReview={setShowChecklistReview}
+                    handlePlanFolderWithProvider={handlePlanFolderWithProvider}
+                    addTransferModalOpen={addTransferModalOpen}
+                    setAddTransferModalOpen={setAddTransferModalOpen}
+                    handleAddTransfer={handleAddTransfer}
+                  />
+                </div>
               )}
             </div>
           )}
+          
           {activeStage === 'CYC' && (
-            <div className="h-full w-full flex px-2">
+            <div className="flex-1 min-h-0 flex flex-col h-full min-h-[740px]">
               {showCycGoSection ? (
-                <CYCFlowManager 
-                  initialPlans={mapTransfersToPlans(caseData.transfers)} 
-                  caseData={caseData}
-                  darkMode={darkMode} 
-                  onFinish={() => setActiveStageIdx(3)} // Navigate to Illustration stage
-                  onBack={() => setActiveStageIdx(1)} // Navigate to Ceding Information stage
-                />
+                <div className="flex-1 min-h-0 flex flex-col border border-zinc-200 dark:border-[var(--border)] rounded-lg overflow-hidden bg-white dark:bg-[var(--muted)]">
+                  <CYCFlowManager 
+                    initialPlans={mapTransfersToPlans(caseData.transfers)} 
+                    caseData={caseData}
+                    darkMode={darkMode} 
+                    onFinish={() => setActiveStageIdx(3)} // Navigate to Illustration stage
+                    onBack={() => setActiveStageIdx(1)} // Navigate to Ceding Information stage
+                    onBackToRoot={() => setShowCycGoSection(false)} // Go back to CYC root
+                  />
+                </div>
               ) : (
-                <CycUploadDropzones darkMode={darkMode} onGoClick={() => setShowCycGoSection(true)} />
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                  <CycUploadDropzones darkMode={darkMode} onGoClick={() => setShowCycGoSection(true)} />
+                </div>
               )}
             </div>
           )}
+          
           {activeStage === 'Illustration' && (
-            <div className="h-full w-full flex">{showIllustrationSection ? (
-              <IllustrationForm darkMode={darkMode} onBack={() => setShowIllustrationSection(false)} />
-            ) : (
-              <IllustrationUploadDropzones darkMode={darkMode} onGoClick={() => setShowIllustrationSection(true)} />
-            )}</div>
+            <div className="flex-1 min-h-0 flex flex-col h-full min-h-[740px]">
+              {showIllustrationSection ? (
+                <div className="flex-1 min-h-0 flex flex-col border border-zinc-200 dark:border-[var(--border)] rounded-lg overflow-hidden bg-white dark:bg-[var(--muted)]">
+                  <IllustrationForm darkMode={darkMode} onBack={() => setShowIllustrationSection(false)} />
+                </div>
+              ) : (
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                  <IllustrationUploadDropzones darkMode={darkMode} onGoClick={() => setShowIllustrationSection(true)} />
+                </div>
+              )}
+            </div>
           )}
+          
           {activeStage === 'Suitability' && (
-            <div className="flex flex-col w-full h-full p-8 text-center text-lg text-zinc-400 items-center justify-center">
-              <div>Suitability stage coming soon.</div>
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center h-full min-h-[740px]">
+              <div className="text-center">
+                <div className="text-lg font-medium text-zinc-700 dark:text-[var(--foreground)] mb-2">
+                  Suitability stage coming soon
+                </div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                  This feature is currently under development
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
-      {/* Progress Navigation */}
-    </div>)}
+    </div>
+  );
+}
 
 // --- CFR Upload Dropzones Component ---
 function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistReview }: { darkMode: boolean; setActiveStageIdx: (idx: number) => void; setShowCfrChecklistReview?: (show: boolean) => void }) {
@@ -326,6 +336,41 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
   const v1InputRef = useRef<HTMLInputElement>(null);
   const [finalDragActive, setFinalDragActive] = useState(false);
   const [v1DragActive, setV1DragActive] = useState(false);
+
+  // Dark mode color variables
+  const colors = {
+    // Background colors
+    dropzoneBg: darkMode ? '#1e1e1e' : '#ffffff',
+    dropzoneBgHover: darkMode ? '#2a2a2a' : '#f8fafc',
+    dropzoneBgDrag: darkMode ? '#1e293b' : '#f0f6ff',
+    
+    // Border colors
+    dropzoneBorder: darkMode ? '#404040' : '#e4e4e7',
+    dropzoneBorderHover: darkMode ? '#525252' : '#d1d5db',
+    dropzoneBorderDrag: darkMode ? '#3b82f6' : '#3b82f6',
+    
+    // Text colors
+    textPrimary: darkMode ? '#f1f5f9' : '#18181b',
+    textSecondary: darkMode ? '#a1a1aa' : '#64748b',
+    textMuted: darkMode ? '#71717a' : '#9ca3af',
+    
+    // File item colors
+    fileItemBg: darkMode ? '#2a2a2a' : '#ffffff',
+    fileItemBgHover: darkMode ? '#333333' : '#f9fafb',
+    fileItemBorder: darkMode ? '#404040' : '#e4e4e7',
+    
+    // Button colors
+    buttonBg: darkMode ? '#3b82f6' : '#3b82f6',
+    buttonBgHover: darkMode ? '#2563eb' : '#2563eb',
+    buttonText: '#ffffff',
+    
+    // Remove button colors
+    removeButtonBgHover: darkMode ? '#dc2626' : '#fef2f2',
+    removeButtonText: '#dc2626',
+    
+    // Overlay colors
+    overlayBg: darkMode ? 'rgba(24, 24, 27, 0.8)' : 'rgba(243, 244, 246, 0.8)',
+  };
 
   function handleDrop(e: React.DragEvent, setFiles: React.Dispatch<React.SetStateAction<File[]>>, setDrag: (v: boolean) => void) {
     e.preventDefault();
@@ -342,6 +387,7 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
       });
     }
   }
+  
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -355,23 +401,31 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
       e.target.value = "";
     }
   }
+  
   function handleRemoveFile(idx: number, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     setFiles(files => files.filter((_, i) => i !== idx));
   }
 
   return (
-    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between h-full relative">
+    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between relative">
       {/* Final CFR Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
-                  <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-            Are you happy with the CFR already?
-          </div>
-          <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-            Upload a final CFR for this case.
-          </div>
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
+          Are you happy with the CFR already?
+        </div>
+        <div className="text-base max-w-xs text-center mb-6 mx-auto" style={{ color: colors.textSecondary }}>
+          Upload a final CFR for this case.
+        </div>
         <label
-          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white ${finalDragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''} ${(v1Files.length > 0) ? 'opacity-50 pointer-events-none' : ''}`}
-          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b', background: '#fff', position: 'relative' }}
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-all duration-200 cursor-pointer ${(v1Files.length > 0) ? 'opacity-50 pointer-events-none' : 'hover:shadow-lg'}`}
+          style={{ 
+            minHeight: 260, 
+            borderColor: finalDragActive ? colors.dropzoneBorderDrag : colors.dropzoneBorder,
+            color: colors.textPrimary, 
+            background: finalDragActive ? colors.dropzoneBgDrag : colors.dropzoneBg,
+            position: 'relative',
+            boxShadow: finalDragActive ? `0 0 0 2px ${colors.dropzoneBorderDrag}` : 'none',
+          }}
           tabIndex={0}
           onDragOver={e => { if (!v1Files.length) { e.preventDefault(); setFinalDragActive(true); } }}
           onDragLeave={e => { if (!v1Files.length) { e.preventDefault(); setFinalDragActive(false); } }}
@@ -398,7 +452,7 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
           <div className="text-base mb-2 text-center">
             <span className="underline cursor-pointer">Click to upload</span> or drag and drop the final CFR here.
           </div>
-          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+          <div className="text-sm text-center mb-2" style={{ color: colors.textMuted }}>
             Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
           </div>
           {finalFiles.length > 0 && (
@@ -406,21 +460,44 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
               <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                 <div className="space-y-3">
                   {finalFiles.map((file, idx) => (
-                    <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
-                      <span className="mr-3 text-zinc-400 dark:text-zinc-500">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div 
+                      key={file.name + file.size} 
+                      className="flex items-center rounded-xl px-4 py-3 border transition-colors duration-200 hover:shadow-sm"
+                      style={{ 
+                        background: colors.fileItemBg, 
+                        borderColor: colors.fileItemBorder,
+                      }}
+                    >
+                      <span className="mr-3" style={{ color: colors.textMuted }}>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
-                        <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                        <div className="text-base font-medium truncate" style={{ color: colors.textPrimary }}>{file.name}</div>
+                        <div className="text-xs" style={{ color: colors.textMuted }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                       </div>
                       <button
-                        className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                        className="ml-3 p-2 rounded-full transition-colors duration-200"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          color: colors.removeButtonText,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.removeButtonBgHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                         aria-label="Remove file"
                         onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setFinalFiles); }}
                         type="button"
                       >
-                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/>
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -428,7 +505,17 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
               </div>
               <button
                 type="button"
-                className="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-lg shadow hover:bg-blue-700 transition"
+                className="w-full mt-4 px-6 py-3 rounded-lg font-semibold text-lg shadow transition-colors duration-200"
+                style={{ 
+                  backgroundColor: colors.buttonBg,
+                  color: colors.buttonText,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBg;
+                }}
                 onClick={() => { setActiveStageIdx(1); }}
                 aria-label="Continue with Final CFR"
               >
@@ -437,8 +524,23 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
             </>
           )}
           {v1Files.length > 0 && (
-            <div style={{ position: 'absolute', inset: 0, background: darkMode ? 'rgba(24,24,27,0.7)' : 'rgba(243,244,246,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16 }}>
-              <span style={{ color: darkMode ? '#f4f4f5' : '#18181b', fontWeight: 600, fontSize: 18, textAlign: 'center', padding: 16 }}>
+            <div style={{ 
+              position: 'absolute', 
+              inset: 0, 
+              background: colors.overlayBg, 
+              zIndex: 10, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              borderRadius: 16 
+            }}>
+              <span style={{ 
+                color: colors.textPrimary, 
+                fontWeight: 600, 
+                fontSize: 18, 
+                textAlign: 'center', 
+                padding: 16 
+              }}>
                 Please clear the other upload area to continue
               </span>
             </div>
@@ -446,26 +548,29 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
         </label>
       </div>
       
-      {/* Vertical separator line with drop shadow */}
-      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
-        height: '90%',
-        minHeight: '500px',
-        boxShadow: darkMode 
-          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
-          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
-      }}></div>
+      {/* Vertical separator - simple line */}
+      <div className="hidden sm:flex items-center justify-center mx-8">
+        <div className="w-0.5 bg-zinc-400 dark:bg-zinc-500 rounded-full shadow-sm" style={{ height: '500px' }}></div>
+      </div>
       
       {/* V1 CFR Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
-                  <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-            Or do you want to check a CFR?
-          </div>
-          <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
-            Upload a first version
-          </div>
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
+          Or do you want to check a CFR?
+        </div>
+        <div className="text-base max-w-xs text-center mb-6 mx-auto" style={{ color: colors.textSecondary }}>
+          Upload a first version
+        </div>
         <label
-          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white ${v1DragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''} ${(finalFiles.length > 0) ? 'opacity-50 pointer-events-none' : ''}`}
-          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b', background: '#fff', position: 'relative' }}
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-all duration-200 cursor-pointer ${(finalFiles.length > 0) ? 'opacity-50 pointer-events-none' : 'hover:shadow-lg'}`}
+          style={{ 
+            minHeight: 260, 
+            borderColor: v1DragActive ? colors.dropzoneBorderDrag : colors.dropzoneBorder,
+            color: colors.textPrimary, 
+            background: v1DragActive ? colors.dropzoneBgDrag : colors.dropzoneBg,
+            position: 'relative',
+            boxShadow: v1DragActive ? `0 0 0 2px ${colors.dropzoneBorderDrag}` : 'none',
+          }}
           tabIndex={0}
           onDragOver={e => { if (!finalFiles.length) { e.preventDefault(); setV1DragActive(true); } }}
           onDragLeave={e => { if (!finalFiles.length) { e.preventDefault(); setV1DragActive(false); } }}
@@ -492,7 +597,7 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
           <div className="text-base mb-2 text-center">
             <span className="underline cursor-pointer">Click to upload</span> or drag and drop the first version here.
           </div>
-          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+          <div className="text-sm text-center mb-2" style={{ color: colors.textMuted }}>
             Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
           </div>
           {v1Files.length > 0 && (
@@ -500,21 +605,44 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
               <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                 <div className="space-y-3">
                   {v1Files.map((file, idx) => (
-                    <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
-                      <span className="mr-3 text-zinc-400 dark:text-zinc-500">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div 
+                      key={file.name + file.size} 
+                      className="flex items-center rounded-xl px-4 py-3 border transition-colors duration-200 hover:shadow-sm"
+                      style={{ 
+                        background: colors.fileItemBg, 
+                        borderColor: colors.fileItemBorder,
+                      }}
+                    >
+                      <span className="mr-3" style={{ color: colors.textMuted }}>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
-                        <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                        <div className="text-base font-medium truncate" style={{ color: colors.textPrimary }}>{file.name}</div>
+                        <div className="text-xs" style={{ color: colors.textMuted }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                       </div>
                       <button
-                        className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                        className="ml-3 p-2 rounded-full transition-colors duration-200"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          color: colors.removeButtonText,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.removeButtonBgHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                         aria-label="Remove file"
                         onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setV1Files); }}
                         type="button"
                       >
-                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/>
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -522,7 +650,17 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
               </div>
               <button
                 type="button"
-                className="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-lg shadow hover:bg-blue-700 transition"
+                className="w-full mt-4 px-6 py-3 rounded-lg font-semibold text-lg shadow transition-colors duration-200"
+                style={{ 
+                  backgroundColor: colors.buttonBg,
+                  color: colors.buttonText,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBg;
+                }}
                 onClick={() => { if (setShowCfrChecklistReview) setShowCfrChecklistReview(true); }}
                 aria-label="Continue with V1 CFR"
               >
@@ -531,8 +669,23 @@ function CfrUploadDropzones({ darkMode, setActiveStageIdx, setShowCfrChecklistRe
             </>
           )}
           {finalFiles.length > 0 && (
-            <div style={{ position: 'absolute', inset: 0, background: darkMode ? 'rgba(24,24,27,0.7)' : 'rgba(243,244,246,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16 }}>
-              <span style={{ color: darkMode ? '#f4f4f5' : '#18181b', fontWeight: 600, fontSize: 18, textAlign: 'center', padding: 16 }}>
+            <div style={{ 
+              position: 'absolute', 
+              inset: 0, 
+              background: colors.overlayBg, 
+              zIndex: 10, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              borderRadius: 16 
+            }}>
+              <span style={{ 
+                color: colors.textPrimary, 
+                fontWeight: 600, 
+                fontSize: 18, 
+                textAlign: 'center', 
+                padding: 16 
+              }}>
                 Please clear the other upload area to continue
               </span>
             </div>
@@ -550,6 +703,38 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
   const finalInputRef = useRef<HTMLInputElement>(null);
   const [finalDragActive, setFinalDragActive] = useState(false);
 
+  // Dark mode color variables
+  const colors = {
+    // Background colors
+    dropzoneBg: darkMode ? '#1e1e1e' : '#ffffff',
+    dropzoneBgHover: darkMode ? '#2a2a2a' : '#f8fafc',
+    dropzoneBgDrag: darkMode ? '#1e293b' : '#f0f6ff',
+    
+    // Border colors
+    dropzoneBorder: darkMode ? '#404040' : '#e4e4e7',
+    dropzoneBorderHover: darkMode ? '#525252' : '#d1d5db',
+    dropzoneBorderDrag: darkMode ? '#3b82f6' : '#3b82f6',
+    
+    // Text colors
+    textPrimary: darkMode ? '#f1f5f9' : '#18181b',
+    textSecondary: darkMode ? '#a1a1aa' : '#64748b',
+    textMuted: darkMode ? '#71717a' : '#9ca3af',
+    
+    // File item colors
+    fileItemBg: darkMode ? '#2a2a2a' : '#ffffff',
+    fileItemBgHover: darkMode ? '#333333' : '#f9fafb',
+    fileItemBorder: darkMode ? '#404040' : '#e4e4e7',
+    
+    // Button colors
+    buttonBg: darkMode ? '#3b82f6' : '#3b82f6',
+    buttonBgHover: darkMode ? '#2563eb' : '#2563eb',
+    buttonText: '#ffffff',
+    
+    // Remove button colors
+    removeButtonBgHover: darkMode ? '#dc2626' : '#fef2f2',
+    removeButtonText: '#dc2626',
+  };
+
   function handleDrop(e: React.DragEvent, setFiles: React.Dispatch<React.SetStateAction<File[]>>, setDrag: (v: boolean) => void) {
     e.preventDefault();
     e.stopPropagation();
@@ -565,6 +750,7 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
       });
     }
   }
+  
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -578,23 +764,30 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
       e.target.value = "";
     }
   }
+  
   function handleRemoveFile(idx: number, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     setFiles(files => files.filter((_, i) => i !== idx));
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center relative">
+    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between relative">
       {/* Final CYC Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
           Are you happy with the CYC already?
         </div>
-        <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+        <div className="text-base max-w-xs text-center mb-6 mx-auto" style={{ color: colors.textSecondary }}>
           Upload a final CYC for this case.
         </div>
         <label
-          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white ${finalDragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
-          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-all duration-200 cursor-pointer hover:shadow-lg`}
+          style={{ 
+            minHeight: 260, 
+            borderColor: finalDragActive ? colors.dropzoneBorderDrag : colors.dropzoneBorder,
+            color: colors.textPrimary, 
+            background: finalDragActive ? colors.dropzoneBgDrag : colors.dropzoneBg,
+            boxShadow: finalDragActive ? `0 0 0 2px ${colors.dropzoneBorderDrag}` : 'none',
+          }}
           tabIndex={0}
           onDragOver={e => { e.preventDefault(); setFinalDragActive(true); }}
           onDragLeave={e => { e.preventDefault(); setFinalDragActive(false); }}
@@ -620,7 +813,7 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
           <div className="text-base mb-2 text-center">
             <span className="underline cursor-pointer">Click to upload</span> or drag and drop the final CYC here.
           </div>
-          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+          <div className="text-sm text-center mb-2" style={{ color: colors.textMuted }}>
             Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
           </div>
           {finalFiles.length > 0 && (
@@ -628,21 +821,44 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
               <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                 <div className="space-y-3">
                   {finalFiles.map((file, idx) => (
-                    <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
-                      <span className="mr-3 text-zinc-400 dark:text-zinc-500">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div 
+                      key={file.name + file.size} 
+                      className="flex items-center rounded-xl px-4 py-3 border transition-colors duration-200 hover:shadow-sm"
+                      style={{ 
+                        background: colors.fileItemBg, 
+                        borderColor: colors.fileItemBorder,
+                      }}
+                    >
+                      <span className="mr-3" style={{ color: colors.textMuted }}>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
-                        <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                        <div className="text-base font-medium truncate" style={{ color: colors.textPrimary }}>{file.name}</div>
+                        <div className="text-xs" style={{ color: colors.textMuted }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                       </div>
                       <button
-                        className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                        className="ml-3 p-2 rounded-full transition-colors duration-200"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          color: colors.removeButtonText,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.removeButtonBgHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                         aria-label="Remove file"
                         onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setFinalFiles); }}
                         type="button"
                       >
-                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/>
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -650,7 +866,17 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
               </div>
               <button
                 type="button"
-                className="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-lg shadow hover:bg-blue-700 transition"
+                className="w-full mt-4 px-6 py-3 rounded-lg font-semibold text-lg shadow transition-colors duration-200"
+                style={{ 
+                  backgroundColor: colors.buttonBg,
+                  color: colors.buttonText,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBg;
+                }}
                 onClick={() => { console.log('Continue Final CYC clicked'); }}
                 aria-label="Continue with Final CYC"
               >
@@ -661,23 +887,32 @@ function CycUploadDropzones({ darkMode, onGoClick }: { darkMode: boolean; onGoCl
         </label>
       </div>
       
-      {/* Vertical separator line with drop shadow */}
-      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
-        height: '90%',
-        minHeight: '500px',
-        boxShadow: darkMode 
-          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
-          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
-      }}></div>
+      {/* Vertical separator - simple line */}
+      <div className="hidden sm:flex items-center justify-center mx-8">
+        <div className="w-0.5 bg-zinc-400 dark:bg-zinc-500 rounded-full shadow-sm" style={{ height: '500px' }}></div>
+      </div>
       
       {/* Help me complete the CYC Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto items-center">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
           Help me complete the CYC.
         </div>
         <button
           type="button"
-          className="px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed mt-4"
+          className="px-4 py-2 rounded-lg border font-medium transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-4"
+          style={{ 
+            borderColor: colors.buttonBg,
+            backgroundColor: colors.buttonBg,
+            color: colors.buttonText,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+            e.currentTarget.style.borderColor = colors.buttonBgHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = colors.buttonBg;
+            e.currentTarget.style.borderColor = colors.buttonBg;
+          }}
           onClick={onGoClick}
         >
           Go
@@ -694,6 +929,38 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
   const finalInputRef = useRef<HTMLInputElement>(null);
   const [finalDragActive, setFinalDragActive] = useState(false);
 
+  // Dark mode color variables
+  const colors = {
+    // Background colors
+    dropzoneBg: darkMode ? '#1e1e1e' : '#ffffff',
+    dropzoneBgHover: darkMode ? '#2a2a2a' : '#f8fafc',
+    dropzoneBgDrag: darkMode ? '#1e293b' : '#f0f6ff',
+    
+    // Border colors
+    dropzoneBorder: darkMode ? '#404040' : '#e4e4e7',
+    dropzoneBorderHover: darkMode ? '#525252' : '#d1d5db',
+    dropzoneBorderDrag: darkMode ? '#3b82f6' : '#3b82f6',
+    
+    // Text colors
+    textPrimary: darkMode ? '#f1f5f9' : '#18181b',
+    textSecondary: darkMode ? '#a1a1aa' : '#64748b',
+    textMuted: darkMode ? '#71717a' : '#9ca3af',
+    
+    // File item colors
+    fileItemBg: darkMode ? '#2a2a2a' : '#ffffff',
+    fileItemBgHover: darkMode ? '#333333' : '#f9fafb',
+    fileItemBorder: darkMode ? '#404040' : '#e4e4e7',
+    
+    // Button colors
+    buttonBg: darkMode ? '#3b82f6' : '#3b82f6',
+    buttonBgHover: darkMode ? '#2563eb' : '#2563eb',
+    buttonText: '#ffffff',
+    
+    // Remove button colors
+    removeButtonBgHover: darkMode ? '#dc2626' : '#fef2f2',
+    removeButtonText: '#dc2626',
+  };
+
   function handleDrop(e: React.DragEvent, setFiles: React.Dispatch<React.SetStateAction<File[]>>, setDrag: (v: boolean) => void) {
     e.preventDefault();
     e.stopPropagation();
@@ -709,6 +976,7 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
       });
     }
   }
+  
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -722,23 +990,30 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
       e.target.value = "";
     }
   }
+  
   function handleRemoveFile(idx: number, setFiles: React.Dispatch<React.SetStateAction<File[]>>) {
     setFiles(files => files.filter((_, i) => i !== idx));
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full sm:flex-row sm:gap-8 sm:items-stretch h-full justify-center relative">
+    <div className="flex flex-col gap-12 w-full sm:flex-row sm:gap-12 sm:items-stretch h-full justify-between relative">
       {/* Final Illustration Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
           Are you happy with the Illustration?
         </div>
-        <div className="text-zinc-500 text-base max-w-xs text-center mb-6 mx-auto" style={{ color: darkMode ? '#a1a1aa' : '#64748b' }}>
+        <div className="text-base max-w-xs text-center mb-6 mx-auto" style={{ color: colors.textSecondary }}>
           Upload a final Illustration for this case.
         </div>
         <label
-          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-colors cursor-pointer bg-white ${finalDragActive ? 'ring-2 ring-blue-400 border-blue-400' : ''}`}
-          style={{ minHeight: 260, borderColor: darkMode ? '#27272a' : '#e4e4e7', color: darkMode ? '#f4f4f5' : '#18181b' }}
+          className={`w-full rounded-2xl border flex flex-col items-center justify-center py-8 sm:py-10 px-2 sm:px-4 relative transition-all duration-200 cursor-pointer hover:shadow-lg`}
+          style={{ 
+            minHeight: 260, 
+            borderColor: finalDragActive ? colors.dropzoneBorderDrag : colors.dropzoneBorder,
+            color: colors.textPrimary, 
+            background: finalDragActive ? colors.dropzoneBgDrag : colors.dropzoneBg,
+            boxShadow: finalDragActive ? `0 0 0 2px ${colors.dropzoneBorderDrag}` : 'none',
+          }}
           tabIndex={0}
           onDragOver={e => { e.preventDefault(); setFinalDragActive(true); }}
           onDragLeave={e => { e.preventDefault(); setFinalDragActive(false); }}
@@ -764,7 +1039,7 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
           <div className="text-base mb-2 text-center">
             <span className="underline cursor-pointer">Click to upload</span> or drag and drop the final Illustration here.
           </div>
-          <div className="text-sm text-center mb-2 text-zinc-400 dark:text-zinc-500">
+          <div className="text-sm text-center mb-2" style={{ color: colors.textMuted }}>
             Maximum file size: 200 MB <span className="mx-1">•</span> Supported file: PDF, Word, Excel
           </div>
           {finalFiles.length > 0 && (
@@ -772,21 +1047,44 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
               <div className="w-full max-w-md mx-auto mt-6" style={{ maxHeight: 220, overflowY: 'auto' }}>
                 <div className="space-y-3">
                   {finalFiles.map((file, idx) => (
-                    <div key={file.name + file.size} className="flex items-center rounded-xl px-4 py-3 border" style={{ background: darkMode ? '#232329' : '#fff', borderColor: darkMode ? '#27272a' : '#e4e4e7' }}>
-                      <span className="mr-3 text-zinc-400 dark:text-zinc-500">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div 
+                      key={file.name + file.size} 
+                      className="flex items-center rounded-xl px-4 py-3 border transition-colors duration-200 hover:shadow-sm"
+                      style={{ 
+                        background: colors.fileItemBg, 
+                        borderColor: colors.fileItemBorder,
+                      }}
+                    >
+                      <span className="mr-3" style={{ color: colors.textMuted }}>
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                        </svg>
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-base font-medium truncate" style={{ color: darkMode ? '#f4f4f5' : '#18181b' }}>{file.name}</div>
-                        <div className="text-xs text-zinc-400 dark:text-zinc-500">{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
+                        <div className="text-base font-medium truncate" style={{ color: colors.textPrimary }}>{file.name}</div>
+                        <div className="text-xs" style={{ color: colors.textMuted }}>{(file.size / (1024 * 1024)).toFixed(1)}MB</div>
                       </div>
                       <button
-                        className="ml-3 p-2 rounded-full hover:bg-red-50 transition"
+                        className="ml-3 p-2 rounded-full transition-colors duration-200"
+                        style={{ 
+                          backgroundColor: 'transparent',
+                          color: colors.removeButtonText,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.removeButtonBgHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                         aria-label="Remove file"
                         onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(idx, setFinalFiles); }}
                         type="button"
                       >
-                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/></svg>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 6v6m4-6v6"/>
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -794,9 +1092,19 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
               </div>
               <button
                 type="button"
-                className="w-full mt-4 px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold text-lg shadow hover:bg-blue-700 transition"
-                onClick={() => { console.log('Continue Final CFR clicked'); }}
-                aria-label="Continue with Final CFR"
+                className="w-full mt-4 px-6 py-3 rounded-lg font-semibold text-lg shadow transition-colors duration-200"
+                style={{ 
+                  backgroundColor: colors.buttonBg,
+                  color: colors.buttonText,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.buttonBg;
+                }}
+                onClick={() => { console.log('Continue Final Illustration clicked'); }}
+                aria-label="Continue with Final Illustration"
               >
                 Continue
               </button>
@@ -805,23 +1113,32 @@ function IllustrationUploadDropzones({ darkMode, onGoClick }: { darkMode: boolea
         </label>
       </div>
       
-      {/* Vertical separator line with drop shadow */}
-      <div className="hidden sm:block w-0.5 bg-gray-300 dark:bg-gray-600 mx-4 rounded-full" style={{ 
-        height: '90%',
-        minHeight: '500px',
-        boxShadow: darkMode 
-          ? '0 0 12px rgba(255, 255, 255, 0.2), 0 0 6px rgba(255, 255, 255, 0.1), 0 0 3px rgba(255, 255, 255, 0.05)' 
-          : '0 0 12px rgba(0, 0, 0, 0.2), 0 0 6px rgba(0, 0, 0, 0.1), 0 0 3px rgba(0, 0, 0, 0.05)'
-      }}></div>
+      {/* Vertical separator - simple line */}
+      <div className="hidden sm:flex items-center justify-center mx-8">
+        <div className="w-0.5 bg-zinc-400 dark:bg-zinc-500 rounded-full shadow-sm" style={{ height: '500px' }}></div>
+      </div>
       
       {/* Help me complete the Illustration Column */}
       <div className="flex flex-col flex-1 justify-center max-w-md mx-auto items-center">
-        <div className="text-xl font-semibold text-center mb-1" style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}>
-          Help me complete the Illustration.
+        <div className="text-xl font-semibold text-center mb-1" style={{ color: colors.textPrimary }}>
+          Help me create the Illustration.
         </div>
         <button
           type="button"
-          className="px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed mt-4"
+          className="px-4 py-2 rounded-lg border font-medium transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-4"
+          style={{ 
+            borderColor: colors.buttonBg,
+            backgroundColor: colors.buttonBg,
+            color: colors.buttonText,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colors.buttonBgHover;
+            e.currentTarget.style.borderColor = colors.buttonBgHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = colors.buttonBg;
+            e.currentTarget.style.borderColor = colors.buttonBg;
+          }}
           onClick={onGoClick}
         >
           Go

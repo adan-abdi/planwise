@@ -2,8 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
+type ThemePreference = 'system' | 'dark' | 'light';
+
 interface ThemeContextType {
   darkMode: boolean;
+  themePreference: ThemePreference;
+  setThemePreference: (preference: ThemePreference) => void;
   toggleDarkMode: () => void;
 }
 
@@ -11,31 +15,77 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
+  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
 
+  // Function to get system preference
+  const getSystemPreference = () => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  };
+
+  // Function to determine if dark mode should be active
+  const shouldUseDarkMode = () => {
+    switch (themePreference) {
+      case 'dark':
+        return true;
+      case 'light':
+        return false;
+      case 'system':
+        return getSystemPreference();
+      default:
+        return false;
+    }
+  };
+
+  // Initialize theme preference from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark") {
-      setDarkMode(true);
-    } else {
-      setDarkMode(false);
+    const stored = localStorage.getItem("themePreference");
+    if (stored === "dark" || stored === "light" || stored === "system") {
+      setThemePreference(stored as ThemePreference);
     }
   }, []);
 
+  // Update dark mode based on preference
   useEffect(() => {
+    const isDark = shouldUseDarkMode();
+    setDarkMode(isDark);
+    
     const html = document.documentElement;
-    if (darkMode) {
+    if (isDark) {
       html.classList.add("dark");
-      localStorage.setItem("theme", "dark");
     } else {
       html.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
-  }, [darkMode]);
+  }, [themePreference]);
 
-  const toggleDarkMode = () => setDarkMode((d) => !d);
+  // Listen for system preference changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && themePreference === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => {
+        setDarkMode(shouldUseDarkMode());
+      };
+      
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [themePreference]);
+
+  const setThemePreferenceHandler = (preference: ThemePreference) => {
+    setThemePreference(preference);
+    localStorage.setItem("themePreference", preference);
+  };
+
+  // Backward compatibility function
+  const toggleDarkMode = () => {
+    const newPreference = darkMode ? 'light' : 'dark';
+    setThemePreferenceHandler(newPreference);
+  };
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ darkMode, themePreference, setThemePreference: setThemePreferenceHandler, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );

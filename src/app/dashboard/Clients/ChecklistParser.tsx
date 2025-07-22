@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, GripVertical, ArrowRight, Info, Copy } from "lucide-react";
+import { Check, GripVertical, ArrowRight, Info, Copy, Grid2x2Check } from "lucide-react";
 import { useTheme } from "../../../theme-context";
 import {
   DndContext,
@@ -23,17 +23,13 @@ const checklistData = [
   { label: "Client DOB", found: true, value: "23 July 1999", source: "policy doc_1", confidence: 88 },
   { label: "SJP SRA", found: false, value: "-", source: null, confidence: null },
   { label: "Recommended Fund Choice", found: true, value: "K1056168932", source: "policy doc_1", confidence: 99 },
-  { label: "Checklist completed by", found: false, value: "-", source: null, confidence: null },
   { label: "Provider", found: true, value: "Standard Life", source: null, confidence: null },
   { label: "Policy Number", found: true, value: "PN123456789", source: "policy doc_2", confidence: 97 },
   { label: "Plan Type", found: true, value: "Retirement", source: "policy doc_2", confidence: 95 },
   { label: "Start Date", found: true, value: "01 Jan 2020", source: "policy doc_2", confidence: 98 },
-  { label: "End Date", found: false, value: "-", source: null, confidence: null },
   { label: "Annual Premium", found: true, value: "$1,200", source: "policy doc_2", confidence: 99 },
-  { label: "Beneficiary", found: false, value: "-", source: null, confidence: null },
   { label: "Advisor", found: true, value: "Jane Doe", source: "policy doc_3", confidence: 96 },
   { label: "Risk Level", found: true, value: "Medium", source: "policy doc_3", confidence: 92 },
-  { label: "Notes", found: false, value: "-", source: null, confidence: null },
 ];
 
 const subtleRadius = 6;
@@ -116,7 +112,7 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
         ...style,
         display: 'flex',
         alignItems: 'stretch',
-        minHeight: 64,
+        minHeight: 52,
         gap: gap,
         background: 'transparent',
         cursor: item.found ? 'pointer' : 'default',
@@ -126,7 +122,7 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
       {...attributes}
     >
       <div
-        style={{ width: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', color: darkMode ? '#fff' : '#000', cursor: 'grab', flexShrink: 0 }}
+        style={{ width: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', color: darkMode ? '#52525b' : '#52525b', cursor: 'grab', flexShrink: 0 }}
         {...listeners}
         tabIndex={0}
         aria-label="Drag to reorder"
@@ -140,9 +136,9 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '0 20px',
+        padding: '0 16px',
       }}>
-        <span style={{ fontSize: 15, fontWeight: 500, color: cardText }}>{item.label}</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: cardText }}>{item.label}</span>
         <span style={{ fontSize: 12, color: darkMode ? '#bbb' : '#888', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {item.found ? (
             <>
@@ -179,10 +175,10 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
           borderRadius: `0 ${subtleRadius}px ${subtleRadius}px 0`,
           display: 'flex',
           alignItems: 'center',
-          fontSize: 15,
+          fontSize: 14,
           color: values[idx] === '' ? notFoundText : cardText,
           fontWeight: 500,
-          padding: '0 20px',
+          padding: '0 16px',
           cursor: 'text',
           position: 'relative',
         }}
@@ -357,41 +353,160 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
   };
 
   return (
-    <div style={{ padding: 32, width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ fontSize: 20, color: cardText, margin: 0 }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
-        <div style={{ display: 'flex', gap: 12 }}>
+    <div style={{ width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '16px 12px 18px 12px', background: 'white', display: 'flex', flexDirection: 'column', minHeight: '80px', borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, marginBottom: '1px', borderTopRightRadius: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
+          <h2 style={{ 
+            fontSize: 18, 
+            color: '#374151', 
+            margin: 0, 
+            fontWeight: 600,
+            flex: 1
+          }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
           <button style={{
-            border: `1.5px solid ${borderColor}`,
+            minWidth: 0,
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
             borderRadius: 8,
-            background: 'transparent',
-            color: cardText,
-            fontWeight: 500,
+            padding: '6px 12px',
             fontSize: 14,
-            padding: '8px 16px',
-            cursor: 'pointer',
+            fontWeight: 400,
+            boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            transition: 'all 0.15s',
-          }}>Add Item</button>
-          <button style={{
-            border: `1.5px solid ${borderColor}`,
-            borderRadius: 8,
-            background: 'transparent',
-            color: cardText,
-            fontWeight: 500,
-            fontSize: 14,
-            padding: '8px 16px',
+            gap: 4,
+            color: darkMode ? 'var(--foreground)' : '#374151',
+            transition: 'all 0.2s ease-in-out',
             cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
+          >
+            <GripVertical className="w-4 h-4" />
+            Add Item
+          </button>
+          <button style={{
+            minWidth: 0,
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 14,
+            fontWeight: 400,
+            boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            transition: 'all 0.15s',
-          }}>Export Missing Info</button>
+            gap: 4,
+            color: darkMode ? 'var(--foreground)' : '#374151',
+            transition: 'all 0.2s ease-in-out',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+            Export missing
+          </button>
+        </div>
+        {/* Action buttons area */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <button style={{
+            minWidth: 0,
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 14,
+            fontWeight: 400,
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            color: darkMode ? 'var(--foreground)' : '#374151',
+            transition: 'all 0.2s ease-in-out',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Save checklist
+          </button>
+          <button style={{
+            minWidth: 0,
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 14,
+            fontWeight: 400,
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            color: darkMode ? 'var(--foreground)' : '#374151',
+            transition: 'all 0.2s ease-in-out',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+            Email
+          </button>
+          <button style={{
+            minWidth: 0,
+            backgroundColor: darkMode ? 'var(--muted)' : 'white',
+            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 14,
+            fontWeight: 400,
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            color: darkMode ? 'var(--foreground)' : '#374151',
+            transition: 'all 0.2s ease-in-out',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+          }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download
+          </button>
         </div>
       </div>
-      <div style={{ borderRadius: 16, minHeight: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{ borderRadius: 16, minHeight: 0, padding: '0 32px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div style={{ display: 'flex', fontWeight: 500, fontSize: 15, padding: '24px 40px 8px 40px', color: cardText, background: 'transparent', flexShrink: 0 }}>
           <div style={{ flex: 2 }}>Requested Information</div>
           <div style={{ width: 40 }}></div>

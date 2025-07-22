@@ -64,10 +64,11 @@ interface CYCFormProps {
   plan: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave: (plan: any, currentStage: number) => void;
+  onBack?: () => void;
   initialStage?: number;
 }
 
-export default function CYCForm({ darkMode, plan, onSave, initialStage = 0 }: CYCFormProps) {
+export default function CYCForm({ darkMode, plan, onSave, onBack, initialStage = 0 }: CYCFormProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formState, setFormState] = useState<any>(plan);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -274,9 +275,10 @@ export default function CYCForm({ darkMode, plan, onSave, initialStage = 0 }: CY
           {/* Stage Content */}
           {renderStageContent()}
 
-          {/* Additional Notes Section */}
-          <div className="flex flex-row w-full items-stretch px-8 py-4 pt-8">
-            {/* Textarea (left) */}
+          {/* Additional Notes Section - Hidden for Results Stage */}
+          {currentStage !== 3 && (
+            <div className="flex flex-row w-full items-stretch px-8 py-4 pt-8">
+              {/* Textarea (left) */}
                       <div className="flex-1 pr-8 py-2 flex flex-col justify-center">
               <label
                 className={`block mb-1 font-medium text-sm ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}
@@ -304,11 +306,12 @@ export default function CYCForm({ darkMode, plan, onSave, initialStage = 0 }: CY
                 background: darkMode ? '#3f3f46' : '#e4e4e7',
               }}
             />
-            {/* Guide (right) */}
-            <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-              <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Supporting notes requested while completing this page or that you belive will help clarify plan details should be written in this box - these will appear in output from this calculator.</span>
+                        {/* Guide (right) */}
+            <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+              <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Supporting notes requested while completing this page or that you belive will help clarify plan details should be written in this box - these will appear in output from this calculator.</span>
+            </div>
                           </div>
-                          </div>
+          )}
           {/* Navigation Buttons */}
           <div className="w-full flex justify-end items-center py-4 bg-inherit gap-2">
             {currentStage === 3 ? (
@@ -329,23 +332,28 @@ export default function CYCForm({ darkMode, plan, onSave, initialStage = 0 }: CY
                 <button
                   type="button"
                   className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition border ${
-                    currentStage === 0
+                    currentStage === 0 && !onBack
                       ? 'text-zinc-400 dark:text-zinc-500 cursor-not-allowed opacity-50'
-                      : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 cursor-pointer shadow-sm hover:shadow'
+                      : 'text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 cursor-pointer shadow-sm hover:shadow'
                   }`}
                   style={{
                     borderColor: darkMode ? '#52525b' : '#e4e4e7', // zinc-200 equivalent
-                    backgroundColor: currentStage === 0 ? 'transparent' : (darkMode ? '#27272a' : '#fafafa'), // zinc-900 in dark, zinc-50 in light
+                    backgroundColor: currentStage === 0 && !onBack ? 'transparent' : (darkMode ? '#27272a' : '#fafafa'), // zinc-900 in dark, zinc-50 in light
+                    color: currentStage === 0 && !onBack ? (darkMode ? '#71717a' : '#a1a1aa') : (darkMode ? '#ffffff' : '#000000'), // Conditional text color
                   }}
                   onClick={() => {
                     console.log('Back button clicked, currentStage:', currentStage);
-                    // Navigate to previous stage
-                    if (currentStage > 0) {
+                    // If at stage 0 and onBack is provided, call it to go back to summary
+                    if (currentStage === 0 && onBack) {
+                      console.log('Calling onBack to return to summary');
+                      onBack();
+                    } else if (currentStage > 0) {
+                      // Navigate to previous stage
                       console.log('Navigating to stage:', currentStage - 1);
                       navigateToStage(currentStage - 1);
                     }
                   }}
-                  disabled={currentStage === 0}
+                  disabled={currentStage === 0 && !onBack}
                 >
                   Back
                 </button>

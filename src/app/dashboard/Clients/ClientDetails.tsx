@@ -147,6 +147,26 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [sortedCases, setSortedCases] = useState<Case[]>(cases);
   // Add state for search value
   const [caseSearch, setCaseSearch] = useState("");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+
+  // Domain-specific search suggestions based on checklist data
+  const searchSuggestions = [
+    "Partner", "Client name", "Client DOB", "SJP SRA", "Recommended Fund Choice",
+    "Checklist completed by", "Provider", "Policy Number", "Plan Type", "Start Date",
+    "End Date", "Annual Premium", "Beneficiary", "Advisor", "Risk Level", "Notes",
+    "Pension Transfer", "ISA Transfer", "Pension New Money", "ISA New Money",
+    "Standard Life", "Retirement", "Employer", "Scheme provider", "Loyalty Bonuses",
+    "Initial charge", "Annual Management Charges", "AMC", "Product charge", "Wrapper charge",
+    "Fixed charge", "Policy fee", "Transfer value", "Single contribution", "Regular contribution",
+    "Crystallised funds", "ESS", "Money Purchase", "Employer Sponsored Scheme",
+    "Attitude to risk", "Experienced investor", "Sophisticated investor", "Critical yield",
+    "Replacement plan", "Ongoing Advice Fee", "OAF", "Top-up", "Lump sums", "Fund allocation"
+  ];
+
+  // Filter suggestions based on current search input
+  const filteredSuggestions = searchSuggestions.filter(suggestion =>
+    suggestion.toLowerCase().includes(caseSearch.toLowerCase())
+  );
 
   useEffect(() => {
     const sorted = [...cases];
@@ -480,11 +500,42 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   <input
                     type="text"
                     value={caseSearch}
-                    onChange={e => setCaseSearch(e.target.value)}
+                    onChange={e => {
+                      setCaseSearch(e.target.value);
+                      setShowSearchSuggestions(true);
+                    }}
+                    onFocus={() => setShowSearchSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
                     placeholder="Search cases..."
                     className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
                     style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
                   />
+                  {/* Search suggestions pills */}
+                  {showSearchSuggestions && (
+                                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[var(--muted)] border border-zinc-200 dark:border-[var(--border)] rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
+                        <div className="p-2">
+                          <div className="flex flex-wrap gap-1 overflow-x-auto" style={{ maxWidth: '100%' }}>
+                          {(filteredSuggestions.length > 0 ? filteredSuggestions : searchSuggestions).slice(0, 10).map((suggestion, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setCaseSearch(suggestion);
+                                setShowSearchSuggestions(false);
+                              }}
+                              className="flex-shrink-0 px-2 py-1 text-xs rounded-md border border-zinc-200 dark:border-[var(--border)] bg-zinc-50 dark:bg-[var(--background)] text-zinc-700 dark:text-[var(--foreground)] hover:bg-zinc-100 dark:hover:bg-[var(--muted)] transition-colors"
+                              style={{
+                                whiteSpace: 'nowrap',
+                                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                                backgroundColor: darkMode ? 'var(--background)' : '#f9fafb'
+                              }}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {/* Pagination for mobile */}
                 {totalPages > 1 && (
@@ -617,9 +668,9 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                 )}
               </div>
             </div>
-            <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
+            <div className="hidden sm:flex w-full items-end justify-between pl-20 pr-4 pt-2 pb-0" style={{ minHeight: '48px' }}>
               {/* LEFT: Navigation/tab buttons only */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-end gap-2 h-full">
                 <button
                   className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal transition"
                   onClick={() => setActiveTab('transfers')}
@@ -672,7 +723,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                 </button>
               </div>
               {/* RIGHT: All table-related actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-end gap-2 h-full">
                 {/* Sort button */}
                 <button 
                   className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
@@ -756,11 +807,42 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                   <input
                     type="text"
                     value={caseSearch}
-                    onChange={e => setCaseSearch(e.target.value)}
+                    onChange={e => {
+                      setCaseSearch(e.target.value);
+                      setShowSearchSuggestions(true);
+                    }}
+                    onFocus={() => setShowSearchSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
                     placeholder="Search cases..."
                     className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
                     style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
                   />
+                  {/* Search suggestions pills */}
+                  {showSearchSuggestions && (
+                                          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[var(--muted)] border border-zinc-200 dark:border-[var(--border)] rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                        <div className="p-3">
+                          <div className="flex flex-wrap gap-2 overflow-x-auto" style={{ maxWidth: '100%' }}>
+                          {(filteredSuggestions.length > 0 ? filteredSuggestions : searchSuggestions).slice(0, 15).map((suggestion, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setCaseSearch(suggestion);
+                                setShowSearchSuggestions(false);
+                              }}
+                              className="flex-shrink-0 px-3 py-1.5 text-sm rounded-lg border border-zinc-200 dark:border-[var(--border)] bg-zinc-50 dark:bg-[var(--background)] text-zinc-700 dark:text-[var(--foreground)] hover:bg-zinc-100 dark:hover:bg-[var(--muted)] transition-colors"
+                              style={{
+                                whiteSpace: 'nowrap',
+                                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                                backgroundColor: darkMode ? 'var(--background)' : '#f9fafb'
+                              }}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {/* Pagination */}
                 {totalPages > 1 && (
@@ -955,11 +1037,20 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
             <EmptyCasesState onAddNewCase={() => setCreateCaseModalOpen(true)} />
           ) : (
             <div className="flex flex-col h-full min-h-0">
-              <div className="flex-1 sm:px-8 sm:ml-16 sm:mt-0 min-h-0 flex flex-col">
+              <div className="flex-1 sm:px-4 sm:ml-16 sm:mt-0 min-h-0 flex flex-col">
                 <CasesTable
                   cases={filteredCases}
                   selectedRows={selectedRows}
                   onSelectRow={idx => setSelectedRows(selectedRows.map((v, i) => i === idx ? !v : v))}
+                  onSelectAll={(selected) => {
+                    const startIdx = (casesCurrentPage - 1) * pageSize;
+                    const endIdx = Math.min(startIdx + pageSize, filteredCases.length);
+                    const newSelectedRows = [...selectedRows];
+                    for (let i = startIdx; i < endIdx; i++) {
+                      newSelectedRows[i] = selected;
+                    }
+                    setSelectedRows(newSelectedRows);
+                  }}
                   onSort={handleSort}
                   sortState={sortState}
                   onAction={(rowIdx, e) => {

@@ -6,6 +6,7 @@ interface CasesTableProps {
   cases: Case[];
   selectedRows: boolean[];
   onSelectRow: (idx: number) => void;
+  onSelectAll: (selected: boolean) => void;
   onSort: (column: string) => void;
   sortState: { column: string | null; order: 'asc' | 'desc' | null };
   onAction: (rowIdx: number, event: React.MouseEvent) => void;
@@ -14,7 +15,7 @@ interface CasesTableProps {
   darkMode: boolean;
 }
 
-// Helper to format date as '!7th June 2025'
+// Helper to format date as '7th June 2025'
 function formatFancyDate(dateString: string) {
   const date = new Date(dateString);
   const day = date.getDate();
@@ -29,14 +30,47 @@ function formatFancyDate(dateString: string) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-export default function CasesTable({ cases, selectedRows, onSelectRow, onSort, sortState, onAction, pageSize, currentPage, darkMode }: CasesTableProps) {
+export default function CasesTable({ cases, selectedRows, onSelectRow, onSelectAll, onSort, sortState, onAction, pageSize, currentPage, darkMode }: CasesTableProps) {
+
+  // Calculate if all visible rows are selected
+  const visibleRows = cases.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const allSelected = visibleRows.length > 0 && visibleRows.every((_, idx) => selectedRows[(currentPage - 1) * pageSize + idx]);
+  const someSelected = visibleRows.some((_, idx) => selectedRows[(currentPage - 1) * pageSize + idx]);
+
+  const handleSelectAll = () => {
+    onSelectAll(!allSelected);
+  };
 
   const renderLightTable = () => (
     <div className="overflow-x-auto w-full px-0 sm:pt-0 scrollbar-thin border border-zinc-200 rounded-lg bg-white" style={{marginBottom: 0}}>
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse">
         <thead className="text-zinc-700 font-semibold bg-gradient-to-r from-zinc-50 to-zinc-100 border-b border-zinc-200">
           <tr className="h-10 sm:h-12">
-            <th className="p-2 align-middle border-r border-zinc-200 w-10 text-center">Select</th>
+            <th className="p-2 align-middle border-r border-zinc-200 w-10 text-center">
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className="appearance-none w-4 h-4 rounded border-2 transition-all cursor-pointer flex items-center justify-center hover:scale-105 mx-auto"
+                style={{ 
+                  outline: 'none',
+                  border: allSelected 
+                    ? '2px solid #2563eb'
+                    : '2px solid #d4d4d8',
+                  backgroundColor: allSelected 
+                    ? '#2563eb'
+                    : 'transparent'
+                }}
+              >
+                {allSelected && (
+                  <Check 
+                    className="w-2.5 h-2.5 text-white" 
+                  />
+                )}
+                {!allSelected && someSelected && (
+                  <div className="w-2.5 h-0.5 bg-gray-400 rounded"></div>
+                )}
+              </button>
+            </th>
             <th className="p-2 align-middle border-r border-zinc-200 text-left select-none">
               <button
                 type="button"
@@ -183,7 +217,31 @@ export default function CasesTable({ cases, selectedRows, onSelectRow, onSort, s
       <table className="w-full text-[10px] sm:text-xs text-left border-collapse text-[var(--foreground)]">
         <thead className="text-[var(--foreground)] font-semibold bg-gradient-to-r from-zinc-800 to-zinc-900 border-b border-zinc-700">
           <tr className="h-10 sm:h-12">
-            <th className="p-2 align-middle border-r border-zinc-700 w-10 text-center">Select</th>
+            <th className="p-2 align-middle border-r border-zinc-700 w-10 text-center">
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className="appearance-none w-4 h-4 rounded border-2 transition-all cursor-pointer flex items-center justify-center hover:scale-105 mx-auto"
+                style={{ 
+                  outline: 'none',
+                  border: allSelected 
+                    ? '2px solid #3b82f6'
+                    : '2px solid #52525b',
+                  backgroundColor: allSelected 
+                    ? '#3b82f6'
+                    : 'transparent'
+                }}
+              >
+                {allSelected && (
+                  <Check 
+                    className="w-2.5 h-2.5 text-white" 
+                  />
+                )}
+                {!allSelected && someSelected && (
+                  <div className="w-2.5 h-0.5 bg-gray-400 rounded"></div>
+                )}
+              </button>
+            </th>
             <th className="p-2 align-middle border-r border-zinc-700 text-left select-none">
               <button
                 type="button"

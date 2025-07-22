@@ -33,6 +33,10 @@ export default function AuthShell({
           className={`flex items-center text-sm text-gray-600 dark:text-[var(--foreground)] border border-gray-300 dark:border-[var(--border)] rounded-md px-3 py-1 transition-opacity duration-150 ${
             showBackButton ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
+          style={{
+            background: darkMode ? 'var(--muted)' : 'white',
+            borderColor: darkMode ? 'var(--border)' : '#e4e4e7',
+          }}
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Go back

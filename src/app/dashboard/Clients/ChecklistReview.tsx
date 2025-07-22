@@ -1,4 +1,4 @@
-import React, { useEffect, ReactNode } from "react";
+import React, { useEffect, ReactNode, useState } from "react";
 import {
   ArrowLeft,
 } from "lucide-react";
@@ -17,6 +17,27 @@ interface ChecklistReviewProps {
 
 export default function ChecklistReview({ reviewerName, onBack, title, backNav }: ChecklistReviewProps) {
   const { darkMode } = useTheme();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Domain-specific search suggestions
+  const searchSuggestions = [
+    "Partner", "Client name", "Client DOB", "SJP SRA", "Recommended Fund Choice",
+    "Checklist completed by", "Provider", "Policy Number", "Plan Type", "Start Date",
+    "End Date", "Annual Premium", "Beneficiary", "Advisor", "Risk Level", "Notes",
+    "Pension Transfer", "ISA Transfer", "Pension New Money", "ISA New Money",
+    "Standard Life", "Retirement", "Employer", "Scheme provider", "Loyalty Bonuses",
+    "Initial charge", "Annual Management Charges", "AMC", "Product charge", "Wrapper charge",
+    "Fixed charge", "Policy fee", "Transfer value", "Single contribution", "Regular contribution",
+    "Crystallised funds", "ESS", "Money Purchase", "Employer Sponsored Scheme",
+    "Attitude to risk", "Experienced investor", "Sophisticated investor", "Critical yield",
+    "Replacement plan", "Ongoing Advice Fee", "OAF", "Top-up", "Lump sums", "Fund allocation"
+  ];
+
+  // Filter suggestions based on search query
+  const filteredSuggestions = searchSuggestions.filter(suggestion =>
+    suggestion.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
   }, [reviewerName]);
@@ -27,17 +48,16 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#fff',
+        backgroundColor: darkMode ? '#1e1e1e' : '#fff',
         borderRadius: 6,
+        border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
+        transition: 'background-color 0.2s ease-in-out',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden' }}>
-        <div style={{ flex: 4, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '8px 24px 2px 24px', background: 'transparent' }}>
-            {title && (
-              <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 4, color: darkMode ? '#18181b' : '#f1f5f9', textAlign: 'left' }}>{title}</div>
-            )}
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 0, marginTop: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden', borderRadius: 6 }}>
+        <div style={{ flex: 9, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }}>
+          <div style={{ padding: '16px 12px 12px 12px', background: 'white', display: 'flex', flexDirection: 'column', minHeight: '80px', borderTopLeftRadius: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
               {backNav ? backNav : onBack && (
                 <button
                   onClick={onBack}
@@ -49,53 +69,148 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                   }
                   style={{
                     minWidth: 0,
-                    backgroundColor: '#fff',
-                    border: darkMode ? '1px solid #3f3f46' : '1px solid #e4e4e7',
+                    backgroundColor: darkMode ? '#1e1e1e' : '#f8fafc',
+                    border: darkMode ? '1px solid #3f3f46' : '1px solid #d1d5db',
                     borderRadius: 8,
                     height: 40,
-                    padding: '0 14px',
-                    fontSize: 16,
+                    padding: '0 12px',
+                    fontSize: 14,
+                    fontWeight: 500,
                     boxSizing: 'border-box',
                     display: 'flex',
                     alignItems: 'center',
+                    color: darkMode ? '#f1f5f9' : '#374151',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f4f4f5';
+                    e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f1f5f9';
+                    e.currentTarget.style.borderColor = darkMode ? '#52525b' : '#9ca3af';
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = '#fff';
+                    e.currentTarget.style.backgroundColor = darkMode ? '#1e1e1e' : '#f8fafc';
+                    e.currentTarget.style.borderColor = darkMode ? '#3f3f46' : '#d1d5db';
                   }}
                   aria-label="Back to previous"
                 >
-                  <ArrowLeft className="w-5 h-5 mr-1" /> Back
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </button>
               )}
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearching(e.target.value.length > 0);
+                }}
                 placeholder="Search document..."
                 style={{
                   flex: 1,
-                  padding: '0 14px',
+                  padding: '0 16px',
                   height: 40,
                   borderRadius: 8,
-                  border: darkMode ? '1px solid #27272a' : '1px solid #e4e4e7',
-                  background: darkMode ? '#232326' : '#fff',
-                  color: darkMode ? 'var(--foreground)' : '#18181b',
-                  fontSize: 16,
+                  border: darkMode ? '1px solid #27272a' : '1px solid #d1d5db',
+                  background: darkMode ? '#1e1e1e' : '#ffffff',
+                  color: darkMode ? 'var(--foreground)' : '#374151',
+                  fontSize: 14,
+                  fontWeight: 400,
                   outline: 'none',
                   boxSizing: 'border-box',
-                  marginBottom: 8,
-                  transition: 'border 0.2s, background 0.2s, color 0.2s',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = darkMode ? '#52525b' : '#3b82f6';
+                  e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(82, 82, 91, 0.1)' : '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = darkMode ? '#27272a' : '#d1d5db';
+                  e.target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
                 }}
               />
             </div>
+            {/* Suggestion pills area */}
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', overflowX: 'auto', paddingBottom: 8, maxHeight: isSearching ? '65px' : 'auto', overflowY: 'hidden' }}>
+              {isSearching ? (
+                /* Search suggestions - exactly 2 rows, no vertical scroll */
+                filteredSuggestions.slice(0, 16).map((suggestion, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: '4px 12px',
+                      backgroundColor: darkMode ? '#27272a' : '#f3f4f6',
+                      border: `1px solid ${darkMode ? '#3f3f46' : '#e5e7eb'}`,
+                      borderRadius: '16px',
+                      fontSize: '12px',
+                      color: darkMode ? '#e4e4e7' : '#374151',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#3f3f46' : '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = darkMode ? '#27272a' : '#f3f4f6';
+                    }}
+                    onClick={() => {
+                      setSearchQuery(suggestion);
+                      setIsSearching(false);
+                    }}
+                  >
+                    {suggestion}
+                  </div>
+                ))
+              ) : (
+                /* Default pills */
+                <>
+                  <div style={{
+                    padding: '4px 12px',
+                    backgroundColor: darkMode ? '#27272a' : '#f3f4f6',
+                    border: `1px solid ${darkMode ? '#3f3f46' : '#e5e7eb'}`,
+                    borderRadius: '16px',
+                    fontSize: '12px',
+                    color: darkMode ? '#e4e4e7' : '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}>Recent documents</div>
+                  <div style={{
+                    padding: '4px 12px',
+                    backgroundColor: darkMode ? '#27272a' : '#f3f4f6',
+                    border: `1px solid ${darkMode ? '#3f3f46' : '#e5e7eb'}`,
+                    borderRadius: '16px',
+                    fontSize: '12px',
+                    color: darkMode ? '#e4e4e7' : '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}>PDF files</div>
+                  <div style={{
+                    padding: '4px 12px',
+                    backgroundColor: darkMode ? '#27272a' : '#f3f4f6',
+                    border: `1px solid ${darkMode ? '#3f3f46' : '#e5e7eb'}`,
+                    borderRadius: '16px',
+                    fontSize: '12px',
+                    color: darkMode ? '#e4e4e7' : '#374151',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}>Images</div>
+                </>
+              )}
+            </div>
           </div>
-          <div style={{ flex: 1, minHeight: 0, padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
             <DocumentViewer document={{ name: "Sample Document" }} />
           </div>
         </div>
         <div style={{ width: 2, height: '100%', borderLeft: `2px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, alignSelf: 'stretch' }} />
-        <div style={{ flex: 6, minWidth: 0, background: darkMode ? 'var(--background)' : 'white', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 11, minWidth: 0, background: darkMode ? '#1e1e1e' : 'white', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
           <ChecklistParser checklistTitle={title} />
         </div>
       </div>

@@ -290,7 +290,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
     clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
-      <div className="sm:px-8 sm:ml-16 sm:mt-0">
+      <div className="sm:px-4 sm:ml-16 sm:mt-0">
         <ClientList
           clients={paginatedClients}
           onViewDetails={handleViewDetails}
@@ -508,7 +508,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   </button>
                 </div>
               </div>
-              <div className="hidden sm:flex w-full items-center justify-between pl-24 pr-8 pt-2 pb-0">
+              <div className="hidden sm:flex w-full items-center justify-between pl-20 pr-4 pt-2 pb-0">
                 {/* LEFT: Main action buttons */}
                 <div className="flex items-center gap-2">
                   <button 

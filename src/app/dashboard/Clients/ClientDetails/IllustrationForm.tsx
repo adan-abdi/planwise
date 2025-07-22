@@ -3,7 +3,7 @@ import React from "react";
 export default function IllustrationForm({ onBack, darkMode }: { onBack: () => void; darkMode: boolean }) {
   return (
     <div
-      className="w-full h-full flex flex-col border rounded-lg max-w-full ml-2"
+      className="w-full h-full flex flex-col border rounded-lg max-w-full"
       style={{
         background: darkMode ? '#18181b' : '#fff',
         boxSizing: 'border-box',
@@ -12,8 +12,8 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
     >
       <button
         onClick={onBack}
-        className="self-start m-4 px-3 py-1 rounded text-sm border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-        style={{ minWidth: 0 }}
+        className="self-start m-4 px-2.5 py-1.5 rounded border border-blue-600 bg-blue-50 text-blue-700 text-xs font-medium hover:bg-blue-100 transition"
+        style={{ minWidth: 0, lineHeight: 1.2 }}
       >
         ← Back
       </button>

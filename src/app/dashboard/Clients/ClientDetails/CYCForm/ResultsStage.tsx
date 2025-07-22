@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, Minus, Plus } from "lucide-react";
+import { Check, Minus, Plus, Upload, FileText } from "lucide-react";
 
 interface ResultsStageProps {
   darkMode: boolean;
@@ -9,6 +9,8 @@ const ResultsStage: React.FC<ResultsStageProps> = ({ darkMode }) => {
   const [iacValue, setIacValue] = useState("0.00");
   const [maximiseIaf, setMaximiseIaf] = useState(true);
   const [maximiseCredit, setMaximiseCredit] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleIacChange = (increment: number) => {
     const currentValue = parseFloat(iacValue);
@@ -16,6 +18,110 @@ const ResultsStage: React.FC<ResultsStageProps> = ({ darkMode }) => {
     setIacValue(newValue.toFixed(2));
   };
 
+  const handleFileUpload = (file: File) => {
+    setUploadedFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  // Part 1: Upload Dropzone
+  if (!uploadedFile) {
+    return (
+      <div className="flex-1 w-full flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-8 py-4 min-h-0">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              Upload Final CYC
+            </h1>
+            <p className={`text-base ${darkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>
+              Upload your final Critical Yield Calculation document to view the results summary.
+            </p>
+          </div>
+
+          {/* Upload Dropzone */}
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div
+              className={`w-full max-w-2xl p-12 border-2 border-dashed rounded-lg text-center transition-colors ${
+                isDragOver
+                  ? darkMode
+                    ? 'border-blue-400 bg-blue-900/20'
+                    : 'border-blue-400 bg-blue-50'
+                  : darkMode
+                    ? 'border-zinc-600 hover:border-zinc-500'
+                    : 'border-zinc-300 hover:border-zinc-400'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                  darkMode ? 'bg-zinc-700' : 'bg-zinc-100'
+                }`}>
+                  <Upload className={`w-8 h-8 ${darkMode ? 'text-zinc-300' : 'text-zinc-600'}`} />
+                </div>
+                <div>
+                  <h3 className={`text-lg font-semibold mb-2 ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>
+                    Upload Final CYC Document
+                  </h3>
+                  <p className={`text-sm mb-4 ${darkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                    Drag and drop your CYC document here, or click to browse
+                  </p>
+                  <label
+                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer ${
+                      darkMode 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4" />
+                    Choose File
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx"
+                      onChange={handleFileInput}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <p className={`text-xs ${darkMode ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  Supported formats: PDF, DOC, DOCX, XLS, XLSX
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Part 2: Results Summary (existing UI)
   return (
     <div className="flex-1 w-full flex flex-col min-h-0">
       <div className="flex-1 overflow-y-auto px-8 py-4 min-h-0">
@@ -23,21 +129,33 @@ const ResultsStage: React.FC<ResultsStageProps> = ({ darkMode }) => {
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>
-              Results
+              Results Summary
             </h1>
             <p className={`text-base ${darkMode ? 'text-zinc-300' : 'text-zinc-600'}`}>
-              Here are the results of your Critical Yield Calculation based on the information you provided.
+              Results based on uploaded document: {uploadedFile.name}
             </p>
           </div>
-          <button
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-              darkMode 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
-          >
-            Close
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setUploadedFile(null)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                darkMode 
+                  ? 'bg-zinc-700 text-zinc-200 hover:bg-zinc-600' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Upload New
+            </button>
+            <button
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                darkMode 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              Close
+            </button>
+          </div>
         </div>
 
         {/* Recommended Plan Section */}
@@ -230,21 +348,10 @@ const ResultsStage: React.FC<ResultsStageProps> = ({ darkMode }) => {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-3">
-                <button
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    darkMode 
-                      ? 'bg-zinc-700 text-zinc-200 hover:bg-zinc-600' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  Exclude Plan
-                </button>
-                <div className={`text-right text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>
-                  <div className="mb-1">Level of outperformance required: 11.43%</div>
-                  <div className="mb-1">Monetary equivalent in Year 1 (£): 11,428.51</div>
-                  <div>Critical Yield Limit: 0.75%</div>
-                </div>
+              <div className={`text-right text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>
+                <div className="mb-1">Level of outperformance required: 11.43%</div>
+                <div className="mb-1">Monetary equivalent in Year 1 (£): 11,428.51</div>
+                <div>Critical Yield Limit: 0.75%</div>
               </div>
             </div>
           </div>

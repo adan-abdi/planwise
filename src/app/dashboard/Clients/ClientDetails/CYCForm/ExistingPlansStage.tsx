@@ -151,8 +151,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) - empty for this question */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
               </div>
             </div>
             {/* Plan provider */}
@@ -185,8 +185,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Start typing the existing providers name (For example Standard Life) and a list of providers to select from will appear. If no option is presented, please type and select &quot;Other&quot; then confirm the provider name within the Additional Notes section below</span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Start typing the existing providers name (For example Standard Life) and a list of providers to select from will appear. If no option is presented, please type and select &quot;Other&quot; then confirm the provider name within the Additional Notes section below</span>
               </div>
             </div>
             {/* Plan number */}
@@ -219,8 +219,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) - empty for this question */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
               </div>
             </div>
             {/* Plan commence date */}
@@ -254,8 +254,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) - empty for this question */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
               </div>
             </div>
             {/* Special question: Did the advising partner or an associate set up this plan? */}
@@ -300,8 +300,8 @@ export default function ExistingPlansStage({
                       }}
                     />
                     {/* Guide (right) - empty for this question */}
-                    <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                      <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                    <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                      <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                     </div>
                   </div>
                 );
@@ -343,8 +343,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>There is an impact on the calculation if any initial charges or financial remuneration ave been taken in the last 3 years, even if the plan started more than 3 years ago</span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>There is an impact on the calculation if any initial charges or financial remuneration ave been taken in the last 3 years, even if the plan started more than 3 years ago</span>
               </div>
             </div>
             {/* Special question: Amount of initial charge/financial remuneration */}
@@ -392,8 +392,8 @@ export default function ExistingPlansStage({
                   }}
                 />
                 {/* Guide (right) */}
-                <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                  <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter here the total of all initial charges and financial remuneration paid in the last 3 years. IAC payable on the new plan might be reduced to cover this amount</span>
+                <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                  <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter here the total of all initial charges and financial remuneration paid in the last 3 years. IAC payable on the new plan might be reduced to cover this amount</span>
                 </div>
               </div>
             )}
@@ -432,8 +432,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>This includes a partial or full transfer of value</span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>This includes a partial or full transfer of value</span>
               </div>
             </div>
             {/* Special question: Current Fund value or Transfer value */}
@@ -482,8 +482,8 @@ export default function ExistingPlansStage({
                     }}
                   />
                   {/* Guide (right) with hyperlink */}
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>For help with this field, see the{' '}
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>For help with this field, see the{' '}
                       <a
                         href="https://example.com/transfer-value-factsheet"
                         target="_blank"
@@ -530,8 +530,8 @@ export default function ExistingPlansStage({
                     }}
                   />
                   {/* Guide (right) */}
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>An example of true cash is a SIPP bank account. An example of something not classed as true cash is a pooled investment uch as a money market fund. Please see page 259 of the advice framework for more information on testing cash. Please note answering Yes to this question will result in the cash element being run with no limit applied. If the plan is split between true cash and other funds, ou are required to treat these as two separate plans for the purpose of the calculation .</span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>An example of true cash is a SIPP bank account. An example of something not classed as true cash is a pooled investment uch as a money market fund. Please see page 259 of the advice framework for more information on testing cash. Please note answering Yes to this question will result in the cash element being run with no limit applied. If the plan is split between true cash and other funds, ou are required to treat these as two separate plans for the purpose of the calculation .</span>
                   </div>
                 </div>
                 {/* Special question: With profits plan with implicit charges */}
@@ -570,8 +570,8 @@ export default function ExistingPlansStage({
                       }}
                     />
                     {/* Guide (right) with line break */}
-                    <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                      <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please note that if you answer Yes to this question this plan will be run without a limit being applied<br/>Please note that if the With Profits PPFM provides an indication of charges, then a charges comparison with a limit can be done, and you can select No to this question. See page 259 of the Advice Framework for more information</span>
+                    <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                      <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please note that if you answer Yes to this question this plan will be run without a limit being applied<br/>Please note that if the With Profits PPFM provides an indication of charges, then a charges comparison with a limit can be done, and you can select No to this question. See page 259 of the Advice Framework for more information</span>
                     </div>
                   </div>
                 )}
@@ -624,8 +624,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) - empty for this question */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
               </div>
             </div>
             {/* Regular contributions question */}
@@ -661,8 +661,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>A test on the regular contributions may still be required even if they have already ceased or about to do so</span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>A test on the regular contributions may still be required even if they have already ceased or about to do so</span>
               </div>
             </div>
             {/* Ongoing advice available question */}
@@ -698,8 +698,8 @@ export default function ExistingPlansStage({
                 }}
               />
               {/* Guide (right) */}
-              <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter Yes where advice is available from the clients existing advisors or IFA office. Examples of when advice is considered to be available are given on page 259 of the Advice Framework</span>
+              <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter Yes where advice is available from the clients existing advisors or IFA office. Examples of when advice is considered to be available are given on page 259 of the Advice Framework</span>
               </div>
             </div>
             {/* Withdrawal Charges and Loyalty Bonuses Section */}
@@ -727,8 +727,8 @@ export default function ExistingPlansStage({
                     </div>
                   </div>
                   <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                   </div>
                 </div>
                 {/* Special questions for EWC Yes - grouped block */}
@@ -762,8 +762,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>See guidance on <a href="https://example.com/how-to-enter-ewcs" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>How to enter EWCs</a></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>See guidance on <a href="https://example.com/how-to-enter-ewcs" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>How to enter EWCs</a></span>
                       </div>
                     </div>
                     {/* Months until no EWC applies & Date no EWC applies (same row) */}
@@ -804,8 +804,8 @@ export default function ExistingPlansStage({
                       {/* Divider */}
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
                       {/* Guide (right) */}
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the EWC is on a sliding scale, enter the number of months until there is no EWC</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the EWC is on a sliding scale, enter the number of months until there is no EWC</span>
                       </div>
                     </div>
                   </div>
@@ -831,8 +831,8 @@ export default function ExistingPlansStage({
                     </div>
                   </div>
                   <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                   </div>
                 </div>
                 {/* Special questions for MVA Yes - grouped block */}
@@ -866,8 +866,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>See guidance on <a href="https://example.com/how-to-enter-mva" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>How to enter MVAs</a></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>See guidance on <a href="https://example.com/how-to-enter-mva" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>How to enter MVAs</a></span>
                       </div>
                     </div>
                     {/* Months until no MVA applies & Date no MVA applies (same row) */}
@@ -908,8 +908,8 @@ export default function ExistingPlansStage({
                       {/* Divider */}
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
                       {/* Guide (right) */}
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the MVA is on a sliding scale, enter the number of months until there is no MVA</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the MVA is on a sliding scale, enter the number of months until there is no MVA</span>
                       </div>
                     </div>
                   </div>
@@ -935,8 +935,8 @@ export default function ExistingPlansStage({
                     </div>
                   </div>
                   <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please answer No if using a Projections basis OR if bonuses are disretionary</span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please answer No if using a Projections basis OR if bonuses are disretionary</span>
                   </div>
                 </div>
                 {/* Special questions for Loyalty Bonus Yes - grouped block */}
@@ -970,8 +970,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter the percentage of the loyalty bonus if known, or leave blank if not applicable.</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Enter the percentage of the loyalty bonus if known, or leave blank if not applicable.</span>
                       </div>
                     </div>
                     {/* Months until no loyalty bonus applies & Date no loyalty bonus applies (same row) */}
@@ -1012,8 +1012,8 @@ export default function ExistingPlansStage({
                       {/* Divider */}
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
                       {/* Guide (right) */}
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the loyalty bonus is on a sliding scale, enter the number of months until there is no loyalty bonus</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If the loyalty bonus is on a sliding scale, enter the number of months until there is no loyalty bonus</span>
                       </div>
                     </div>
                   </div>
@@ -1032,8 +1032,8 @@ export default function ExistingPlansStage({
                     </div>
                   </div>
                   <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please <a href="https://example.com/api-169-guidance" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>click here</a> for guidance on when to use projections or charges in API 169</span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please <a href="https://example.com/api-169-guidance" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>click here</a> for guidance on when to use projections or charges in API 169</span>
                   </div>
                 </div>
                 {/* Basis for CYC calculation question */}
@@ -1057,8 +1057,8 @@ export default function ExistingPlansStage({
                     </div>
                   </div>
                   <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>We expect a charges basis to be used for most comparisons. For plans containing a loyalty bonus, with profits guarantees implicit or complex charges, then projections should be used. Please refer to the Pensions CYC toolkit for further guidance.</span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>We expect a charges basis to be used for most comparisons. For plans containing a loyalty bonus, with profits guarantees implicit or complex charges, then projections should be used. Please refer to the Pensions CYC toolkit for further guidance.</span>
                   </div>
                 </div>
                 {/* Projection Basis Section */}
@@ -1088,8 +1088,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If plan contains a guaranteed annuity rate (GAR) read <a href="https://example.com/ba237" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>BA237</a>. If plan was issued by Met life, read <a href="https://example.com/ba422" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>BA422</a></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>If plan contains a guaranteed annuity rate (GAR) read <a href="https://example.com/ba237" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>BA237</a>. If plan was issued by Met life, read <a href="https://example.com/ba422" target="_blank" rel="noopener noreferrer" className={darkMode ? 'text-blue-400 underline' : 'text-blue-600 underline'}>BA422</a></span>
                       </div>
                     </div>
                     {/* Q2: Has this value been reduced for inflation? */}
@@ -1106,8 +1106,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please check the ceding plans projections - in some rare cases (e.g. legacy companies) this will be No</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please check the ceding plans projections - in some rare cases (e.g. legacy companies) this will be No</span>
                       </div>
                     </div>
                     {/* Q3: Do all funds have the same annual growth? */}
@@ -1124,8 +1124,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                       </div>
                     </div>
                     {/* Q4: Projection Start Date */}
@@ -1135,8 +1135,8 @@ export default function ExistingPlansStage({
                         <input type="date" className={`w-full px-3 py-2 rounded border outline-none transition focus:ring-2 ${darkMode ? 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-500' : 'bg-white border-zinc-300 text-zinc-900 focus:ring-zinc-300'}`} />
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>The date the projection was created should be within the last 6 months. The transfer value and projection should be dated within 5 days of each other</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>The date the projection was created should be within the last 6 months. The transfer value and projection should be dated within 5 days of each other</span>
                       </div>
                     </div>
                     {/* Q5/Q6: Projection end date & Or Age at projection date */}
@@ -1154,8 +1154,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>The Projection End Date is the clients selected retirement age. You should have a projection to this age. You can run the CYC to a different retirement age, but only if the provider has confirmed in writting that they cant produce projections to the selected retirement age</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>The Projection End Date is the clients selected retirement age. You should have a projection to this age. You can run the CYC to a different retirement age, but only if the provider has confirmed in writting that they cant produce projections to the selected retirement age</span>
                       </div>
                     </div>
                     {/* Q7: Implied annual charge */}
@@ -1167,8 +1167,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Where pension projections are available, they must be used and actuarial advice is that, regardless of the implied annual charge, the result of the Critical Yield Calculator should be accepted</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Where pension projections are available, they must be used and actuarial advice is that, regardless of the implied annual charge, the result of the Critical Yield Calculator should be accepted</span>
                       </div>
                     </div>
                   </div>
@@ -1216,8 +1216,8 @@ export default function ExistingPlansStage({
                         </button>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Where there is a fund rebate, please reduce the AMC accordingly. At least one Product/Wrapper annual change from month 1 to month 1 must be included</span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Where there is a fund rebate, please reduce the AMC accordingly. At least one Product/Wrapper annual change from month 1 to month 1 must be included</span>
                       </div>
                     </div>
                     {/* Q2: Do all funds have the same annual charge? */}
@@ -1241,8 +1241,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                       </div>
                     </div>
                     {/* Special question: Is the fund value equal to the transfer value (only if No above) */}
@@ -1268,8 +1268,8 @@ export default function ExistingPlansStage({
                             </div>
                           </div>
                           <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                          <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                            <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                          <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                            <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                           </div>
                         </div>
                         {/* Fund charge details special question */}
@@ -1375,8 +1375,8 @@ export default function ExistingPlansStage({
                           {/* Divider */}
                           <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
                           {/* Right: Guidance (empty for now) */}
-                          <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                            <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                          <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                            <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                           </div>
                         </div>
                       </>
@@ -1407,8 +1407,8 @@ export default function ExistingPlansStage({
                           </div>
                         </div>
                         <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                        <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                          <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                        <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                          <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                         </div>
                       </div>
                     )}
@@ -1433,8 +1433,8 @@ export default function ExistingPlansStage({
                         </div>
                       </div>
                       <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                      <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                        <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                      <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                        <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                       </div>
                     </div>
                     {/* Special questions for fixed charge/policy fee Yes */}
@@ -1464,8 +1464,8 @@ export default function ExistingPlansStage({
                             </div>
                           </div>
                           <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                          <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                            <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please input any non fund related charges (i.e policy fee)</span>
+                          <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                            <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Please input any non fund related charges (i.e policy fee)</span>
                           </div>
                         </div>
                         {/* Frequency dropdown with custom icon */}
@@ -1488,8 +1488,8 @@ export default function ExistingPlansStage({
                             </div>
                           </div>
                           <div className="self-stretch mx-2" style={{ width: '2px', background: darkMode ? '#3f3f46' : '#e4e4e7' }} />
-                          <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                            <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
+                          <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                            <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}></span>
                           </div>
                         </div>
                       </>

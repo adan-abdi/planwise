@@ -132,11 +132,13 @@ export default function BasicDetailsStage({
   }
   finalQuestions = [
     ...finalQuestions,
-    ...baseQuestions.slice(attitudeIdx + 1)
+    ...baseQuestions.slice(attitudeIdx + 1),
+    { label: "Additional notes", placeholder: "Enter any supporting notes here...", type: "textarea", options: [] }
   ];
   finalGuides = [
     ...finalGuides,
-    ...baseGuides.slice(attitudeIdx + 1)
+    ...baseGuides.slice(attitudeIdx + 1),
+    "Supporting notes requested while completing this page or that you believe will help clarify plan details should be written in this box - these will appear in output from this calculator."
   ];
 
   return (
@@ -215,6 +217,20 @@ export default function BasicDetailsStage({
                     </label>
                   ))}
                 </div>
+              ) : q.type === 'textarea' ? (
+                <textarea
+                  id={`q-${idx}`}
+                  rows={3}
+                  placeholder={q.placeholder}
+                  className={`w-full px-3 py-2 rounded border outline-none transition focus:ring-2 resize-y min-h-[80px] ${
+                    darkMode
+                      ? 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-500'
+                      : 'bg-white border-zinc-300 text-zinc-900 focus:ring-zinc-300'
+                  } ${activeIndex === idx ? 'ring-2 ring-blue-400' : ''}`}
+                  style={{ fontSize: 15 }}
+                  onFocus={() => setActiveIndex(idx)}
+                  onClick={() => setActiveIndex(idx)}
+                />
               ) : (
                 <input
                   id={`q-${idx}`}
@@ -239,8 +255,8 @@ export default function BasicDetailsStage({
               }}
             />
             {/* Guide (right) */}
-            <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-              <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>{finalGuides[idx]}</span>
+            <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+              <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>{finalGuides[idx]}</span>
             </div>
           </div>
         ))}

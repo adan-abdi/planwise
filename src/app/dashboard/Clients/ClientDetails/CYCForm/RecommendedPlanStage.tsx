@@ -670,8 +670,8 @@ const RecommendedPlanStage: React.FC<RecommendedPlanStageProps> = ({ darkMode })
                     }}
                   />
                   {/* Guide (right) */}
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>
                       {recommendedPlanGuides[i]}
                     </span>
                   </div>
@@ -776,7 +776,7 @@ const RecommendedPlanStage: React.FC<RecommendedPlanStageProps> = ({ darkMode })
                         ) : q.type === 'button' ? (
                           <button
                             type="button"
-                            className="px-4 py-2 rounded-lg text-sm font-medium transition border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            className="px-4 py-2 rounded-lg text-sm font-medium transition border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 w-fit"
                           >
                             {q.label}
                           </button>
@@ -818,8 +818,8 @@ const RecommendedPlanStage: React.FC<RecommendedPlanStageProps> = ({ darkMode })
                     }}
                   />
                   {/* Guide (right) */}
-                  <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                    <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>{recommendedPlanGuides[i]}</span>
+                  <div className="flex-1 pl-8 py-2 flex items-start min-h-[40px]">
+                    <span className={`text-sm text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>{recommendedPlanGuides[i]}</span>
                   </div>
                 </div>
               );
