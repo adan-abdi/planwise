@@ -26,6 +26,7 @@ interface CYCFlowManagerProps {
   caseData: CaseData;
   darkMode: boolean;
   onFinish: () => void;
+  onBack: () => void;
 }
 
 interface CaseData {
@@ -130,7 +131,7 @@ function mapCaseDataToESSPlans(caseData: CaseData): ESS[] {
   return essPlans;
 }
 
-export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFinish }: CYCFlowManagerProps) {
+export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFinish, onBack }: CYCFlowManagerProps) {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [essPlans, setEssPlans] = useState<ESS[]>(mapCaseDataToESSPlans(caseData));
   const [currentPlanIndex, setCurrentPlanIndex] = useState<number | null>(0); // null = not editing, show summary
@@ -203,16 +204,8 @@ export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFin
 
   // Handler to go back (from summary)
   const handleBack = () => {
-    // Go back to the CYCForm stage 1 (Existing Plans)
-    if (plans.length > 0) {
-      setCurrentPlanIndex(0); // Go to the first plan
-      setLastFormStage(1); // Set the stage to 1 (Existing Plans)
-    } else {
-      // If no plans exist, create a new one and go to it
-      setPlans([{ planName: '', planNumber: '', fundValue: '', transferValue: '', regularContribution: '', frequency: '', complete: false }]);
-      setCurrentPlanIndex(0);
-      setLastFormStage(1); // Set the stage to 1 (Existing Plans)
-    }
+    // Call the onBack prop to navigate back
+    onBack();
   };
 
   // Handler to close (from summary)
@@ -264,7 +257,6 @@ export default function CYCFlowManager({ initialPlans, caseData, darkMode, onFin
         ess={essPlans[currentESSIndex]}
         onSave={handleSaveESS}
         onCancel={handleCancelESS}
-        caseData={caseData}
       />
     );
   }
