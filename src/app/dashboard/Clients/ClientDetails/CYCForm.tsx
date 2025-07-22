@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import BasicDetailsStage from './CYCForm/BasicDetailsStage';
+import ExistingPlansStage from './CYCForm/ExistingPlansStage';
 
 const baseQuestions = [
   { label: "Partner code", placeholder: "Enter partner code" },
@@ -36,25 +37,32 @@ const replaceEssQuestion = {
   type: "radio",
   options: ["Yes", "No"]
 };
-const replaceEssGuide =
-  "If you are not replacing the ESS, enter the scheme details in the ESS section to allow a comparison to be run with the SJP plan, and detail the results in the Suitability Letter. If you are replacing the ESS and there is at least one other plan being replaced, enter the scheme details as both a plan to be replaced  and in the ESS section. If the ESS is the only plan being replaced, just enter the details as a plan to be replaced because a separate ESS comparison is not required in this scenrario";
 const essOnlyComparisonQuestion = {
   label: "Do you require an ESS only comparison?",
   placeholder: "Select yes or no",
   type: "radio",
   options: ["Yes", "No"]
 };
-const essOnlyComparisonGuide =
-  "You should select this option when the client has an ESS and you are recommending a new money contribution and where no plans are being replaced";
 
 const STAGES = [
-  "Client Details",
-  "Plan Details",
-  "Investment Details",
-  "Review & Submit"
+  "Basic Details",
+  "Existing Plans",
+  "Recommended plan",
+  "Results"
 ];
 
-export default function CYCForm({ darkMode }: { darkMode: boolean }) {
+interface CYCFormProps {
+  darkMode: boolean;
+  onBack?: () => void;
+}
+
+interface FundChargeDetail {
+  name: string;
+  value: string;
+  charge: string;
+}
+
+export default function CYCForm({ darkMode, onBack }: CYCFormProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
   const [attitudeValue, setAttitudeValue] = useState("");
@@ -66,6 +74,45 @@ export default function CYCForm({ darkMode }: { darkMode: boolean }) {
   const [crystallisedRadio, setCrystallisedRadio] = useState("");
   const [replaceEssRadio, setReplaceEssRadio] = useState("");
   const [essOnlyComparisonRadio, setEssOnlyComparisonRadio] = useState("");
+  // Existing Plans stage: track plan commence date and special question
+  const [planCommenceDate, setPlanCommenceDate] = useState("");
+  const [advisingPartnerRadio, setAdvisingPartnerRadio] = useState("");
+  // Track initial charge/remuneration radio and amount
+  const [initialChargeRadio, setInitialChargeRadio] = useState("");
+  const [initialChargeAmount, setInitialChargeAmount] = useState("");
+  // Track lump sum transfer radio and value
+  const [lumpSumTransferRadio, setLumpSumTransferRadio] = useState("");
+  const [transferValue, setTransferValue] = useState("");
+  // Track benefit date and age
+  const [benefitDate, setBenefitDate] = useState("");
+  const [benefitAge, setBenefitAge] = useState("");
+  // Track true cash and with profits plan radios
+  const [trueCashRadio, setTrueCashRadio] = useState("");
+  const [withProfitsRadio, setWithProfitsRadio] = useState("");
+  // Track EWC radio and special fields
+  const [ewcRadio, setEwcRadio] = useState("");
+  const [ewcAmount, setEwcAmount] = useState("");
+  const [ewcMonths, setEwcMonths] = useState("");
+  const [ewcDate, setEwcDate] = useState("");
+  // Track MVA radio
+  const [mvaRadio, setMvaRadio] = useState("");
+  // Track Loyalty Bonus radio
+  const [loyaltyBonusRadio, setLoyaltyBonusRadio] = useState("");
+  // Track CYC basis radio
+  const [cycBasisRadio, setCycBasisRadio] = useState("");
+  // Add state for fundValueEqualsTransferValueRadio
+  const [fundValueEqualsTransferValueRadio, setFundValueEqualsTransferValueRadio] = useState("");
+  // Add state for fundChargeDetails
+  const [fundChargeDetails, setFundChargeDetails] = useState<FundChargeDetail[]>([]);
+  // Add state for sameAnnualChargeRadio
+  const [sameAnnualChargeRadio, setSameAnnualChargeRadio] = useState("");
+  // Add state for fundAnnualCharge
+  const [fundAnnualCharge, setFundAnnualCharge] = useState("");
+  // Add state for fixedChargeAmount and fixedChargeFrequency
+  const [fixedChargeAmount, setFixedChargeAmount] = useState("");
+  const [fixedChargeFrequency, setFixedChargeFrequency] = useState("");
+  // Add state for fixedChargeRadio
+  const [fixedChargeRadio, setFixedChargeRadio] = useState("");
 
   // Build the questions and guides in the correct order:
   const attitudeIdx = baseQuestions.findIndex(q => q.label === "Attitude to risk");
@@ -87,18 +134,12 @@ export default function CYCForm({ darkMode }: { darkMode: boolean }) {
   guides.push(essGuide);
   // Insert the replace ESS question after the ESS question if user answered Yes
   let finalQuestions = [...questions];
-  let finalGuides = [...guides];
   const essIdx = finalQuestions.findIndex(q => q.label === essQuestion.label);
   if (essRadio === "Yes") {
     finalQuestions = [
       ...finalQuestions.slice(0, essIdx + 1),
       replaceEssQuestion,
       ...finalQuestions.slice(essIdx + 1)
-    ];
-    finalGuides = [
-      ...finalGuides.slice(0, essIdx + 1),
-      replaceEssGuide,
-      ...finalGuides.slice(essIdx + 1)
     ];
     // Insert ESS only comparison question if user answers No to replace ESS
     const replaceIdx = finalQuestions.findIndex(q => q.label === replaceEssQuestion.label);
@@ -108,147 +149,96 @@ export default function CYCForm({ darkMode }: { darkMode: boolean }) {
         essOnlyComparisonQuestion,
         ...finalQuestions.slice(replaceIdx + 1)
       ];
-      finalGuides = [
-        ...finalGuides.slice(0, replaceIdx + 1),
-        essOnlyComparisonGuide,
-        ...finalGuides.slice(replaceIdx + 1)
-      ];
     }
   }
   finalQuestions = [
     ...finalQuestions,
     ...baseQuestions.slice(attitudeIdx + 1)
   ];
-  finalGuides = [
-    ...finalGuides,
-    ...baseGuides.slice(attitudeIdx + 1)
-  ];
 
   // Stage content renderers
   function renderStageContent() {
     if (currentStage === 0) {
-      // Stage 1: Client Details (existing form)
       return (
-        <div className="flex-1 w-full flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto px-8 py-4 min-h-0">
-            {finalQuestions.map((q, idx) => (
-              <div key={q.label} className="flex flex-row w-full items-stretch">
-                {/* Question (left) */}
-                <div className="flex-1 pr-8 py-2 flex flex-col justify-center">
-                  <label
-                    className={`block mb-1 font-medium text-sm ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}
-                    htmlFor={`q-${idx}`}
-                  >
-                    {q.label}
-                  </label>
-                  {q.type === 'select' ? (
-                    <div className="relative w-full">
-                      <select
-                        id={`q-${idx}`}
-                        className={`w-full appearance-none px-3 py-2 rounded border outline-none transition focus:ring-2 pr-10 ${
-                          darkMode
-                            ? 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-500'
-                            : 'bg-white border-zinc-300 text-zinc-900 focus:ring-zinc-300'
-                        } ${activeIndex === idx ? 'ring-2 ring-blue-400' : ''}`}
-                        onFocus={() => setActiveIndex(idx)}
-                        onClick={() => setActiveIndex(idx)}
-                        value={q.label === "Attitude to risk" ? attitudeValue : undefined}
-                        onChange={e => {
-                          if (q.label === "Attitude to risk") {
-                            setAttitudeValue(e.target.value);
-                            setActiveIndex(idx);
-                          }
-                        }}
-                        defaultValue={q.label === "Attitude to risk" ? "" : undefined}
-                      >
-                        <option value="" disabled>
-                          {q.placeholder}
-                        </option>
-                        {q.options && q.options.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500"
-                        size={18}
-                      />
-                    </div>
-                  ) : q.type === 'radio' ? (
-                    <div className="flex gap-6 mt-1">
-                      {q.options.map(opt => (
-                        <label key={opt} className="inline-flex items-center cursor-pointer">
-                          <input
-                            type="radio"
-                            name={q.label}
-                            value={opt}
-                            checked={q.label === extraQuestion.label
-                              ? specialRadio === opt
-                              : q.label === essQuestion.label
-                                ? essRadio === opt
-                                : q.label === crystallisedQuestion.label
-                                  ? crystallisedRadio === opt
-                                  : q.label === replaceEssQuestion.label
-                                    ? replaceEssRadio === opt
-                                    : q.label === essOnlyComparisonQuestion.label
-                                      ? essOnlyComparisonRadio === opt
-                                      : false}
-                            onChange={e => {
-                              if (q.label === extraQuestion.label) setSpecialRadio(e.target.value);
-                              else if (q.label === essQuestion.label) setEssRadio(e.target.value);
-                              else if (q.label === crystallisedQuestion.label) setCrystallisedRadio(e.target.value);
-                              else if (q.label === replaceEssQuestion.label) setReplaceEssRadio(e.target.value);
-                              else if (q.label === essOnlyComparisonQuestion.label) setEssOnlyComparisonRadio(e.target.value);
-                            }}
-                            className="accent-blue-600 w-4 h-4 mr-2"
-                          />
-                          <span className={darkMode ? 'text-zinc-200' : 'text-zinc-700'}>{opt}</span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <input
-                      id={`q-${idx}`}
-                      type={idx === 3 || idx === 4 ? "date" : "text"}
-                      placeholder={q.placeholder}
-                      className={`w-full px-3 py-2 rounded border outline-none transition focus:ring-2 ${
-                        darkMode
-                          ? 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-500'
-                          : 'bg-white border-zinc-300 text-zinc-900 focus:ring-zinc-300'
-                      } ${activeIndex === idx ? 'ring-2 ring-blue-400' : ''}`}
-                      onFocus={() => setActiveIndex(idx)}
-                      onClick={() => setActiveIndex(idx)}
-                    />
-                  )}
-                </div>
-                {/* Divider */}
-                <div
-                  className="h-full"
-                  style={{
-                    width: '2px',
-                    background: darkMode ? '#3f3f46' : '#e4e4e7',
-                    alignSelf: 'stretch',
-                  }}
-                />
-                {/* Guide (right) */}
-                <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
-                  <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>{finalGuides[idx]}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <BasicDetailsStage
+          darkMode={darkMode}
+          activeIndex={activeIndex}
+          setActiveIndex={setActiveIndex}
+          attitudeValue={attitudeValue}
+          setAttitudeValue={setAttitudeValue}
+          specialRadio={specialRadio}
+          setSpecialRadio={setSpecialRadio}
+          essRadio={essRadio}
+          setEssRadio={setEssRadio}
+          crystallisedRadio={crystallisedRadio}
+          setCrystallisedRadio={setCrystallisedRadio}
+          replaceEssRadio={replaceEssRadio}
+          setReplaceEssRadio={setReplaceEssRadio}
+          essOnlyComparisonRadio={essOnlyComparisonRadio}
+          setEssOnlyComparisonRadio={setEssOnlyComparisonRadio}
+        />
       );
     }
-    // Placeholder content for other stages
-    const minContentHeight = 600; // px, adjust as needed to match page one
     if (currentStage === 1) {
-      return <div className="flex-1 flex items-center justify-center text-lg text-zinc-500" style={{minHeight: minContentHeight}}>Plan Details Form (Stage 2)</div>;
+      return (
+        <ExistingPlansStage
+          darkMode={darkMode}
+          planCommenceDate={planCommenceDate}
+          setPlanCommenceDate={setPlanCommenceDate}
+          advisingPartnerRadio={advisingPartnerRadio}
+          setAdvisingPartnerRadio={setAdvisingPartnerRadio}
+          initialChargeRadio={initialChargeRadio}
+          setInitialChargeRadio={setInitialChargeRadio}
+          initialChargeAmount={initialChargeAmount}
+          setInitialChargeAmount={setInitialChargeAmount}
+          lumpSumTransferRadio={lumpSumTransferRadio}
+          setLumpSumTransferRadio={setLumpSumTransferRadio}
+          transferValue={transferValue}
+          setTransferValue={setTransferValue}
+          benefitDate={benefitDate}
+          setBenefitDate={setBenefitDate}
+          benefitAge={benefitAge}
+          setBenefitAge={setBenefitAge}
+          trueCashRadio={trueCashRadio}
+          setTrueCashRadio={setTrueCashRadio}
+          withProfitsRadio={withProfitsRadio}
+          setWithProfitsRadio={setWithProfitsRadio}
+          ewcRadio={ewcRadio}
+          setEwcRadio={setEwcRadio}
+          ewcAmount={ewcAmount}
+          setEwcAmount={setEwcAmount}
+          ewcMonths={ewcMonths}
+          setEwcMonths={setEwcMonths}
+          ewcDate={ewcDate}
+          setEwcDate={setEwcDate}
+          mvaRadio={mvaRadio}
+          setMvaRadio={setMvaRadio}
+          loyaltyBonusRadio={loyaltyBonusRadio}
+          setLoyaltyBonusRadio={setLoyaltyBonusRadio}
+          cycBasisRadio={cycBasisRadio}
+          setCycBasisRadio={setCycBasisRadio}
+          fundValueEqualsTransferValueRadio={fundValueEqualsTransferValueRadio}
+          setFundValueEqualsTransferValueRadio={setFundValueEqualsTransferValueRadio}
+          fundChargeDetails={fundChargeDetails}
+          setFundChargeDetails={setFundChargeDetails}
+          sameAnnualChargeRadio={sameAnnualChargeRadio}
+          setSameAnnualChargeRadio={setSameAnnualChargeRadio}
+          fundAnnualCharge={fundAnnualCharge}
+          setFundAnnualCharge={setFundAnnualCharge}
+          fixedChargeAmount={fixedChargeAmount}
+          setFixedChargeAmount={setFixedChargeAmount}
+          fixedChargeFrequency={fixedChargeFrequency}
+          setFixedChargeFrequency={setFixedChargeFrequency}
+          fixedChargeRadio={fixedChargeRadio}
+          setFixedChargeRadio={setFixedChargeRadio}
+        />
+      );
     }
     if (currentStage === 2) {
-      return <div className="flex-1 flex items-center justify-center text-lg text-zinc-500" style={{minHeight: minContentHeight}}>Investment Details Form (Stage 3)</div>;
+      return <div className="flex-1 flex items-center justify-center text-lg text-zinc-500">Investment Details Form (Stage 3)</div>;
     }
     if (currentStage === 3) {
-      return <div className="flex-1 flex items-center justify-center text-lg text-zinc-500" style={{minHeight: minContentHeight}}>Review & Submit (Stage 4)</div>;
+      return <div className="flex-1 flex items-center justify-center text-lg text-zinc-500">Review & Submit (Stage 4)</div>;
     }
     return null;
   }
@@ -274,53 +264,116 @@ export default function CYCForm({ darkMode }: { darkMode: boolean }) {
           maxWidth: '100%',
         }}
       >
-        {/* Stepper */}
-        <div className="flex flex-row w-full px-8 pt-8 pb-2 gap-4 items-center">
-          {STAGES.map((stage, idx) => (
-            <div
-              key={stage}
-              className={`flex-1 flex flex-col items-center cursor-pointer select-none ${idx === currentStage ? 'font-bold text-blue-600' : 'text-zinc-400'}`}
-              onClick={() => setCurrentStage(idx)}
-            >
-              <div className={`rounded-full w-8 h-8 flex items-center justify-center mb-1 border-2 ${idx === currentStage ? 'border-blue-600 bg-blue-50' : 'border-zinc-300 bg-zinc-100 dark:bg-zinc-800'}`}>{idx + 1}</div>
-              <span className="text-xs text-center">{stage}</span>
-            </div>
-          ))}
-        </div>
-        {/* Stage Content */}
-        {renderStageContent()}
-        {/* Navigation Buttons */}
-        <div className="w-full flex justify-between items-center px-8 py-4 bg-inherit">
-          <div>
-            <button
-              type="button"
-              className="px-5 py-2 rounded border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-              onClick={() => setCurrentStage(s => Math.max(0, s - 1))}
-              disabled={currentStage === 0}
-            >
-              Back
-            </button>
-          </div>
-          <div>
-            {currentStage < STAGES.length - 1 ? (
+        <div className="w-full h-full flex flex-col px-4">
+          {onBack && (
+            <div className="w-full flex justify-start pt-6">
               <button
                 type="button"
-                className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-                onClick={() => setCurrentStage(s => Math.min(STAGES.length - 1, s + 1))}
+                className="px-2.5 py-1.5 rounded border border-blue-600 bg-blue-50 text-blue-700 text-xs font-medium hover:bg-blue-100 transition"
+                style={{ minWidth: 0, lineHeight: 1.2 }}
+                onClick={onBack}
               >
-                Next
+                ← Back
               </button>
-            ) : (
-              <button
-                type="submit"
-                className="px-5 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+            </div>
+          )}
+          {/* Stepper */}
+          <div className="flex flex-row w-full pt-8 pb-2 gap-4 items-center">
+            {STAGES.map((stage, idx) => (
+              <div
+                key={stage}
+                className={`flex-1 flex flex-col items-center cursor-pointer select-none ${idx === currentStage ? (darkMode ? 'font-bold text-blue-400' : 'font-bold text-blue-600') : (darkMode ? 'text-zinc-400' : 'text-zinc-400')}`}
+                onClick={() => setCurrentStage(idx)}
               >
-                Save
-              </button>
-            )}
+                <div className={`rounded-full w-8 h-8 flex items-center justify-center mb-1 border-2 ${idx === currentStage
+                  ? (darkMode ? 'border-blue-400 bg-zinc-800' : 'border-blue-600 bg-blue-50')
+                  : (darkMode ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-300 bg-zinc-100')
+                }`}>{idx + 1}</div>
+                <span className={`text-xs text-center ${darkMode ? (idx === currentStage ? 'text-blue-400' : 'text-zinc-400') : (idx === currentStage ? 'text-blue-600' : 'text-zinc-400')}`}>{stage}</span>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-    </div>
+          {/* Stage Content */}
+          {renderStageContent()}
+
+          {/* Additional Notes Section */}
+          <div className="flex flex-row w-full items-stretch px-8 py-4 pt-8">
+            {/* Textarea (left) */}
+                      <div className="flex-1 pr-8 py-2 flex flex-col justify-center">
+              <label
+                className={`block mb-1 font-medium text-sm ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}
+                htmlFor="additional-notes"
+              >
+                Additional notes
+              </label>
+              <textarea
+                id="additional-notes"
+                rows={3}
+                placeholder="Enter any supporting notes here..."
+                className={`w-full px-3 py-2 rounded border outline-none transition focus:ring-2 resize-y min-h-[80px] ${
+                  darkMode
+                    ? 'bg-zinc-800 border-zinc-700 text-zinc-100 focus:ring-zinc-500'
+                    : 'bg-white border-zinc-300 text-zinc-900 focus:ring-zinc-300'
+                }`}
+                style={{ fontSize: 15 }}
+              />
+                            </div>
+            {/* Divider */}
+            <div
+              className="self-stretch mx-2"
+              style={{
+                width: '2px',
+                background: darkMode ? '#3f3f46' : '#e4e4e7',
+              }}
+            />
+            {/* Guide (right) */}
+            <div className="flex-1 pl-8 py-2 flex items-center min-h-[40px]">
+              <span className={`text-base text-left w-full transition-colors duration-200 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>Supporting notes requested while completing this page or that you belive will help clarify plan details should be written in this box - these will appear in output from this calculator.</span>
+                          </div>
+                          </div>
+          {/* Navigation Buttons */}
+          <div className="w-full flex justify-end items-center py-4 bg-inherit gap-2">
+            {currentStage < STAGES.length - 1 ? (
+              <>
+                <button
+                  type="button"
+                  className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition border border-zinc-200 dark:border-[var(--border)] ${darkMode ? 'bg-[var(--muted)] text-white' : 'bg-white text-zinc-700'}`}
+                  style={{ minWidth: 0 }}
+                  onClick={() => {/* Save logic here */}}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal bg-blue-600 text-white transition border border-blue-600 hover:bg-blue-700 hover:border-blue-700"
+                  style={{ minWidth: 0 }}
+                  onClick={() => setCurrentStage(s => Math.min(STAGES.length - 1, s + 1))}
+                >
+                  Save and Continue
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal transition border border-zinc-200 dark:border-[var(--border)] ${darkMode ? 'bg-[var(--muted)] text-white' : 'bg-white text-zinc-700'}`}
+                  style={{ minWidth: 0 }}
+                  onClick={() => {/* Save logic here */}}
+                >
+                  Save
+                </button>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal bg-blue-600 text-white transition border border-blue-600 hover:bg-blue-700 hover:border-blue-700"
+                  style={{ minWidth: 0 }}
+                >
+                  Save and Continue
+                </button>
+              </>
+            )}
+                          </div>
+                        </div>
+                      </div>
+                      </div>
   );
 }
