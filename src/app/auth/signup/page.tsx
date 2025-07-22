@@ -169,7 +169,7 @@ export default function SignupPage() {
   };
 
   const sharedInputClass =
-    'w-full px-4 py-2 rounded-[10px] bg-zinc-100 text-sm shadow-inner border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
+    'w-full px-4 py-2 rounded-[10px] bg-white text-sm shadow-inner border border-zinc-200 focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400'
 
   const inputStyle = darkMode
     ? {
@@ -184,7 +184,10 @@ export default function SignupPage() {
         color: 'var(--foreground)',
         borderColor: 'var(--border)',
       }
-    : {}
+    : {
+        background: 'white',
+        borderColor: '#e5e7eb',
+      }
   const buttonStyle = darkMode
     ? {
         backgroundColor: '#2563eb',
@@ -218,7 +221,7 @@ export default function SignupPage() {
             ref={(el) => {
               otpRefs.current[i] = el!
             }}
-            className="w-10 h-12 text-center text-xl rounded-md bg-zinc-100 shadow-inner focus:border-blue-500 focus:bg-white border border-transparent focus:outline-none transition"
+            className="w-10 h-12 text-center text-xl rounded-md bg-white shadow-inner focus:border-blue-500 border border-zinc-200 focus:outline-none transition"
             style={otpInputStyle}
           />
         ))}

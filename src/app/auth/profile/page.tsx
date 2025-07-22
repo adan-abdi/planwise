@@ -149,9 +149,9 @@ export default function ProfilePage() {
           onChange={(e) => setName(e.target.value)}
           className="w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400"
           style={{
-            background: darkMode ? 'var(--muted)' : '#f4f4f5',
+            background: darkMode ? 'var(--muted)' : 'white',
             color: darkMode ? 'var(--foreground)' : '#18181b',
-            borderColor: darkMode ? 'var(--border)' : 'transparent',
+            borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
           }}
           required
         />

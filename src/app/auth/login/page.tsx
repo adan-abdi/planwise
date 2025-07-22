@@ -90,9 +90,9 @@ export default function LoginPage() {
         boxShadow: '0 1px 2px 0 #1112',
       }
     : {
-        background: '#f4f4f5',
+        background: 'white',
         color: '#18181b',
-        borderColor: 'transparent',
+        borderColor: '#e5e7eb',
         boxShadow: '0 1px 2px 0 #e0e7ef',
       };
 
