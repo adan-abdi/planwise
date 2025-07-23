@@ -15,15 +15,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
-  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
+  const [themePreference, setThemePreference] = useState<ThemePreference>('light');
 
-  // Function to get system preference
-  const getSystemPreference = () => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  };
+  // Function to get system preference (no longer used since we force light mode)
+  // const getSystemPreference = () => {
+  //   if (typeof window !== 'undefined') {
+  //     return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  //   }
+  //   return false;
+  // };
 
   // Function to determine if dark mode should be active
   const shouldUseDarkMode = useCallback(() => {
@@ -33,7 +33,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       case 'light':
         return false;
       case 'system':
-        return getSystemPreference();
+        // Force light mode even for system preference
+        return false;
       default:
         return false;
     }
@@ -44,6 +45,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("themePreference");
     if (stored === "dark" || stored === "light" || stored === "system") {
       setThemePreference(stored as ThemePreference);
+    } else {
+      // Force light mode as default if no preference is stored
+      setThemePreference('light');
+      localStorage.setItem("themePreference", "light");
     }
   }, []);
 
@@ -60,18 +65,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [themePreference, shouldUseDarkMode]);
 
-  // Listen for system preference changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && themePreference === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => {
-        setDarkMode(shouldUseDarkMode());
-      };
-      
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-  }, [themePreference, shouldUseDarkMode]);
+  // Listen for system preference changes (disabled since we force light mode)
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && themePreference === 'system') {
+  //     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  //     const handleChange = () => {
+  //       setDarkMode(shouldUseDarkMode());
+  //     };
+  //     
+  //     mediaQuery.addEventListener('change', handleChange);
+  //     return () => mediaQuery.removeEventListener('change', handleChange);
+  //   }
+  // }, [themePreference, shouldUseDarkMode]);
 
   const setThemePreferenceHandler = (preference: ThemePreference) => {
     setThemePreference(preference);
