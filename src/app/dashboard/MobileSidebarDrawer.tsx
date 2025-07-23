@@ -1,5 +1,5 @@
 import React from "react";
-import { X, LayoutDashboard, SquareUserRound, BookUser, PersonStanding, SquareDashedKanban, BadgeQuestionMark, Settings, LogOut, UserPen } from "lucide-react";
+import { X, LayoutDashboard, SquareUserRound, BookUser, PersonStanding, SquareDashedKanban, BadgeQuestionMark, Settings, LogOut, UserPen, Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import { useTheme } from "../../theme-context";
 import { logout } from '../../api/services/auth';
@@ -20,7 +20,7 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
   onSectionSelect: (key: string) => void;
   activeSectionKey: string;
 }) {
-  const { darkMode } = useTheme();
+  const { darkMode, toggleDarkMode } = useTheme();
   
   // Logout handler
   const handleLogout = () => {
@@ -157,6 +157,51 @@ export default function MobileSidebarDrawer({ open, onClose, onSectionSelect, ac
                 <Settings className="w-5 h-5 transition-colors duration-200" />
                 <span className="text-sm font-medium">Settings</span>
               </button>
+              
+              {/* Theme Toggle Button */}
+              <button
+                onClick={() => { toggleDarkMode(); onClose(); }}
+                className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: darkMode ? '#fbbf24' : '#1e40af',
+                  border: '1px solid transparent'
+                }}
+                onMouseEnter={(e) => {
+                  // macOS liquid glass effect
+                  e.currentTarget.style.backgroundColor = darkMode 
+                    ? 'rgba(251, 191, 36, 0.08)' 
+                    : 'rgba(30, 64, 175, 0.08)';
+                  e.currentTarget.style.color = darkMode ? '#fbbf24' : '#1e40af';
+                  e.currentTarget.style.backdropFilter = 'blur(20px) saturate(180%)';
+                  (e.currentTarget.style as CSSStyleDeclaration & { WebkitBackdropFilter?: string }).WebkitBackdropFilter = 'blur(20px) saturate(180%)';
+                  e.currentTarget.style.border = darkMode 
+                    ? '1px solid rgba(251, 191, 36, 0.2)' 
+                    : '1px solid rgba(30, 64, 175, 0.2)';
+                  e.currentTarget.style.boxShadow = darkMode 
+                    ? '0 8px 32px rgba(251, 191, 36, 0.15), 0 2px 8px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                    : '0 8px 32px rgba(30, 64, 175, 0.15), 0 2px 8px rgba(30, 64, 175, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  // Reset liquid glass effect
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = darkMode ? '#fbbf24' : '#1e40af';
+                  e.currentTarget.style.backdropFilter = 'blur(20px) saturate(180%)';
+                  (e.currentTarget.style as CSSStyleDeclaration & { WebkitBackdropFilter?: string }).WebkitBackdropFilter = 'blur(20px) saturate(180%)';
+                  e.currentTarget.style.border = '1px solid transparent';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {darkMode ? (
+                  <Sun className="w-5 h-5 transition-colors duration-200" />
+                ) : (
+                  <Moon className="w-5 h-5 transition-colors duration-200" />
+                )}
+                <span className="text-sm font-medium">
+                  {darkMode ? "Light Mode" : "Dark Mode"}
+                </span>
+              </button>
+              
               <button
                 onClick={() => { window.location.href = '/auth/profile'; onClose(); }}
                 className="w-full flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium"

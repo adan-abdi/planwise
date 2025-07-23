@@ -48,7 +48,8 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
     "Account owner",
     "Investment", 
     "Benefits",
-    "Uncrystallised fund selection"
+    "Uncrystallised fund selection",
+    "Illustration Summary"
   ];
 
   return (
@@ -67,7 +68,7 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
             className="text-2xl font-bold"
             style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
           >
-            Account owner
+            {progressTabs[activeTab]}
           </h1>
           <button
             onClick={onBack}
@@ -970,86 +971,258 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
 
           {activeTab === 2 && (
             <div className="space-y-6">
-              <h2 
-                className="text-lg font-semibold mb-4"
-                style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+              {/* Warning Banner */}
+              <div 
+                className="flex items-start gap-3 p-4 rounded-lg border-l-4"
+                style={{
+                  background: darkMode ? '#fef2f2' : '#fef2f2',
+                  borderLeftColor: '#dc2626',
+                  borderColor: darkMode ? '#dc2626' : '#dc2626'
+                }}
               >
-                Benefits Configuration
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <label 
-                    className="w-48 text-sm font-medium"
-                    style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                <AlertCircle 
+                  className="w-5 h-5 mt-0.5 flex-shrink-0"
+                  style={{ color: '#dc2626' }}
+                />
+                <div>
+                  <p 
+                    className="font-medium"
+                    style={{ color: '#dc2626' }}
                   >
-                    Benefit type:
-                  </label>
-                  <div className="flex-1 flex gap-6">
-                    {['Pension', 'Annuity', 'Lump Sum'].map((benefit) => (
-                      <label key={benefit} className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="benefitType"
-                          value={benefit}
-                          className="w-4 h-4 mr-2 accent-blue-600"
-                        />
-                        <span style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
-                          {benefit}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                    Please complete the following information
+                  </p>
+                  <ul className="text-sm mt-1 space-y-1">
+                    <li style={{ color: '#dc2626' }}>• Is an uncrystallised funds pension lump sum required?</li>
+                    <li style={{ color: '#dc2626' }}>• Anticipated retirement age</li>
+                  </ul>
                 </div>
+              </div>
 
-                <div className="flex items-center">
+              {/* Uncrystallised funds pension lump sum Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
+              >
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  Uncrystallised funds pension lump sum
+                </h3>
+                <div className="flex items-center gap-3">
+                  <AlertCircle 
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: '#dc2626' }}
+                  />
                   <label 
-                    className="w-48 text-sm font-medium"
+                    className="text-sm font-medium flex-1"
                     style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
                   >
-                    Retirement age:
+                    Is an uncrystallised funds pension lump sum required?
                   </label>
-                  <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      placeholder="65"
-                      className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8"
-                      style={{
-                        background: darkMode ? '#1e1e1e' : '#ffffff',
-                        borderColor: darkMode ? '#3f3f46' : '#d1d5db',
-                        color: darkMode ? '#f1f5f9' : '#18181b'
-                      }}
-                    />
-                    <span 
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
-                      style={{ color: darkMode ? '#71717a' : '#6b7280' }}
-                    >
-                      years
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <label 
-                    className="w-48 text-sm font-medium"
-                    style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
-                  >
-                    Death benefit:
-                  </label>
-                  <div className="flex-1 flex gap-6">
+                  <div className="flex gap-6">
                     {['Yes', 'No'].map((option) => (
                       <label key={option} className="flex items-center cursor-pointer">
                         <input
                           type="radio"
-                          name="deathBenefit"
+                          name="uncrystallisedFundsLumpSum"
                           value={option}
                           className="w-4 h-4 mr-2 accent-blue-600"
                         />
-                        <span style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
+                        <span className="text-sm" style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
                           {option}
                         </span>
                       </label>
                     ))}
+                  </div>
+                  <HelpCircle 
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: '#3b82f6' }}
+                  />
+                </div>
+              </div>
+
+              {/* Drawdown Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
+              >
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  Drawdown
+                </h3>
+                <div className="flex items-center gap-3">
+                  <label 
+                    className="text-sm font-medium flex-1"
+                    style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                  >
+                    Do you wish to crystallise any funds for drawdown?
+                  </label>
+                  <div className="flex gap-6">
+                    {['Yes', 'No'].map((option) => (
+                      <label key={option} className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="crystalliseForDrawdown"
+                          value={option}
+                          className="w-4 h-4 mr-2 accent-blue-600"
+                        />
+                        <span className="text-sm" style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
+                          {option}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Anticipated retirement age Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
+              >
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  Anticipated retirement age
+                </h3>
+                <div className="flex items-center gap-3">
+                  <AlertCircle 
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: '#dc2626' }}
+                  />
+                  <label 
+                    className="text-sm font-medium"
+                    style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                  >
+                    Anticipated retirement age:
+                  </label>
+                  <div className="flex-1 max-w-xs">
+                    <input
+                      type="text"
+                      placeholder=""
+                      className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        background: darkMode ? '#1e1e1e' : '#ffffff',
+                        borderColor: '#dc2626',
+                        color: darkMode ? '#f1f5f9' : '#18181b'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Example annuity details Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
+              >
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  Example annuity details
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <label 
+                      className="text-sm font-medium w-48"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Pension escalation rate:
+                    </label>
+                    <div className="flex-1 relative max-w-xs">
+                      <select
+                        className="w-full px-3 py-2 rounded border appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          background: darkMode ? '#1e1e1e' : '#ffffff',
+                          borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                          color: darkMode ? '#f1f5f9' : '#18181b'
+                        }}
+                      >
+                        <option value="Level">Level</option>
+                        <option value="RPI">RPI</option>
+                        <option value="CPI">CPI</option>
+                        <option value="Fixed">Fixed</option>
+                      </select>
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        size={16}
+                        style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label 
+                      className="text-sm font-medium w-48"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Guarantee period:
+                    </label>
+                    <div className="flex-1 relative max-w-xs">
+                      <select
+                        className="w-full px-3 py-2 rounded border appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          background: darkMode ? '#1e1e1e' : '#ffffff',
+                          borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                          color: darkMode ? '#f1f5f9' : '#18181b'
+                        }}
+                      >
+                        <option value="5 years">5 years</option>
+                        <option value="10 years">10 years</option>
+                        <option value="15 years">15 years</option>
+                        <option value="No guarantee">No guarantee</option>
+                      </select>
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        size={16}
+                        style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label 
+                      className="text-sm font-medium w-48"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Dependant&apos;s pension:
+                    </label>
+                    <div className="flex-1 relative max-w-xs">
+                      <select
+                        className="w-full px-3 py-2 rounded border appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          background: darkMode ? '#1e1e1e' : '#ffffff',
+                          borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                          color: darkMode ? '#f1f5f9' : '#18181b'
+                        }}
+                      >
+                        <option value="Single with no dependants">Single with no dependants</option>
+                        <option value="Single life with dependant&apos;s pension">Single life with dependant&apos;s pension</option>
+                        <option value="Joint life">Joint life</option>
+                      </select>
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                        size={16}
+                        style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1058,92 +1231,856 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
 
           {activeTab === 3 && (
             <div className="space-y-6">
-              <h2 
-                className="text-lg font-semibold mb-4"
-                style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+              {/* AFT Fund Selection Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
               >
-                Uncrystallised Fund Selection
-              </h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center">
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  AFT fund selection
+                </h3>
+                <div className="flex items-center gap-3">
                   <label 
-                    className="w-48 text-sm font-medium"
+                    className="text-sm font-medium flex-1"
                     style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
                   >
-                    Fund allocation:
+                    Do you want to use the Automatic Fund Transfer (AFT) facility for this Investment?
                   </label>
-                  <div className="flex-1 relative">
-                    <select
-                      className="w-full px-3 py-2 rounded border appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      style={{
-                        background: darkMode ? '#1e1e1e' : '#ffffff',
-                        borderColor: darkMode ? '#3f3f46' : '#d1d5db',
-                        color: darkMode ? '#f1f5f9' : '#18181b'
-                      }}
-                    >
-                      <option value="">Select fund allocation</option>
-                      <option value="equity">Equity Funds</option>
-                      <option value="bond">Bond Funds</option>
-                      <option value="mixed">Mixed Funds</option>
-                      <option value="property">Property Funds</option>
-                    </select>
-                    <ChevronDown 
-                      className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                      size={16}
-                      style={{ color: darkMode ? '#71717a' : '#6b7280' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <label 
-                    className="w-48 text-sm font-medium"
-                    style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
-                  >
-                    Crystallisation strategy:
-                  </label>
-                  <div className="flex-1 flex gap-6">
-                    {['Flexible', 'Fixed', 'Hybrid'].map((strategy) => (
-                      <label key={strategy} className="flex items-center cursor-pointer">
+                  <div className="flex gap-6">
+                    {['Yes', 'No'].map((option) => (
+                      <label key={option} className="flex items-center cursor-pointer">
                         <input
                           type="radio"
-                          name="crystallisationStrategy"
-                          value={strategy}
+                          name="aftFacility"
+                          value={option}
+                          defaultChecked={option === 'No'}
                           className="w-4 h-4 mr-2 accent-blue-600"
                         />
-                        <span style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
-                          {strategy}
+                        <span className="text-sm" style={{ color: darkMode ? '#e4e4e7' : '#374151' }}>
+                          {option}
                         </span>
                       </label>
                     ))}
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center">
-                  <label 
-                    className="w-48 text-sm font-medium"
+              {/* Fund Selection Section */}
+              <div 
+                className="p-4 rounded-lg border"
+                style={{
+                  background: darkMode ? '#2a2a2a' : '#f9fafb',
+                  borderColor: darkMode ? '#3f3f46' : '#e5e7eb'
+                }}
+              >
+                <h3 
+                  className="text-base font-semibold mb-4"
+                  style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                >
+                  Fund selection
+                </h3>
+                
+                {/* Transfers Header */}
+                <div className="mb-4">
+                  <h4 
+                    className="text-sm font-medium mb-3"
                     style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
                   >
-                    Transfer value:
-                  </label>
-                  <div className="flex-1 relative">
-                    <span 
-                      className="absolute left-3 top-1/2 -translate-y-1/2"
-                      style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                    Transfers
+                  </h4>
+                  
+                  {/* Table Header */}
+                  <div className="grid grid-cols-3 gap-4 mb-3">
+                    <div></div>
+                    <div 
+                      className="text-sm font-medium text-center"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
                     >
-                      £
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="0.00"
-                      className="w-full px-3 py-2 pl-8 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      style={{
-                        background: darkMode ? '#1e1e1e' : '#ffffff',
-                        borderColor: darkMode ? '#3f3f46' : '#d1d5db',
-                        color: darkMode ? '#f1f5f9' : '#18181b'
-                      }}
-                    />
+                      Distribution
+                    </div>
+                    <div 
+                      className="text-sm font-medium text-center"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Non-distribution
+                    </div>
+                  </div>
+
+                  {/* Portfolio List */}
+                  <div className="space-y-3">
+                    {[
+                      'Adventurous Portfolio',
+                      'Balanced Portfolio', 
+                      'Conservative Portfolio',
+                      'Managed Funds Portfolio',
+                      'Strategic Growth Portfolio'
+                    ].map((portfolio) => (
+                      <div key={portfolio} className="grid grid-cols-3 gap-4 items-center">
+                        <div 
+                          className="text-sm"
+                          style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                        >
+                          {portfolio}
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder=""
+                            className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                            style={{
+                              background: darkMode ? '#1e1e1e' : '#ffffff',
+                              borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                              color: darkMode ? '#f1f5f9' : '#18181b'
+                            }}
+                          />
+                          <span 
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                            style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                          >
+                            %
+                          </span>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder=""
+                            className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                            style={{
+                              background: darkMode ? '#1e1e1e' : '#ffffff',
+                              borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                              color: darkMode ? '#f1f5f9' : '#18181b'
+                            }}
+                          />
+                          <span 
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                            style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                          >
+                            %
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Hide individual funds link */}
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors text-sm"
+                      style={{ color: darkMode ? '#60a5fa' : '#2563eb' }}
+                    >
+                      <span>Hide individual funds</span>
+                      <ChevronDown className="w-3 h-3 rotate-180" />
+                    </button>
+                  </div>
+
+                  {/* Polaris and InRetirement Range */}
+                  <div className="mt-6">
+                    <h4 
+                      className="text-sm font-medium mb-3"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Polaris and InRetirement Range
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      {['Polaris 1', 'Polaris 2', 'Polaris 3', 'Polaris 4'].map((fund) => (
+                        <div key={fund} className="grid grid-cols-3 gap-4 items-center">
+                          <div 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                          >
+                            {fund}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* InRetirement Funds (disabled) */}
+                      {['Balance InRetirement', 'Growth InRetirement', 'Prudence InRetirement'].map((fund) => (
+                        <div key={fund} className="grid grid-cols-3 gap-4 items-center">
+                          <div 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                          >
+                            {fund}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              disabled
+                              className="w-full px-3 py-2 rounded border focus:outline-none pr-8 text-center cursor-not-allowed"
+                              style={{
+                                background: darkMode ? '#3f3f46' : '#f3f4f6',
+                                borderColor: darkMode ? '#52525b' : '#d1d5db',
+                                color: darkMode ? '#71717a' : '#9ca3af'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#9ca3af' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              disabled
+                              className="w-full px-3 py-2 rounded border focus:outline-none pr-8 text-center cursor-not-allowed"
+                              style={{
+                                background: darkMode ? '#3f3f46' : '#f3f4f6',
+                                borderColor: darkMode ? '#52525b' : '#d1d5db',
+                                color: darkMode ? '#71717a' : '#9ca3af'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#9ca3af' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Individual Funds */}
+                  <div className="mt-6">
+                    <h4 
+                      className="text-sm font-medium mb-3"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      Individual Funds
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      {['Asia Pacific', 'Balanced Managed', 'Continental European', 'Corporate Bond'].map((fund) => (
+                        <div key={fund} className="grid grid-cols-3 gap-4 items-center">
+                          <div 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                          >
+                            {fund}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Additional Individual Funds */}
+                      {[
+                        { name: 'Diversified Assets (FAIF)', disabled: true },
+                        { name: 'Diversified Bond', disabled: false },
+                        { name: 'Emerging Markets Equity', disabled: false },
+                        { name: 'Global Absolute Return', disabled: false },
+                        { name: 'Global Emerging Markets', disabled: false },
+                        { name: 'Global Equity', disabled: false },
+                        { name: 'Global Government Bond', disabled: false },
+                        { name: 'Global Government Inflation Linked Bond', disabled: true },
+                        { name: 'Global Growth', disabled: false },
+                        { name: 'Global High Yield Bond', disabled: false }
+                      ].map((fund) => (
+                        <div key={fund.name} className="grid grid-cols-3 gap-4 items-center">
+                          <div 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                          >
+                            {fund.name}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              disabled={fund.disabled}
+                              className={`w-full px-3 py-2 rounded border focus:outline-none pr-8 text-center ${
+                                fund.disabled ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'
+                              }`}
+                              style={{
+                                background: fund.disabled 
+                                  ? (darkMode ? '#3f3f46' : '#f3f4f6')
+                                  : (darkMode ? '#1e1e1e' : '#ffffff'),
+                                borderColor: fund.disabled 
+                                  ? (darkMode ? '#52525b' : '#d1d5db')
+                                  : (darkMode ? '#3f3f46' : '#d1d5db'),
+                                color: fund.disabled 
+                                  ? (darkMode ? '#71717a' : '#9ca3af')
+                                  : (darkMode ? '#f1f5f9' : '#18181b')
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ 
+                                color: fund.disabled 
+                                  ? (darkMode ? '#71717a' : '#9ca3af')
+                                  : (darkMode ? '#71717a' : '#6b7280')
+                              }}
+                            >
+                              %
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              disabled={fund.disabled}
+                              className={`w-full px-3 py-2 rounded border focus:outline-none pr-8 text-center ${
+                                fund.disabled ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'
+                              }`}
+                              style={{
+                                background: fund.disabled 
+                                  ? (darkMode ? '#3f3f46' : '#f3f4f6')
+                                  : (darkMode ? '#1e1e1e' : '#ffffff'),
+                                borderColor: fund.disabled 
+                                  ? (darkMode ? '#52525b' : '#d1d5db')
+                                  : (darkMode ? '#3f3f46' : '#d1d5db'),
+                                color: fund.disabled 
+                                  ? (darkMode ? '#71717a' : '#9ca3af')
+                                  : (darkMode ? '#f1f5f9' : '#18181b')
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ 
+                                color: fund.disabled 
+                                  ? (darkMode ? '#71717a' : '#9ca3af')
+                                  : (darkMode ? '#71717a' : '#6b7280')
+                              }}
+                            >
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Final Individual Funds */}
+                      {[
+                        'Global Managed',
+                        'Global Quality',
+                        'Global Smaller Companies',
+                        'Global Value',
+                        'Greater European',
+                        'International Equity',
+                        'Investment Grade Corporate Bond',
+                        'Japan',
+                        'Managed Growth',
+                        'Money Market',
+                        'North American',
+                        'Strategic Income',
+                        'Strategic Managed',
+                        'Sustainable & Responsible Equity',
+                        'UK',
+                        'UK Equity Income',
+                        'Worldwide Income'
+                      ].map((fund) => (
+                        <div key={fund} className="grid grid-cols-3 gap-4 items-center">
+                          <div 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                          >
+                            {fund}
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder=""
+                              className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-center"
+                              style={{
+                                background: darkMode ? '#1e1e1e' : '#ffffff',
+                                borderColor: darkMode ? '#3f3f46' : '#d1d5db',
+                                color: darkMode ? '#f1f5f9' : '#18181b'
+                              }}
+                            />
+                            <span 
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                              style={{ color: darkMode ? '#71717a' : '#6b7280' }}
+                            >
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Total Section */}
+                    <div className="mt-6 pt-4 border-t" style={{ borderColor: darkMode ? '#3f3f46' : '#e5e7eb' }}>
+                      <div className="grid grid-cols-3 gap-4 items-center">
+                        <div 
+                          className="text-sm font-medium"
+                          style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                        >
+                          Total:
+                        </div>
+                        <div className="text-center">
+                          <span 
+                            className="text-sm font-medium"
+                            style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                          >
+                            100.0%
+                          </span>
+                        </div>
+                        <div className="text-center">
+                          <span 
+                            className="text-sm font-medium"
+                            style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                          >
+                            100.0%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 4 && (
+            <div className="space-y-6">
+              {/* Summary Sections */}
+              <div className="grid grid-cols-1 gap-6">
+                {/* Account Owner Section */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{
+                    background: darkMode ? '#2a2a2a' : '#fafaf9',
+                    borderColor: darkMode ? '#3f3f46' : '#e4e4e7'
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 
+                      className="text-lg font-semibold"
+                      style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                    >
+                      Account owner
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div 
+                      className="text-base"
+                      style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                    >
+                      {formData.title} {formData.forename} {formData.surname}
+                    </div>
+                    <div 
+                      className="text-sm"
+                      style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                    >
+                      Anticipated retirement age: 75
+                    </div>
+                  </div>
+                </div>
+
+                {/* Investments Section */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{
+                    background: darkMode ? '#2a2a2a' : '#fafaf9',
+                    borderColor: darkMode ? '#3f3f46' : '#e4e4e7'
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 
+                      className="text-lg font-semibold"
+                      style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                    >
+                      Investments
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <HelpCircle size={16} style={{ color: darkMode ? '#71717a' : '#6b7280' }} />
+                      </button>
+                      <button className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium">
+                        Edit
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: darkMode ? '#71717a' : '#6b7280' }}>
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <path d="M8 12h8"/>
+                          <path d="M12 8v8"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-6">
+                    {/* Single contributions */}
+                    <div>
+                      <h4 
+                        className="text-sm font-medium mb-2"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Single contributions
+                      </h4>
+                      <div 
+                        className="text-base"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        None
+                      </div>
+                    </div>
+
+                    {/* Regular contributions */}
+                    <div>
+                      <h4 
+                        className="text-sm font-medium mb-2"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Regular contributions
+                      </h4>
+                      <div 
+                        className="text-base"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        None
+                      </div>
+                    </div>
+
+                    {/* Transfers */}
+                    <div>
+                      <h4 
+                        className="text-sm font-medium mb-2"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Transfers
+                      </h4>
+                      <div className="space-y-2">
+                        <div 
+                          className="text-base"
+                          style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                        >
+                          Phoenix Life Limited
+                        </div>
+                        <div 
+                          className="text-sm"
+                          style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                        >
+                          £ 17107.05 (Uncrystallised)
+                        </div>
+                        <div 
+                          className="text-base"
+                          style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                        >
+                          Aviva
+                        </div>
+                        <div 
+                          className="text-sm"
+                          style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                        >
+                          £ 6108.92 (Uncrystallised)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Benefits Section */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{
+                    background: darkMode ? '#2a2a2a' : '#fafaf9',
+                    borderColor: darkMode ? '#3f3f46' : '#e4e4e7'
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 
+                      className="text-lg font-semibold"
+                      style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                    >
+                      Benefits
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <HelpCircle size={16} style={{ color: darkMode ? '#71717a' : '#6b7280' }} />
+                      </button>
+                      <button className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium">
+                        Edit
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: darkMode ? '#71717a' : '#6b7280' }}>
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <path d="M8 12h8"/>
+                          <path d="M12 8v8"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Drawdown */}
+                    <div>
+                      <h4 
+                        className="text-sm font-medium mb-2"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Drawdown
+                      </h4>
+                      <div 
+                        className="text-base"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        None
+                      </div>
+                    </div>
+
+                    {/* Example annuity */}
+                    <div>
+                      <h4 
+                        className="text-sm font-medium mb-2"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Example annuity
+                      </h4>
+                      <div className="space-y-1">
+                        <div className="flex justify-between">
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                          >
+                            Escalation rate:
+                          </span>
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                          >
+                            Level
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                          >
+                            Guarantee period:
+                          </span>
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                          >
+                            5 years
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                          >
+                            Dependant&apos;s pension:
+                          </span>
+                          <span 
+                            className="text-sm"
+                            style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                          >
+                            Single with no dependants
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Illustration for Retirement Account Section */}
+                <div 
+                  className="p-6 rounded-lg border"
+                  style={{
+                    background: darkMode ? '#2a2a2a' : '#fafaf9',
+                    borderColor: darkMode ? '#3f3f46' : '#e4e4e7'
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 
+                      className="text-lg font-semibold"
+                      style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                    >
+                      Illustration for Retirement Account new investment (as at 30/04/2033)
+                    </h3>
+                  </div>
+                  
+                  {/* Projection Table */}
+                  <div className="mb-6">
+                    <div className="grid grid-cols-4 gap-4 mb-3">
+                      <div></div>
+                      <div 
+                        className="text-sm font-medium text-center"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Lower rate
+                      </div>
+                      <div 
+                        className="text-sm font-medium text-center"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Mid rate
+                      </div>
+                      <div 
+                        className="text-sm font-medium text-center"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Higher rate
+                      </div>
+                    </div>
+
+                    {/* Retirement Account Row */}
+                    <div className="grid grid-cols-4 gap-4 items-center mb-3">
+                      <div 
+                        className="text-sm"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Retirement Account - Uncrystallised
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £19,100
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £24,100
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £30,200
+                      </div>
+                    </div>
+
+                    {/* Available tax free cash Row */}
+                    <div className="grid grid-cols-4 gap-4 items-center">
+                      <div 
+                        className="text-sm"
+                        style={{ color: darkMode ? '#e4e4e7' : '#374151' }}
+                      >
+                        Available tax free cash:
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £4,790
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £6,030
+                      </div>
+                      <div 
+                        className="text-sm text-center font-medium"
+                        style={{ color: darkMode ? '#f1f5f9' : '#18181b' }}
+                      >
+                        £7,550
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <div className="mb-6">
+                    <p 
+                      className="text-xs"
+                      style={{ color: darkMode ? '#a1a1aa' : '#6b7280' }}
+                    >
+                      The figures shown above are in today&apos;s money based on an assumed rate of future price inflation of 2% per annum.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1153,17 +2090,22 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
       </div>
 
       {/* Footer */}
-      <div className="p-6 border-t flex justify-between" style={{ borderColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
-        <button
-          onClick={onBack}
-          className="px-4 py-2 bg-gray-100 text-gray-700 rounded font-medium hover:bg-gray-200 transition-colors"
-          style={{
-            background: darkMode ? '#2a2a2a' : '#f4f4f5',
-            color: darkMode ? '#e4e4e7' : '#374151'
-          }}
-        >
-          Close
-        </button>
+      <div className="p-6 border-t flex justify-end gap-4" style={{ borderColor: darkMode ? '#3f3f46' : '#e4e4e7' }}>
+        {activeTab === progressTabs.length - 1 && (
+          <button
+            type="button"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10,9 9,9 8,9"/>
+            </svg>
+            Get PDF
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -1172,13 +2114,13 @@ export default function IllustrationForm({ onBack, darkMode }: { onBack: () => v
             }
           }}
           disabled={activeTab === progressTabs.length - 1}
-          className={`px-4 py-2 rounded font-medium transition-colors ${
+          className={`px-6 py-2 rounded font-medium transition-colors ${
             activeTab === progressTabs.length - 1
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          Continue
+          {activeTab === progressTabs.length - 1 ? 'Save Illustration' : 'Continue'}
         </button>
       </div>
     </div>

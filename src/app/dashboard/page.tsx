@@ -12,6 +12,9 @@ import {
   ChevronRight,
   LogOut,
   UserPen,
+  Moon,
+  Sun,
+  CalendarClock,
 } from "lucide-react";
 import Clients from "./Clients";
 import MobileSidebarDrawer from "./MobileSidebarDrawer";
@@ -21,8 +24,7 @@ import Dashboard from './Dashboard';
 import Advisors from './Advisors';
 import Compliance from './Compliance';
 import Templates from './Templates';
-import Auditlog from './Auditlog';
-import Teammembers from './Teammembers';
+
 import SettingsSection from './Settings';
 import { useTheme } from "../../theme-context";
 import { logout } from '../../api/services/auth';
@@ -87,7 +89,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const { darkMode } = useTheme();
+  const { darkMode, toggleDarkMode } = useTheme();
 
   // Logout handler
   const handleLogout = () => {
@@ -252,21 +254,7 @@ export default function DashboardPage() {
               </div>
               {/* Logo on the right side */}
               <div className="flex items-center">
-                <div className="rounded-xl p-2 backdrop-blur-lg" style={{
-                  backgroundColor: darkMode 
-                    ? 'rgba(55, 65, 81, 0.1)' 
-                    : 'rgba(255, 255, 255, 0.2)',
-                  borderColor: darkMode 
-                    ? 'rgba(255, 255, 255, 0.1)' 
-                    : 'rgba(255, 255, 255, 0.3)',
-                  border: `1px solid ${darkMode 
-                    ? 'rgba(255, 255, 255, 0.1)' 
-                    : 'rgba(255, 255, 255, 0.3)'}`,
-                  backdropFilter: 'blur(12px) saturate(150%)',
-                  WebkitBackdropFilter: 'blur(12px) saturate(150%)'
-                }}>
-                  <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
-                </div>
+                <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
               </div>
             </div>
           </div>
@@ -291,10 +279,20 @@ export default function DashboardPage() {
             <Compliance />
           ) : active === "templates" ? (
             <Templates />
-          ) : active === "auditlog" ? (
-            <Auditlog />
-          ) : active === "teammembers" ? (
-            <Teammembers />
+          ) : active === "help" ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center bg-white dark:bg-[var(--background)] py-24">
+              <div 
+                className="w-24 h-24 rounded-[14px] flex items-center justify-center mb-8 shadow-sm"
+                style={{
+                  backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+                  border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`
+                }}
+              >
+                <CalendarClock size={64} stroke="#b0b0b0" strokeWidth={1.5} />
+              </div>
+              <div className="text-xl font-semibold mb-2 text-zinc-900 dark:text-[var(--foreground)]">Help/FAQs Section</div>
+              <div className="text-zinc-400 dark:text-[var(--foreground)] text-base mb-8">This is a placeholder for the <span className="text-zinc-400 dark:text-[var(--foreground)]">Help/FAQs</span> section.</div>
+            </div>
           ) : active === "settings" ? (
             <SettingsSection />
           ) : null}
@@ -403,7 +401,7 @@ export default function DashboardPage() {
             ))}
           </nav>
           
-          {/* Bottom Links - Settings, Edit Profile, and Logout */}
+          {/* Bottom Links - Settings, Theme Toggle, Edit Profile, and Logout */}
           <div className="border-t py-4 flex flex-col items-center space-y-2" style={{ 
             borderColor: darkMode 
               ? 'rgba(161, 161, 170, 0.3)' 
@@ -477,6 +475,79 @@ export default function DashboardPage() {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               }} />
             </button>
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleDarkMode}
+              className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
+              style={{
+                backgroundColor: 'transparent',
+                color: darkMode ? '#fbbf24' : '#1e40af',
+                border: '1px solid transparent',
+                transform: 'scale(1)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)'
+              }}
+              onMouseEnter={(e) => {
+                // macOS liquid glass effect
+                e.currentTarget.style.backgroundColor = darkMode 
+                  ? 'rgba(251, 191, 36, 0.08)' 
+                  : 'rgba(30, 64, 175, 0.08)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.backdropFilter = 'blur(20px) saturate(180%)';
+                (e.currentTarget.style as CSSStyleDeclaration & { WebkitBackdropFilter?: string }).WebkitBackdropFilter = 'blur(20px) saturate(180%)';
+                e.currentTarget.style.border = darkMode 
+                  ? '1px solid rgba(251, 191, 36, 0.2)' 
+                  : '1px solid rgba(30, 64, 175, 0.2)';
+                e.currentTarget.style.boxShadow = darkMode 
+                  ? '0 8px 32px rgba(251, 191, 36, 0.15), 0 2px 8px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
+                  : '0 8px 32px rgba(30, 64, 175, 0.15), 0 2px 8px rgba(30, 64, 175, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
+                
+                // Add liquid glow effect to icon
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.filter = darkMode 
+                    ? 'drop-shadow(0 0 12px rgba(251, 191, 36, 0.6)) brightness(1.1)' 
+                    : 'drop-shadow(0 0 12px rgba(30, 64, 175, 0.6)) brightness(1.1)';
+                  icon.style.transform = 'scale(1.05)';
+                  icon.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                // Reset liquid glass effect
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backdropFilter = 'blur(16px) saturate(180%)';
+                (e.currentTarget.style as CSSStyleDeclaration & { WebkitBackdropFilter?: string }).WebkitBackdropFilter = 'blur(16px) saturate(180%)';
+                e.currentTarget.style.border = '1px solid transparent';
+                e.currentTarget.style.boxShadow = 'none';
+                
+                // Reset icon effects
+                const icon = e.currentTarget.querySelector('svg');
+                if (icon) {
+                  icon.style.filter = 'none';
+                  icon.style.transform = 'scale(1)';
+                  icon.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+              }}
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 transition-all duration-300 ease-out" style={{
+                  filter: 'none',
+                  transform: 'scale(1)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} />
+              ) : (
+                <Moon className="w-5 h-5 transition-all duration-300 ease-out" style={{
+                  filter: 'none',
+                  transform: 'scale(1)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }} />
+              )}
+            </button>
+            
             <button
               onClick={() => window.location.href = '/auth/profile'}
               className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"

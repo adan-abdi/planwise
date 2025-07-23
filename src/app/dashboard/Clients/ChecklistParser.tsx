@@ -354,11 +354,20 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
 
   return (
     <div style={{ width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '16px 12px 18px 12px', background: 'white', display: 'flex', flexDirection: 'column', minHeight: '80px', borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, marginBottom: '1px', borderTopRightRadius: 6 }}>
+      <div style={{ 
+        padding: '16px 12px 18px 12px', 
+        background: darkMode ? '#1e1e1e' : '#ffffff', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '80px', 
+        borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, 
+        marginBottom: '1px', 
+        borderTopRightRadius: 6 
+      }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
           <h2 style={{ 
             fontSize: 18, 
-            color: '#374151', 
+            color: darkMode ? '#f1f5f9' : '#374151', 
             margin: 0, 
             fontWeight: 600,
             flex: 1

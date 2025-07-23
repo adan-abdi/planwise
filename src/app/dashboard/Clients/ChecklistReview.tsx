@@ -56,7 +56,15 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
     >
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden', borderRadius: 6 }}>
         <div style={{ flex: 9, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }}>
-          <div style={{ padding: '16px 12px 12px 12px', background: 'white', display: 'flex', flexDirection: 'column', minHeight: '80px', borderTopLeftRadius: 6 }}>
+          <div style={{ 
+            padding: '16px 12px 12px 12px', 
+            background: darkMode ? '#1e1e1e' : '#ffffff', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            minHeight: '80px', 
+            borderTopLeftRadius: 6,
+            borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`
+          }}>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
               {backNav ? backNav : onBack && (
                 <button
@@ -210,7 +218,7 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
           </div>
         </div>
         <div style={{ width: 2, height: '100%', borderLeft: `2px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, alignSelf: 'stretch' }} />
-        <div style={{ flex: 11, minWidth: 0, background: darkMode ? '#1e1e1e' : 'white', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
+        <div style={{ flex: 11, minWidth: 0, background: darkMode ? '#1e1e1e' : '#ffffff', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
           <ChecklistParser checklistTitle={title} />
         </div>
       </div>
