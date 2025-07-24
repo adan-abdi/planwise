@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Check, GripVertical, ArrowRight, Info, Copy } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Check, GripVertical, ArrowRight, Info, Copy, Trash2, X, Search } from "lucide-react";
 import { useTheme } from "../../../theme-context";
 import {
   DndContext,
@@ -16,6 +16,238 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { createPortal } from 'react-dom';
+
+const mandatoryItems = [
+  "Partner",
+  "Client name", 
+  "Client DOB",
+  "SJP SRA",
+  "Recommended Fund Choice",
+  "Provider"
+];
+
+const AddItemModal = React.memo(function AddItemModal({ 
+  showAddModal, 
+  newItemName, 
+  setNewItemName, 
+  handleAddItem, 
+  handleCloseAddModal, 
+  darkMode 
+}: {
+  showAddModal: boolean;
+  newItemName: string;
+  setNewItemName: (value: string) => void;
+  handleAddItem: () => void;
+  handleCloseAddModal: () => void;
+  darkMode: boolean;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewItemName(e.target.value);
+  }, [setNewItemName]);
+
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleAddItem();
+    } else if (e.key === 'Escape') {
+      handleCloseAddModal();
+    }
+  }, [handleAddItem, handleCloseAddModal]);
+
+  if (!mounted || !showAddModal) return null;
+
+  const modalContent = (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+      width: '100vw',
+      height: '100vh',
+    }}>
+      <div style={{
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+        borderRadius: 16,
+        padding: '32px',
+        maxWidth: '480px',
+        width: '90%',
+        boxShadow: darkMode
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+          : '0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+        transform: 'scale(1)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '24px',
+        }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: 600,
+            color: darkMode ? '#f1f5f9' : '#374151',
+            margin: 0,
+          }}>
+            Add New Checklist Item
+          </h2>
+          <button
+            onClick={handleCloseAddModal}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: '8px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              color: darkMode ? '#9ca3af' : '#6b7280',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              e.currentTarget.style.color = darkMode ? '#f1f5f9' : '#374151';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = darkMode ? '#9ca3af' : '#6b7280';
+            }}
+          >
+            <X size={20} />
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div style={{ marginBottom: '24px' }}>
+          <p style={{
+            fontSize: '14px',
+            color: darkMode ? '#9ca3af' : '#6b7280',
+            margin: '0 0 16px 0',
+            lineHeight: '1.5',
+          }}>
+            Enter the name of the information you want to search for in the documents. The system will automatically search and populate the results.
+          </p>
+          
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: darkMode ? '#9ca3af' : '#6b7280',
+            }}>
+              <Search size={18} />
+            </div>
+            <input
+              type="text"
+              value={newItemName}
+              onChange={handleInputChange}
+              placeholder="e.g., Policy Number, Annual Premium, Risk Level..."
+              style={{
+                width: '100%',
+                padding: '12px 12px 12px 40px',
+                fontSize: '16px',
+                border: `1px solid ${darkMode ? '#3f3f46' : '#d1d5db'}`,
+                borderRadius: '12px',
+                background: darkMode ? '#1e1e1e' : '#ffffff',
+                color: darkMode ? '#f1f5f9' : '#374151',
+                outline: 'none',
+                transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = darkMode ? '#52525b' : '#3b82f6';
+                e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(82, 82, 91, 0.1)' : '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = darkMode ? '#3f3f46' : '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
+              onKeyDown={handleInputKeyDown}
+              autoFocus
+            />
+          </div>
+        </div>
+        
+        {/* Actions */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          justifyContent: 'flex-end',
+        }}>
+          <button
+            onClick={handleCloseAddModal}
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              fontWeight: 500,
+              border: `1px solid ${darkMode ? '#3f3f46' : '#d1d5db'}`,
+              borderRadius: '8px',
+              background: 'transparent',
+              color: darkMode ? '#f1f5f9' : '#374151',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAddItem}
+            disabled={!newItemName.trim()}
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              fontWeight: 500,
+              border: 'none',
+              borderRadius: '8px',
+              background: newItemName.trim() ? (darkMode ? '#2563eb' : '#2563eb') : (darkMode ? '#3f3f46' : '#e5e7eb'),
+              color: newItemName.trim() ? '#ffffff' : (darkMode ? '#6b7280' : '#9ca3af'),
+              cursor: newItemName.trim() ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (newItemName.trim()) {
+                e.currentTarget.style.background = darkMode ? '#1d4ed8' : '#1d4ed8';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (newItemName.trim()) {
+                e.currentTarget.style.background = darkMode ? '#2563eb' : '#2563eb';
+              }
+            }}
+          >
+            Add Item
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modalContent, document.body);
+});
 
 const checklistData = [
   { label: "Partner", found: false, value: "-", source: null, confidence: null },
@@ -48,6 +280,8 @@ interface SortableChecklistItemProps {
   darkMode: boolean;
   checked: boolean[];
   handleToggle: (idx: number) => void;
+  handleDelete: (idx: number) => void;
+  isMandatory: boolean;
   editingIdx: number | null;
   setEditingIdx: React.Dispatch<React.SetStateAction<number | null>>;
   inputValue: string;
@@ -75,7 +309,7 @@ interface SortableChecklistItemProps {
   checkShadow: string;
 }
 
-function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle, editingIdx, setEditingIdx, inputValue, setInputValue, handleInputChange, handleInputBlur, handleInputKeyDown, values, cardBg, cardText, subtleRadius, badgeFound, badgeWarn, badgeBg, notFoundText, notFoundBg, borderColor, Info, ArrowRight, inputText, gap, squirkleRadius, checkBg, checkBorder, checkShadow }: SortableChecklistItemProps) {
+function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle, handleDelete, isMandatory, editingIdx, setEditingIdx, inputValue, setInputValue, handleInputChange, handleInputBlur, handleInputKeyDown, values, cardBg, cardText, subtleRadius, badgeFound, badgeWarn, badgeBg, notFoundText, notFoundBg, borderColor, Info, ArrowRight, inputText, gap }: SortableChecklistItemProps) {
   const {
     attributes,
     listeners,
@@ -122,10 +356,18 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
       {...attributes}
     >
       <div
-        style={{ width: 28, display: 'flex', justifyContent: 'center', alignItems: 'center', color: darkMode ? '#52525b' : '#52525b', cursor: 'grab', flexShrink: 0 }}
+        style={{ 
+          width: 28, 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          color: isMandatory ? (darkMode ? '#3b82f6' : '#2563eb') : (darkMode ? '#52525b' : '#52525b'), 
+          cursor: 'grab', 
+          flexShrink: 0 
+        }}
         {...listeners}
         tabIndex={0}
-        aria-label="Drag to reorder"
+        aria-label={isMandatory ? "Mandatory item - drag to reorder" : "Drag to reorder"}
       >
         <GripVertical size={22} />
       </div>
@@ -235,38 +477,87 @@ function SortableChecklistItem({ id, idx, item, darkMode, checked, handleToggle,
           {copied ? <Check size={18} color={badgeFound} /> : <Copy size={18} color={darkMode ? '#bbb' : '#888'} />}
         </button>
       </div>
+      {/* Delete button - enabled for non-mandatory, disabled for mandatory */}
       <div style={{
-        width: 56,
-        minWidth: 56,
+        width: 40,
+        minWidth: 40,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: checkBg,
-        borderRadius: squirkleRadius,
+        background: cardBg,
+        borderRadius: subtleRadius,
+      }}>
+        <button
+          onClick={(e) => { 
+            if (!isMandatory) {
+              e.stopPropagation(); 
+              handleDelete(idx); 
+            }
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: isMandatory ? 'not-allowed' : 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            verticalAlign: 'middle',
+            opacity: isMandatory ? 0.3 : 1,
+          }}
+          tabIndex={0}
+          aria-label={isMandatory ? "Cannot delete mandatory item" : "Delete item"}
+          disabled={isMandatory}
+        >
+          <Trash2 size={18} color={darkMode ? '#ef4444' : '#dc2626'} />
+        </button>
+      </div>
+      <div style={{
+        width: 40,
+        minWidth: 40,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: cardBg,
+        borderRadius: subtleRadius,
       }}>
         {item.found ? (
-          <div
+          <button
             onClick={e => { e.stopPropagation(); handleToggle(idx); }}
             style={{
-              border: `1.5px solid ${checkBorder}`,
-              borderRadius: squirkleRadius,
-              background: checkBg,
-              width: 40,
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              background: 'none',
+              border: 'none',
+              padding: 0,
               cursor: 'pointer',
-              boxShadow: checkShadow,
-              transition: 'box-shadow 0.15s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              verticalAlign: 'middle',
+              transition: 'all 0.2s ease',
             }}
             tabIndex={0}
             aria-label={checked[idx] ? 'Uncheck' : 'Check'}
           >
-            {checked[idx] && <Check size={18} color={cardText} />}
-          </div>
+            {checked[idx] ? (
+              <Check size={18} color={darkMode ? '#22c55e' : '#16a34a'} />
+            ) : (
+              <div style={{
+                width: 18,
+                height: 18,
+                borderRadius: '3px',
+                background: 'transparent',
+                border: `2px solid ${darkMode ? '#6b7280' : '#9ca3af'}`,
+                transition: 'all 0.2s ease',
+              }} />
+            )}
+          </button>
         ) : (
-          <div style={{ width: 40, height: 40 }} />
+          <div style={{
+            width: 18,
+            height: 18,
+            borderRadius: '3px',
+            background: darkMode ? '#374151' : '#e5e7eb',
+            border: `2px solid ${darkMode ? '#4b5563' : '#d1d5db'}`,
+            opacity: 0.3,
+          }} />
         )}
       </div>
     </div>
@@ -280,6 +571,8 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
   const [values, setValues] = useState(checklistData.map(item => item.value === '-' ? '' : item.value));
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [newItemName, setNewItemName] = useState<string>('');
 
   const bgMain = darkMode ? 'var(--background)' : '#fafafa';
   const cardBg = darkMode ? 'var(--muted)' : '#fff';
@@ -352,18 +645,109 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
     }
   };
 
+  const handleDeleteItem = (idx: number) => {
+    // Get the actual item from checklistData
+    const itemToDelete = items[idx];
+    const itemLabel = checklistData[itemToDelete].label;
+    
+    // Check if the item is mandatory by its variable name
+    if (mandatoryItems.includes(itemLabel)) return;
+    
+    // Find the actual item index in the items array
+    setItems(prev => prev.filter(item => item !== itemToDelete));
+    setChecked(prev => prev.filter((_, i) => i !== idx));
+    setValues(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddItem = () => {
+    if (!newItemName.trim()) return;
+    
+    // Simulate searching for the item in documents
+    const isFound = Math.random() > 0.5; // Random for demo
+    const foundValue = isFound ? `Found in document ${Math.floor(Math.random() * 3) + 1}` : '';
+    
+    // Add new item to checklistData
+    const newItemIndex = checklistData.length;
+    if (isFound) {
+      const source = `doc_${Math.floor(Math.random() * 3) + 1}`;
+      const confidence = Math.floor(Math.random() * 20) + 80;
+      checklistData.push({
+        label: newItemName.trim(),
+        found: true,
+        value: foundValue,
+        source: source,
+        confidence: confidence
+      });
+    } else {
+      checklistData.push({
+        label: newItemName.trim(),
+        found: false,
+        value: '-',
+        source: null,
+        confidence: null
+      });
+    }
+    
+    // Update state arrays
+    setItems(prev => [...prev, newItemIndex]);
+    setChecked(prev => [...prev, false]);
+    setValues(prev => [...prev, isFound ? foundValue : '']);
+    
+    // Reset modal
+    setNewItemName('');
+    setShowAddModal(false);
+  };
+
+  const handleOpenAddModal = () => {
+    setShowAddModal(true);
+    setNewItemName('');
+  };
+
+  const handleCloseAddModal = useCallback(() => {
+    setShowAddModal(false);
+    setNewItemName('');
+  }, []);
+
+
+
+
+
   return (
-    <div style={{ width: '100%', height: '100%', background: bgMain, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ 
-        padding: '16px 12px 18px 12px', 
-        background: darkMode ? '#1e1e1e' : '#ffffff', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: '80px', 
-        borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, 
-        marginBottom: '1px', 
-        borderTopRightRadius: 6 
-      }}>
+    <div style={{ 
+      width: '100%', 
+      height: '100%', 
+      background: bgMain, 
+      display: 'flex', 
+      flexDirection: 'column', 
+      overflow: 'hidden',
+      '--checkmark-animation': `
+        @keyframes checkmarkAppear {
+          0% {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `
+    } as React.CSSProperties}>
+              <div style={{
+          padding: '16px 12px 18px 12px',
+          background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(15px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '80px',
+          borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
+          marginBottom: '1px',
+          borderTopRightRadius: 6,
+          boxShadow: darkMode
+            ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+            : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
           <h2 style={{ 
             fontSize: 18, 
@@ -372,28 +756,32 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             fontWeight: 600,
             flex: 1
           }}>{checklistTitle || 'Ceding 1 Checklist'}</h2>
-          <button style={{
-            minWidth: 0,
-            backgroundColor: darkMode ? 'var(--muted)' : 'white',
-            border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
-            borderRadius: 8,
-            padding: '6px 12px',
-            fontSize: 14,
-            fontWeight: 400,
-            boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            color: darkMode ? 'var(--foreground)' : '#374151',
-            transition: 'all 0.2s ease-in-out',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
-          }}
+          <button 
+            onClick={handleOpenAddModal}
+            style={{
+              minWidth: 0,
+              backgroundColor: darkMode ? 'var(--muted)' : 'white',
+              border: `1px solid ${darkMode ? 'var(--border)' : '#e5e7eb'}`,
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontSize: 14,
+              fontWeight: 400,
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              color: darkMode ? 'var(--foreground)' : '#374151',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
             <GripVertical className="w-4 h-4" />
             Add Item
@@ -411,14 +799,16 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             alignItems: 'center',
             gap: 4,
             color: darkMode ? 'var(--foreground)' : '#374151',
-            transition: 'all 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -442,14 +832,16 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             alignItems: 'center',
             gap: 4,
             color: darkMode ? 'var(--foreground)' : '#374151',
-            transition: 'all 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -470,14 +862,16 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             alignItems: 'center',
             gap: 4,
             color: darkMode ? 'var(--foreground)' : '#374151',
-            transition: 'all 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -498,14 +892,16 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             alignItems: 'center',
             gap: 4,
             color: darkMode ? 'var(--foreground)' : '#374151',
-            transition: 'all 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             cursor: 'pointer',
           }}
           onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+            e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={e => {
             e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -515,7 +911,7 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
           </button>
         </div>
       </div>
-      <div style={{ borderRadius: 16, minHeight: 0, padding: '0 32px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{ borderRadius: 16, minHeight: 0, padding: '0 32px', display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
         <div style={{ display: 'flex', fontWeight: 500, fontSize: 15, padding: '24px 40px 8px 40px', color: cardText, background: 'transparent', flexShrink: 0 }}>
           <div style={{ flex: 2 }}>Requested Information</div>
           <div style={{ width: 40 }}></div>
@@ -529,7 +925,7 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
-            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: gap, paddingRight: 16 }}>
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0, display: 'flex', flexDirection: 'column', gap: gap, paddingRight: 16, paddingBottom: 16 }}>
               {items.map((itemIdx, idx) => (
                 <SortableChecklistItem
                   key={checklistData[itemIdx].label + itemIdx}
@@ -539,6 +935,8 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
                   darkMode={darkMode}
                   checked={checked}
                   handleToggle={handleToggle}
+                  handleDelete={handleDeleteItem}
+                  isMandatory={mandatoryItems.includes(checklistData[itemIdx].label)}
                   editingIdx={editingIdx}
                   setEditingIdx={setEditingIdx}
                   inputValue={inputValue}
@@ -580,6 +978,7 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
             gap: 16,
             padding: '0 32px',
             marginTop: 8,
+            flexShrink: 0,
           }}>
             <button style={{
               border: `1.5px solid ${borderColor}`,
@@ -627,6 +1026,16 @@ const ChecklistParser: React.FC<ChecklistParserProps> = ({ showFooterActions, ch
           </div>
         )}
       </div>
+      
+      {/* Render the portal-based modal */}
+      <AddItemModal 
+        showAddModal={showAddModal}
+        newItemName={newItemName}
+        setNewItemName={setNewItemName}
+        handleAddItem={handleAddItem}
+        handleCloseAddModal={handleCloseAddModal}
+        darkMode={darkMode}
+      />
     </div>
   );
 };

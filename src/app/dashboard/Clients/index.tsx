@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, Search as SearchIcon, ArrowLeft, Grid2x2Check } from "lucide-react";
+import { ArrowUpDown, Filter as FilterIcon, UserPlus, Download, Upload, SquareUserRound, Search as SearchIcon, ArrowLeft, Grid2x2Check, FolderSearch } from "lucide-react";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import ClientModal from "./ClientModal";
 import ClientList, { ClientItem } from "./ClientListItem";
@@ -346,7 +346,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
           />
         ) : (
           <>
-            {/* Client list subheader - no box styling */}
+            {/* Client list subheader - liquid glass styling */}
             <div
               className={`w-full flex-wrap gap-2 min-h-[64px] relative transition-opacity duration-200 mt-1 ${selectedClient ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
             >
@@ -354,93 +354,174 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
               <div className="flex sm:hidden mb-1 pt-2 pb-4 justify-between w-full">
                 <div className="flex gap-2">
                   <button 
-                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
-                    aria-label="Sort"
+                    className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
+                    aria-label="Sort"
                   >
                     <ArrowUpDown className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Sort</span>
                   </button>
                   <button 
-                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
-                    aria-label="Filter"
+                    className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
+                    aria-label="Filter"
                   >
                     <FilterIcon className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Filter</span>
                   </button>
                   {/* Search input for mobile */}
                   <div className="relative ml-2" style={{ minWidth: 160, maxWidth: 240 }}>
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
-                      <SearchIcon className="w-4 h-4" />
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none">
+                      <FolderSearch className="w-4 h-4 text-zinc-400" />
                     </span>
                     <input
                       type="text"
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                       placeholder="Search clients"
-                      className="pl-8 pr-2 py-1 rounded-md border border-zinc-200 dark:border-[var(--border)] text-xs bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
-                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
+                      className="pl-8 pr-2 py-1 rounded-md text-xs text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                      style={{
+                        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(15px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`,
+                        boxShadow: darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                          : '0 2px 6px 0 rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(59, 130, 246, 0.1)'
+                          : '0 2px 6px 0 rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 3px rgba(59, 130, 246, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                      }}
                     />
                   </div>
                   {/* Pagination for mobile */}
                   {totalPages > 1 && (
-                    <div className="flex items-center ml-2">
+                    <div 
+                      className="flex items-center ml-2 rounded-lg"
+                      style={{
+                        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(15px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                        boxShadow: darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                          : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
                       <button
-                        className="h-6 w-6 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="h-6 w-6 flex items-center justify-center border-0 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                         aria-label="Previous page"
-                        style={{ 
-                          borderTopRightRadius: 0, 
-                          borderBottomRightRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white'
-                        }}
                       >
                         <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
                       </button>
                       <span
-                        className="h-6 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-xs font-medium select-none px-2"
-                        style={{ 
-                          borderRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white',
-                          color: darkMode ? '#e4e4e7' : '#18181b'
-                        }}
+                        className="h-6 flex items-center justify-center border-0 text-xs font-medium select-none px-2"
                       >
                         <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
                         <span className="font-normal ml-0.5" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
                       </span>
                       <button
-                        className="h-6 w-6 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="h-6 w-6 flex items-center justify-center border-0 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
                         aria-label="Next page"
-                        style={{ 
-                          borderTopLeftRadius: 0, 
-                          borderBottomLeftRadius: 0, 
-                          borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                          backgroundColor: darkMode ? '#27272a' : 'white'
-                        }}
                       >
                         <svg className="w-3 h-3 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
                       </button>
@@ -450,53 +531,101 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                 <div className="flex gap-2">
                   <button 
                     onClick={handleOpenModal} 
-                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
-                    aria-label="Add new client"
+                    className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
+                    aria-label="Add new client"
                   >
                     <UserPlus className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Add Client</span>
                   </button>
                   <button 
                     onClick={handleGenerateRandomClients}
-                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
-                    aria-label="Generate random clients"
+                    className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
+                    aria-label="Generate random clients"
                   >
                     <Grid2x2Check className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
                     <span className="dark:text-[var(--foreground)]">Generate</span>
                   </button>
                   <button 
-                    className="flex items-center gap-1 p-1 px-2 rounded-md border border-zinc-200 dark:border-[var(--border)] bg-white dark:bg-[var(--muted)] text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
-                    aria-label="Import/Export"
+                    className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
+                    aria-label="Import/Export"
                   >
                     {/* Use Upload icon for Export if available, otherwise keep Download */}
                     {typeof Upload !== 'undefined' ? (
@@ -513,16 +642,32 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={handleOpenModal} 
-                    className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     <UserPlus className="w-4 h-4" />
@@ -530,32 +675,64 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   </button>
                   <button 
                     onClick={handleGenerateRandomClients}
-                    className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     <Grid2x2Check className="w-4 h-4" />
                     Generate
                   </button>
                   <button 
-                    className="flex items-center gap-2 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     {/* Use Upload icon for Export if available, otherwise keep Download */}
@@ -571,16 +748,32 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                 <div className="flex items-center gap-2">
                   {/* Sort button */}
                   <button 
-                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     <ArrowUpDown className="w-4 h-4" />
@@ -588,16 +781,32 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   </button>
                   {/* Filter button */}
                   <button 
-                    className="flex items-center gap-1 border border-zinc-200 dark:border-[var(--border)] rounded-lg px-3 py-1.5 text-sm font-normal bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] transition"
+                    className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
                     style={{
-                      backgroundColor: darkMode ? 'var(--muted)' : 'white',
-                      borderColor: darkMode ? 'var(--border)' : '#e5e7eb'
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? '#444' : '#f9fafb';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = darkMode ? 'var(--muted)' : 'white';
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
                     <FilterIcon className="w-4 h-4" />
@@ -605,7 +814,7 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                   </button>
                   {/* Search input */}
                   <div className="relative ml-2" style={{ minWidth: 220, maxWidth: 320 }}>
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 pointer-events-none">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none">
                       <SearchIcon className="w-5 h-5" />
                     </span>
                     <input
@@ -613,49 +822,98 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
                       placeholder="Search clients"
-                      className="pl-10 pr-3 py-1.5 rounded-lg border border-zinc-200 dark:border-[var(--border)] text-sm bg-white dark:bg-[var(--muted)] text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 focus:bg-white dark:focus:bg-[var(--muted)] w-full"
-                      style={{ backgroundColor: darkMode ? 'var(--muted)' : 'white' }}
+                      className="pl-10 pr-3 py-1.5 rounded-lg text-sm text-zinc-700 dark:text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-blue-200 w-full"
+                      style={{
+                        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(15px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`,
+                        boxShadow: darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                          : '0 2px 6px 0 rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(59, 130, 246, 0.1)'
+                          : '0 2px 6px 0 rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 3px rgba(59, 130, 246, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.15)'}`;
+                        e.currentTarget.style.boxShadow = darkMode 
+                          ? '0 1px 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                          : '0 1px 3px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                      }}
                     />
                   </div>
                   {/* Pagination always present */}
-                  <div className="flex items-center ml-4">
+                  <div 
+                    className="flex items-center ml-4 rounded-lg"
+                    style={{
+                      background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(15px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                      border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                      boxShadow: darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                        : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                      e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                      e.currentTarget.style.boxShadow = darkMode 
+                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                        : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
                     <button
-                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-r-0 rounded-l-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="h-8 w-8 flex items-center justify-center border-0 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       aria-label="Previous page"
-                      style={{ 
-                        borderTopRightRadius: 0, 
-                        borderBottomRightRadius: 0, 
-                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                        backgroundColor: darkMode ? '#27272a' : 'white'
-                      }}
                     >
                       <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
                     </button>
                     <span
-                      className="h-8 flex items-center justify-center border-t border-b border-l border-r border-zinc-200 text-sm font-medium select-none px-3"
-                      style={{ 
-                        borderRadius: 0, 
-                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                        backgroundColor: darkMode ? '#27272a' : 'white',
-                        color: darkMode ? '#e4e4e7' : '#18181b'
-                      }}
+                      className="h-8 flex items-center justify-center border-0 text-sm font-medium select-none px-3"
                     >
                       <span className="font-medium" style={{ color: darkMode ? '#e4e4e7' : '#18181b' }}>{currentPage}</span>
                       <span className="font-normal ml-1" style={{ color: darkMode ? '#71717a' : '#a1a1aa' }}>/{totalPages}</span>
                     </span>
                     <button
-                      className="h-8 w-8 flex items-center justify-center border border-zinc-200 border-l-0 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="h-8 w-8 flex items-center justify-center border-0 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                       aria-label="Next page"
-                      style={{ 
-                        borderTopLeftRadius: 0, 
-                        borderBottomLeftRadius: 0, 
-                        borderColor: darkMode ? '#52525b' : '#e4e4e7',
-                        backgroundColor: darkMode ? '#27272a' : 'white'
-                      }}
                     >
                       <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
                     </button>

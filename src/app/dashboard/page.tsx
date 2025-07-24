@@ -43,15 +43,6 @@ const sections = [
 type BreadcrumbItem = { label: string; icon?: React.ReactNode; onClick?: () => void; isActive?: boolean };
 
 export default function DashboardPage() {
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const token = localStorage.getItem('token');
-  //     if (!token) {
-  //       window.location.href = '/';
-  //     }
-  //   }
-  // }, []);
-
   const [active, setActive] = useState("clients");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
@@ -59,7 +50,6 @@ export default function DashboardPage() {
   const [breadcrumbPath, setBreadcrumbPath] = useState<BreadcrumbItem[]>([]);
 
 
-  // Memoize the callback
   const handleBreadcrumbChange = useCallback((path: BreadcrumbItem[]) => {
     setBreadcrumbPath(path);
   }, []);
@@ -91,7 +81,6 @@ export default function DashboardPage() {
 
   const { darkMode, toggleDarkMode } = useTheme();
 
-  // Logout handler
   const handleLogout = () => {
     logout();
   };
@@ -113,7 +102,6 @@ export default function DashboardPage() {
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const advisor = advisors[Math.floor(Math.random() * advisors.length)];
       
-      // Generate random date within the last 2 years
       const now = new Date();
       const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
       const randomTime = twoYearsAgo.getTime() + Math.random() * (now.getTime() - twoYearsAgo.getTime());
@@ -135,7 +123,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-[var(--background)] w-full max-w-full">
-      {/* Sidebar drawer (now always available as overlay) */}
       <MobileSidebarDrawer
         open={mobileSidebarOpen}
         onClose={() => setMobileSidebarOpen(false)}
@@ -145,9 +132,9 @@ export default function DashboardPage() {
       {/* Main content area: header + content */}
       <main className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="w-full px-2 sm:px-4 pt-2"> {/* pt-2 instead of pt-4 for less space */}
+        <div className="w-full px-2 sm:px-4 pt-2">
                   <div 
-          className="backdrop-blur-xl p-2 sm:p-4 border"
+          className="backdrop-blur-sm p-2 sm:p-4 border"
           style={{ 
             backgroundColor: darkMode 
               ? 'rgba(30, 30, 30, 0.9)' 
@@ -161,8 +148,8 @@ export default function DashboardPage() {
             boxShadow: darkMode
               ? '0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
               : '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(12px) saturate(150%)',
-            WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+            backdropFilter: 'blur(4px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(4px) saturate(150%)',
             borderRadius: '5px'
           }}
         >
@@ -207,7 +194,6 @@ export default function DashboardPage() {
                     <line x1="5" y1="17" x2="19" y2="17" />
                   </svg>
                 </button>
-                {/* Breadcrumb/title flush next to menu button */}
                 {active === "clients" && breadcrumbPath.length > 0 ? (
                   <div className="flex items-center gap-2 py-2 pl-4">
                     {breadcrumbPath.map((item, idx) => (
@@ -252,14 +238,12 @@ export default function DashboardPage() {
                     }}>{activeSection?.label}</div>
                 }
               </div>
-              {/* Logo on the right side */}
               <div className="flex items-center">
                 <Image src={darkMode ? "/logo_darkmode.png" : "/logo.svg"} alt="PlanWise Logo" width={120} height={40} className="h-10 w-auto" />
               </div>
             </div>
           </div>
         </div>
-        {/* Main content */}
         <div className="flex-1 flex flex-col w-full px-4 sm:px-0 min-h-0">
           {active === "clients" ? (
             <Clients 
@@ -298,9 +282,7 @@ export default function DashboardPage() {
           ) : null}
         </div>
       </main>
-      {/* Left Sidebar */}
       <div className="absolute left-2 sm:left-4 top-[92px] z-40 w-12" style={{ height: 'calc(100vh - 145px)' }}>
-        {/* Sidebar Content */}
         <div 
           className="h-full overflow-hidden flex flex-col" 
           style={{ 
@@ -321,7 +303,6 @@ export default function DashboardPage() {
             borderRadius: '5px'
           }}
         >
-          {/* Main Navigation */}
           <nav className="flex-1 flex flex-col items-center justify-start space-y-2 py-4">
             {sections.map((section) => (
               <button
@@ -359,7 +340,6 @@ export default function DashboardPage() {
                     ? '0 12px 32px rgba(0, 0, 0, 0.3), 0 6px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)' 
                     : '0 12px 32px rgba(0, 0, 0, 0.1), 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
                   
-                  // Icon hover effects
                   const icon = e.currentTarget.querySelector('svg');
                   if (icon) {
                     icon.style.transform = 'scale(1.05)';
@@ -376,7 +356,6 @@ export default function DashboardPage() {
                   e.currentTarget.style.transform = 'scale(1)';
                   e.currentTarget.style.boxShadow = 'none';
                   
-                  // Reset icon effects
                   const icon = e.currentTarget.querySelector('svg');
                   if (icon) {
                     icon.style.transform = 'scale(1)';
@@ -401,7 +380,6 @@ export default function DashboardPage() {
             ))}
           </nav>
           
-          {/* Bottom Links - Settings, Theme Toggle, Edit Profile, and Logout */}
           <div className="border-t py-4 flex flex-col items-center space-y-2" style={{ 
             borderColor: darkMode 
               ? 'rgba(161, 161, 170, 0.3)' 
@@ -439,7 +417,6 @@ export default function DashboardPage() {
                   ? '0 8px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
                   : '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
                 
-                // Icon hover effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.transform = 'scale(1.05)';
@@ -456,7 +433,6 @@ export default function DashboardPage() {
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
                 
-                // Reset icon effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.transform = 'scale(1)';
@@ -476,7 +452,6 @@ export default function DashboardPage() {
               }} />
             </button>
             
-            {/* Theme Toggle Button */}
             <button
               onClick={toggleDarkMode}
               className="w-8 h-8 rounded-lg transition-all duration-300 ease-out flex items-center justify-center group relative hover:scale-110"
@@ -490,7 +465,6 @@ export default function DashboardPage() {
                 WebkitBackdropFilter: 'blur(16px) saturate(180%)'
               }}
               onMouseEnter={(e) => {
-                // macOS liquid glass effect
                 e.currentTarget.style.backgroundColor = darkMode 
                   ? 'rgba(251, 191, 36, 0.08)' 
                   : 'rgba(30, 64, 175, 0.08)';
@@ -504,7 +478,6 @@ export default function DashboardPage() {
                   ? '0 8px 32px rgba(251, 191, 36, 0.15), 0 2px 8px rgba(251, 191, 36, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
                   : '0 8px 32px rgba(30, 64, 175, 0.15), 0 2px 8px rgba(30, 64, 175, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
                 
-                // Add liquid glow effect to icon
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.filter = darkMode 
@@ -515,7 +488,6 @@ export default function DashboardPage() {
                 }
               }}
               onMouseLeave={(e) => {
-                // Reset liquid glass effect
                 e.currentTarget.style.backgroundColor = 'transparent';
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.backdropFilter = 'blur(16px) saturate(180%)';
@@ -523,7 +495,6 @@ export default function DashboardPage() {
                 e.currentTarget.style.border = '1px solid transparent';
                 e.currentTarget.style.boxShadow = 'none';
                 
-                // Reset icon effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.filter = 'none';
@@ -570,7 +541,6 @@ export default function DashboardPage() {
                   ? '0 8px 25px rgba(0, 0, 0, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
                   : '0 8px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
                 
-                // Icon hover effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.transform = 'scale(1.05)';
@@ -585,7 +555,6 @@ export default function DashboardPage() {
                 e.currentTarget.style.transform = 'scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
                 
-                // Reset icon effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.transform = 'scale(1)';
@@ -620,7 +589,6 @@ export default function DashboardPage() {
                   ? '0 8px 25px rgba(220, 38, 38, 0.3), 0 4px 10px rgba(220, 38, 38, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
                   : '0 8px 25px rgba(220, 38, 38, 0.2), 0 4px 10px rgba(220, 38, 38, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)';
                 
-                // Icon hover effects
                 const icon = e.currentTarget.querySelector('svg');
                 if (icon) {
                   icon.style.transform = 'scale(1.05)';

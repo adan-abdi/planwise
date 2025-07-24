@@ -17,13 +17,17 @@ const StepCircle: React.FC<StepCircleProps & { state: "completed" | "active" | "
   if (state === "completed") {
     return (
       <span 
-        className={`w-8 h-8 flex items-center justify-center rounded-full border bg-white dark:bg-[var(--muted)]`}
+        className={`w-8 h-8 flex items-center justify-center rounded-full border`}
         style={{
+          background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(15px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(15px) saturate(180%)',
           borderColor: darkMode ? '#22c55e' : '#16a34a',
           borderWidth: '2px',
           boxShadow: darkMode 
-            ? '0 1px 3px rgba(34, 197, 94, 0.2)' 
-            : '0 1px 3px rgba(22, 163, 74, 0.15)'
+            ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 3px rgba(34, 197, 94, 0.2)' 
+            : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(22, 163, 74, 0.15)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
         <svg width="10" height="10" fill="none" stroke={darkMode ? "#22c55e" : "#16a34a"} strokeWidth="2.5" viewBox="0 0 24 24">
@@ -35,13 +39,17 @@ const StepCircle: React.FC<StepCircleProps & { state: "completed" | "active" | "
   if (state === "active") {
     return (
       <span 
-        className={`w-8 h-8 flex items-center justify-center rounded-full border bg-white dark:bg-[var(--muted)]`}
+        className={`w-8 h-8 flex items-center justify-center rounded-full border`}
         style={{
+          background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(15px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(15px) saturate(180%)',
           borderColor: darkMode ? '#60a5fa' : '#2563eb',
           borderWidth: '2px',
           boxShadow: darkMode 
-            ? '0 2px 8px rgba(96, 165, 250, 0.3)' 
-            : '0 2px 8px rgba(37, 99, 235, 0.2)'
+            ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 8px rgba(96, 165, 250, 0.3)' 
+            : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 8px rgba(37, 99, 235, 0.2)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
       >
         <div 
@@ -57,13 +65,17 @@ const StepCircle: React.FC<StepCircleProps & { state: "completed" | "active" | "
   }
   return (
     <span 
-      className={`w-8 h-8 flex items-center justify-center rounded-full border bg-white dark:bg-[var(--muted)]`}
+      className={`w-8 h-8 flex items-center justify-center rounded-full border`}
       style={{
-        borderColor: darkMode ? '#52525b' : '#d4d4d8',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(15px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+        borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)',
         borderWidth: '1px',
         boxShadow: darkMode 
-          ? '0 1px 2px rgba(0, 0, 0, 0.1)' 
-          : '0 1px 2px rgba(0, 0, 0, 0.05)'
+          ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)' 
+          : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
       <div 
@@ -87,61 +99,39 @@ const Stepper: React.FC<StepperProps> = ({ steps, current, darkMode, onStepClick
               type="button"
               className={`group flex flex-col items-center justify-center w-full px-3 py-2 border-none outline-none focus:outline-none transition relative ${clickable ? 'cursor-pointer' : 'cursor-default'}`}
               style={{
+                background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(15px) saturate(180%)',
                 border: idx === current
-                  ? `1.5px solid ${darkMode ? '#60a5fa' : '#2563eb'}`
+                  ? `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`
                   : idx < current
-                    ? `1px solid ${darkMode ? '#22c55e' : '#16a34a'}`
-                    : `1px solid ${darkMode ? '#52525b' : '#d4d4d8'}`,
-                borderRadius: 5,
-                transition: 'all 0.3s ease',
-                boxShadow: idx === current 
-                  ? (darkMode 
-                      ? '0 2px 12px rgba(96, 165, 250, 0.2), 0 0 0 1px rgba(96, 165, 250, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
-                      : '0 2px 12px rgba(37, 99, 235, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)')
-                  : idx < current
-                    ? (darkMode 
-                        ? '0 1px 6px rgba(34, 197, 94, 0.1), 0 0 0 1px rgba(34, 197, 94, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
-                        : '0 1px 6px rgba(22, 163, 74, 0.08), 0 0 0 1px rgba(22, 163, 74, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6)')
-                    : (darkMode 
-                        ? '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
-                        : '0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)'),
-                backgroundColor: idx === current 
-                  ? (darkMode ? 'rgba(30, 41, 59, 0.8)' : 'rgba(239, 246, 255, 0.8)')
-                  : idx < current
-                    ? (darkMode ? 'rgba(6, 78, 59, 0.3)' : 'rgba(240, 253, 244, 0.6)')
-                    : (darkMode ? 'rgba(24, 24, 27, 0.8)' : 'rgba(255, 255, 255, 0.8)'),
-                backdropFilter: 'blur(12px) saturate(150%)',
-                WebkitBackdropFilter: 'blur(12px) saturate(150%)',
+                    ? `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`
+                    : `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                borderRadius: 8,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: darkMode 
+                  ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                  : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
                 transform: idx === current ? 'scale(1.02)' : 'scale(1)',
               }}
               onMouseEnter={(e) => {
                 if (clickable) {
-                  e.currentTarget.style.backgroundColor = darkMode ? 'rgba(39, 39, 42, 0.9)' : 'rgba(249, 250, 251, 0.9)';
-                  e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                  e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                  e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
                   e.currentTarget.style.boxShadow = darkMode 
-                    ? '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
-                    : '0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)';
+                    ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                    : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (clickable) {
-                  e.currentTarget.style.backgroundColor = idx === current 
-                    ? (darkMode ? 'rgba(30, 41, 59, 0.8)' : 'rgba(239, 246, 255, 0.8)')
-                    : idx < current
-                      ? (darkMode ? 'rgba(6, 78, 59, 0.3)' : 'rgba(240, 253, 244, 0.6)')
-                      : (darkMode ? 'rgba(24, 24, 27, 0.8)' : 'rgba(255, 255, 255, 0.8)');
+                  e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                  e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`;
+                  e.currentTarget.style.boxShadow = darkMode 
+                    ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                    : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
                   e.currentTarget.style.transform = idx === current ? 'scale(1.02)' : 'scale(1)';
-                  e.currentTarget.style.boxShadow = idx === current 
-                    ? (darkMode 
-                        ? '0 2px 12px rgba(96, 165, 250, 0.2), 0 0 0 1px rgba(96, 165, 250, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' 
-                        : '0 2px 12px rgba(37, 99, 235, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)')
-                    : idx < current
-                      ? (darkMode 
-                          ? '0 1px 6px rgba(34, 197, 94, 0.1), 0 0 0 1px rgba(34, 197, 94, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
-                          : '0 1px 6px rgba(22, 163, 74, 0.08), 0 0 0 1px rgba(22, 163, 74, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.6)')
-                      : (darkMode 
-                          ? '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)' 
-                          : '0 1px 3px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)');
                 }
               }}
               onClick={() => clickable && onStepClick && onStepClick(idx)}

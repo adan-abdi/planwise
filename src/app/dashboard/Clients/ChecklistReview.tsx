@@ -48,23 +48,33 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: darkMode ? '#1e1e1e' : '#fff',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(15px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(15px) saturate(180%)',
         borderRadius: 6,
-        border: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
-        transition: 'background-color 0.2s ease-in-out',
+        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+        boxShadow: darkMode 
+          ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+          : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, alignItems: 'stretch', overflow: 'hidden', borderRadius: 6 }}>
         <div style={{ flex: 9, minWidth: 0, background: darkMode ? '#18181b' : '#f4f4f5', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }}>
-          <div style={{ 
-            padding: '16px 12px 12px 12px', 
-            background: darkMode ? '#1e1e1e' : '#ffffff', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            minHeight: '80px', 
-            borderTopLeftRadius: 6,
-            borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`
-          }}>
+                        <div style={{
+                padding: '16px 12px 12px 12px',
+                background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '80px',
+                borderTopLeftRadius: 6,
+                borderBottom: `1px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`,
+                boxShadow: darkMode
+                  ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                  : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+              }}>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, marginTop: 0 }}>
               {backNav ? backNav : onBack && (
                 <button
@@ -88,16 +98,20 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                     display: 'flex',
                     alignItems: 'center',
                     color: darkMode ? '#f1f5f9' : '#374151',
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.backgroundColor = darkMode ? '#232329' : '#f1f5f9';
                     e.currentTarget.style.borderColor = darkMode ? '#52525b' : '#9ca3af';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px 0 rgba(0, 0, 0, 0.1)';
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.backgroundColor = darkMode ? '#1e1e1e' : '#f8fafc';
                     e.currentTarget.style.borderColor = darkMode ? '#3f3f46' : '#d1d5db';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
                   }}
                   aria-label="Back to previous"
                 >
@@ -124,16 +138,32 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                   fontWeight: 400,
                   outline: 'none',
                   boxSizing: 'border-box',
-                  transition: 'all 0.2s ease-in-out',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                 }}
+                onMouseEnter={(e) => {
+                  const target = e.target as HTMLInputElement;
+                  target.style.backgroundColor = darkMode ? '#232329' : '#f9fafb';
+                  target.style.borderColor = darkMode ? '#3f3f46' : '#9ca3af';
+                  target.style.transform = 'translateY(-1px)';
+                  target.style.boxShadow = '0 2px 4px 0 rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.target as HTMLInputElement;
+                  target.style.backgroundColor = darkMode ? '#1e1e1e' : '#ffffff';
+                  target.style.borderColor = darkMode ? '#27272a' : '#d1d5db';
+                  target.style.transform = 'translateY(0)';
+                  target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+                }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = darkMode ? '#52525b' : '#3b82f6';
-                  e.target.style.boxShadow = darkMode ? '0 0 0 3px rgba(82, 82, 91, 0.1)' : '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  const target = e.target as HTMLInputElement;
+                  target.style.borderColor = darkMode ? '#52525b' : '#3b82f6';
+                  target.style.boxShadow = darkMode ? '0 0 0 3px rgba(82, 82, 91, 0.1)' : '0 0 0 3px rgba(59, 130, 246, 0.1)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = darkMode ? '#27272a' : '#d1d5db';
-                  e.target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+                  const target = e.target as HTMLInputElement;
+                  target.style.borderColor = darkMode ? '#27272a' : '#d1d5db';
+                  target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
                 }}
               />
             </div>
@@ -152,15 +182,17 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                       fontSize: '12px',
                       color: darkMode ? '#e4e4e7' : '#374151',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = darkMode ? '#3f3f46' : '#e5e7eb';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = darkMode ? '#27272a' : '#f3f4f6';
+                      e.currentTarget.style.transform = 'translateY(0)';
                     }}
                     onClick={() => {
                       setSearchQuery(suggestion);
@@ -181,7 +213,7 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                     fontSize: '12px',
                     color: darkMode ? '#e4e4e7' : '#374151',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
                   }}>Recent documents</div>
@@ -193,7 +225,7 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                     fontSize: '12px',
                     color: darkMode ? '#e4e4e7' : '#374151',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
                   }}>PDF files</div>
@@ -205,7 +237,7 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                     fontSize: '12px',
                     color: darkMode ? '#e4e4e7' : '#374151',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
                   }}>Images</div>
@@ -217,7 +249,7 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
             <DocumentViewer document={{ name: "Sample Document" }} />
           </div>
         </div>
-        <div style={{ width: 2, height: '100%', borderLeft: `2px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, alignSelf: 'stretch' }} />
+                 <div style={{ width: 2, height: '100%', borderLeft: `2px solid ${darkMode ? '#3f3f46' : '#e4e4e7'}`, alignSelf: 'stretch' }} />
         <div style={{ flex: 11, minWidth: 0, background: darkMode ? '#1e1e1e' : '#ffffff', minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', borderTopRightRadius: 6, borderBottomRightRadius: 6 }}>
           <ChecklistParser checklistTitle={title} />
         </div>
