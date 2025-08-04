@@ -22,6 +22,7 @@ export interface ClientItem {
   isaTransfer?: number;
   pensionNewMoney?: number;
   isaNewMoney?: number;
+  apiClientId?: string; // Store the API client ID for fetching cases
 }
 
 export interface ClientListProps {

@@ -1,9 +1,9 @@
 import React, { useEffect, ReactNode, useState } from "react";
 import {
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import { useTheme } from "../../../theme-context";
-// import Stepper from "./Stepper";
 import DocumentViewer from "./documentviewer/DocumentViewer";
 import ChecklistParser from "./ChecklistParser";
 
@@ -13,9 +13,10 @@ interface ChecklistReviewProps {
   onBack?: () => void;
   title?: string;
   backNav?: ReactNode;
+  confidencePercentage?: number;
 }
 
-export default function ChecklistReview({ reviewerName, onBack, title, backNav }: ChecklistReviewProps) {
+export default function ChecklistReview({ reviewerName, onBack, title, backNav, confidencePercentage = 85 }: ChecklistReviewProps) {
   const { darkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -166,6 +167,71 @@ export default function ChecklistReview({ reviewerName, onBack, title, backNav }
                   target.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
                 }}
               />
+              {/* Confidence Percentage Badge */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '0 12px',
+                  height: 40,
+                  background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(15px) saturate(180%)',
+                  WebkitBackdropFilter: 'blur(15px) saturate(180%)',
+                  border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)'}`,
+                  borderRadius: 8,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: darkMode ? '#f1f5f9' : '#374151',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  cursor: 'default',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: darkMode 
+                    ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                    : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  boxSizing: 'border-box',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+                  e.currentTarget.style.borderColor = darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = darkMode 
+                    ? '0 2px 4px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                    : '0 2px 4px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                  e.currentTarget.style.borderColor = darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.3)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = darkMode 
+                    ? '0 1px 3px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                    : '0 1px 3px 0 rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                }}
+                title={`Document confidence: ${confidencePercentage}%`}
+              >
+                <CheckCircle 
+                  size={14} 
+                  style={{
+                    color: confidencePercentage >= 80 
+                      ? (darkMode ? '#10b981' : '#059669') 
+                      : confidencePercentage >= 60 
+                      ? (darkMode ? '#f59e0b' : '#d97706')
+                      : (darkMode ? '#ef4444' : '#dc2626')
+                  }}
+                />
+                <span style={{ color: darkMode ? '#f1f5f9' : '#374151' }}>Confidence</span>
+                <span style={{ 
+                  color: confidencePercentage >= 80 
+                    ? (darkMode ? '#10b981' : '#059669') 
+                    : confidencePercentage >= 60 
+                    ? (darkMode ? '#f59e0b' : '#d97706')
+                    : (darkMode ? '#ef4444' : '#dc2626'),
+                  fontWeight: 600
+                }}>
+                  {confidencePercentage}%
+                </span>
+              </div>
             </div>
             {/* Suggestion pills area */}
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap', overflowX: 'auto', paddingBottom: 8, maxHeight: isSearching ? '65px' : 'auto', overflowY: 'hidden' }}>

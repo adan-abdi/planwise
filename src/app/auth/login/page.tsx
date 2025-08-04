@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
 import EmailInput from '../EmailInput';
-import { useSearchParams } from 'next/navigation';
+import { login, RegisterResponse } from '../../../api/services/auth'
+import { useAuth } from '../../../contexts/AuthContext'
 import { Suspense } from 'react';
-import { login } from '../../../api/services/auth';
-import type { RegisterResponse } from '../../../api/services/auth';
 
 function EmailFromQuery({ setEmail, setStep, isValidEmail }: { setEmail: (email: string) => void, setStep: (step: 'login' | 'password') => void, isValidEmail: (email: string) => boolean }) {
   const searchParams = useSearchParams();
@@ -25,6 +24,7 @@ function EmailFromQuery({ setEmail, setStep, isValidEmail }: { setEmail: (email:
 
 export default function LoginPage() {
   const { darkMode } = useTheme();
+  const { login: authLogin } = useAuth();
   const [step, setStep] = useState<'login' | 'password'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,7 +32,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const router = useRouter()
-  // useSearchParams must be wrapped in Suspense
+  const searchParams = useSearchParams()
 
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
@@ -53,9 +53,12 @@ export default function LoginPage() {
     try {
       const result = await login({ email: email.trim(), password }) as RegisterResponse;
       if (result.status && result.data) {
-        localStorage.setItem('token', result.data.token);
+        // Use AuthContext to manage authentication
+        authLogin(result.data.token, result.data.user);
+        
+        // Store additional data
         localStorage.setItem('refresh_token', result.data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        
         router.push('/dashboard');
       } else {
         setPasswordError(result.message || 'Login failed.');

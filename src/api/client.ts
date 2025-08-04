@@ -1,13 +1,16 @@
-export const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+export const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://planwise-backend-staging.up.railway.app';
 
 export async function apiFetch<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  
   const res = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options?.headers || {}),
     },
   });

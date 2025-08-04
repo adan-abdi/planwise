@@ -1,16 +1,50 @@
 import { apiFetch } from '../client';
 import { baseUrl } from '../client';
 
-export async function login(credentials: { email: string; password: string }) {
-  return apiFetch('/auth/login', {
+// Helper functions to manage tokens in both localStorage and cookies
+const setAuthToken = (token: string) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('token', token);
+    // Also set in cookies for middleware access
+    document.cookie = `auth_token=${token}; path=/; max-age=86400; secure; samesite=strict`;
+  }
+};
+
+const clearAuthToken = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('organization');
+    // Clear cookie as well
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }
+};
+
+export async function login(credentials: { email: string; password: string }): Promise<RegisterResponse> {
+  const response = await apiFetch<RegisterResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
+  
+  // If login is successful, store token in both localStorage and cookies
+  if (response.status && response.data?.token) {
+    setAuthToken(response.data.token);
+  }
+  
+  return response;
 }
 
 
 export async function getProfile() {
-  return apiFetch('/auth/profile');
+  try {
+    const response = await apiFetch('/user/profile');
+    console.log('getProfile raw response:', response);
+    return response;
+  } catch (error) {
+    console.error('getProfile error:', error);
+    throw error;
+  }
 }
 
 export interface CheckUserExistsResponse {
@@ -70,10 +104,17 @@ export interface RegisterResponse {
 }
 
 export async function registerUser(email: string, password: string): Promise<RegisterResponse> {
-  return apiFetch('/auth/register', {
+  const response = await apiFetch<RegisterResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+  
+  // If registration is successful, store token in both localStorage and cookies
+  if (response.status && response.data?.token) {
+    setAuthToken(response.data.token);
+  }
+  
+  return response;
 }
 
 export interface UpdateProfileResponse {
@@ -119,9 +160,6 @@ export async function updateUserProfile(fullName: string, profileImage?: File): 
 
 // TODO: Call backend /logout endpoint here when available for token/session invalidation
 export function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
-  localStorage.removeItem('organization');
+  clearAuthToken();
   window.location.href = '/';
 }

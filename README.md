@@ -2,7 +2,7 @@
 
 - [ ] Advisor License (profile is created on the platform)
 - [x] Cases inside and not create client page
-- [ ] Extracting details from v1 CFR document
+- [x] Extracting details from v1 CFR document
 - [x] client search next to sort, filter
 
 - [x] date added, [no of transfers,] type of case, case status, crf, seeding, cyc, illustration, sl, overall(pending, complete)
@@ -43,11 +43,11 @@ ISA New money
 
 
 - [x] Remove providers on case creation part
-- [ ] Upload final CFR and v1 CFR to their own boxes
+- [x] Upload final CFR and v1 CFR to their own boxes
 - [x] remove two split, ceeding section
 - [ ] get rid of advice, and internal compliance in every ceding detail
-- [ ] navigation to be changed
-- [ ] ESS: cant be no and ESS partial be yes
+- [x] navigation to be changed
+- [x] ESS: cant be no and ESS partial be yes
 - 
 
 
@@ -62,9 +62,9 @@ CYC Form Stages
 - [x] Upload final CYC 
 
 Illustrations
-- [-] Page 1 Basic details (In Progress)
-- [ ] transfers
-- [ ] Recommendations
+- [x] Page 1 Basic details (In Progress)
+- [x] transfers
+- [x] Recommendations
 
 Sidebar
 - [x] Plans becomes Parterns/onboaridng
@@ -84,6 +84,8 @@ TODO:
 - [x] Stages stepper styling
 - [x] ChecklistReview styling
 - [x] Styling for CYCForm stages
+
+
 - [ ] Adding page 2 form
 - [ ] Aggregating all blues/primary colors up to one globalcss var that can be changed by the header colors
 - [ ] 
@@ -96,7 +98,13 @@ Changes:
 - [x] Drawer to right and hover
 - [x] Adding new checklist item field to checklist parser which saved
 - [x] line between to show 
-- [ ] accuracy score for CFR
+- [x] accuracy score for CFR
+
 
 - [ ] Output only for all forms
 - [ ] Inputs to have copy
+
+
+- [ ] Sources of requested information
+- [ ] Fund table checklists + export /Search
+- [ ] income, tax rate, spouses birthday,

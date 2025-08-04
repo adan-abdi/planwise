@@ -10,6 +10,7 @@ import UploadModal from "./UploadModal";
 import ClientFooter from "./ClientFooter";
 import ClientEmptyState from "./ClientEmptyState";
 import { useTheme } from "../../../theme-context";
+import { getClients, Client as ApiClient } from "../../../api/services/clients";
 
 // Helper to format date as '25th June 2025'
 function formatFancyDate(dateString: string) {
@@ -26,7 +27,7 @@ function formatFancyDate(dateString: string) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenerateRandomClients, triggerRandomClients, onRandomClientsGenerated, onBreadcrumbChange, onBackToClientList }: { 
+export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenerateRandomClients, triggerRandomClients, onRandomClientsGenerated, onBreadcrumbChange, onBackToClientList, selectedClientSlug, selectedCaseType }: { 
   detailsViewOpen?: boolean; 
   onDetailsViewChange?: (open: boolean, name?: string, tab?: string) => void;
   onGenerateRandomClients?: () => ClientItem[];
@@ -34,11 +35,56 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   onRandomClientsGenerated?: () => void;
   onBreadcrumbChange?: (path: Array<{label: string, icon?: React.ReactNode, onClick?: () => void, isActive?: boolean}>) => void;
   onBackToClientList?: () => void;
+  selectedClientSlug?: string | null;
+  selectedCaseType?: string | null;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [clients, setClients] = useState<ClientItem[]>([]);
+  const [isLoadingClients, setIsLoadingClients] = useState(false);
   const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
   const [checklistStates, setChecklistStates] = useState<boolean[][]>([]);
+
+  // Convert API client to ClientItem format
+  const convertApiClientToClientItem = (apiClient: ApiClient): ClientItem => {
+    return {
+      advisor: 'N/A', // API doesn't provide advisor info in client response
+      client: apiClient.name,
+      date: apiClient.createdAt,
+      type: 'N/A',
+      pensionTransfer: 0,
+      isaTransfer: 0,
+      pensionNewMoney: 0,
+      isaNewMoney: 0,
+      retirementAge: apiClient.retirementAge?.toString() || '',
+      atr: apiClient.attitudeToRisk || '',
+      cfr: "No",
+      plans: 0,
+      checklist: 0,
+      // Store the API client ID for fetching cases
+      apiClientId: apiClient.id,
+    };
+  };
+
+  // Fetch clients from API
+  const fetchClients = async () => {
+    setIsLoadingClients(true);
+    try {
+      const response = await getClients(1, 50); // Get up to 50 clients
+      if (response.status && response.data) {
+        const clientItems = response.data.map(convertApiClientToClientItem);
+        setClients(clientItems);
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    } finally {
+      setIsLoadingClients(false);
+    }
+  };
+
+  // Restore client fetching with proper safeguards
+  useEffect(() => {
+    fetchClients();
+  }, []); // Only run once on mount
   const [selectedTab, setSelectedTab] = useState<string>('details');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [showReviewChecklist, setShowReviewChecklist] = useState(false);
@@ -55,34 +101,62 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const [viewingCaseIdx, setViewingCaseIdx] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [casesCurrentPage, setCasesCurrentPage] = useState<number>(1);
+  const processedSlugRef = useRef<string | null>(null);
 
+  // Restore details view management with proper safeguards
   React.useEffect(() => {
     if (detailsViewOpen === false) {
       setSelectedClientName(null);
       setShowChecklistReview(false);
+      processedSlugRef.current = null;
     }
   }, [detailsViewOpen]);
 
+  // Restore URL handling with proper safeguards
   React.useEffect(() => {
-    if (triggerRandomClients && onGenerateRandomClients && onRandomClientsGenerated) {
-      const randomClients = onGenerateRandomClients();
-      setClients(randomClients);
-      onRandomClientsGenerated();
-    }
-  }, [triggerRandomClients, onGenerateRandomClients, onRandomClientsGenerated]);
-
-  useEffect(() => {
-    if (clients.length !== checklistStates.length) {
-      if (clients.length > checklistStates.length) {
-        setChecklistStates(prev => [
-          ...prev,
-          ...clients.slice(prev.length).map((c) => Array(4).fill(false).map((_, i) => i < c.checklist))
-        ]);
-      } else {
-        setChecklistStates(prev => prev.slice(0, clients.length));
+    if (selectedClientSlug && clients.length > 0 && !selectedClientName && processedSlugRef.current !== selectedClientSlug) {
+      // Find the client by slug (convert client name to slug and compare)
+      const client = clients.find(c => {
+        const clientSlug = c.client.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        return clientSlug === selectedClientSlug;
+      });
+      
+      if (client) {
+        processedSlugRef.current = selectedClientSlug;
+        setSelectedClientName(client.client);
+        // Don't call onDetailsViewChange here to prevent infinite loop
+        // The parent component will handle opening the details view
       }
     }
-  }, [clients, checklistStates.length]);
+  }, [selectedClientSlug, clients.length, selectedClientName]); // Use clients.length instead of entire clients array
+
+  // Restore case type handling with proper safeguards
+  React.useEffect(() => {
+    if (selectedCaseType && selectedClientName) {
+      setSelectedTab(`transfers/${selectedCaseType}`);
+    }
+  }, [selectedCaseType, selectedClientName]);
+
+  // Temporarily disable random clients and checklist useEffect hooks
+  // React.useEffect(() => {
+  //   if (triggerRandomClients && onGenerateRandomClients && onRandomClientsGenerated) {
+  //     const randomClients = onGenerateRandomClients();
+  //     setClients(randomClients);
+  //     onRandomClientsGenerated();
+  //   }
+  // }, [triggerRandomClients, onGenerateRandomClients, onRandomClientsGenerated]);
+
+  // useEffect(() => {
+  //   if (clients.length !== checklistStates.length) {
+  //     if (clients.length > checklistStates.length) {
+  //       setChecklistStates(prev => [
+  //         ...prev,
+  //         ...clients.slice(prev.length).map((c) => Array(4).fill(false).map((_, i) => i < c.checklist))
+  //       ]);
+  //     } else {
+  //       setChecklistStates(prev => prev.slice(0, clients.length));
+  //     }
+  // }, [clients, checklistStates.length]);
 
   const handleChecklistChange = (idx: number, newChecklist: boolean[]) => {
     setChecklistStates((prev) => prev.map((arr, i) => (i === idx ? newChecklist : arr)));
@@ -91,24 +165,8 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleSubmit = (data: ClientFormData) => {
-    setClients((prev) => [
-      ...prev,
-      {
-        advisor: data.advisorName,
-        client: data.clientName,
-        date: '',
-        type: 'N/A',
-        pensionTransfer: 0,
-        isaTransfer: 0,
-        pensionNewMoney: 0,
-        isaNewMoney: 0,
-        retirementAge: '',
-        atr: '',
-        cfr: "No",
-        plans: 0,
-        checklist: 0,
-      },
-    ]);
+    // Refresh the clients list to include the newly created client
+    fetchClients();
     setModalOpen(false);
   };
   const handleViewDetails = (client: ClientItem) => {
@@ -286,7 +344,13 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
   const paginatedClients = filteredClients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   let clientContent;
-  if (filteredClients.length === 0) {
+  if (isLoadingClients) {
+    clientContent = (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-zinc-500 dark:text-zinc-400">Loading clients...</div>
+      </div>
+    );
+  } else if (filteredClients.length === 0) {
     clientContent = <ClientEmptyState onCreate={handleOpenModal} />;
   } else {
     clientContent = (
@@ -340,7 +404,15 @@ export default function Clients({ detailsViewOpen, onDetailsViewChange, onGenera
             onBackToClientList={goToClientList}
             casesCurrentPage={casesCurrentPage}
             setCasesCurrentPage={setCasesCurrentPage}
-            onCaseView={caseType => setSelectedTab(`transfers/${caseType}`)}
+            onCaseView={caseType => {
+              setSelectedTab(`transfers/${caseType}`);
+              // Update URL to include case details
+              if (selectedClientName && onDetailsViewChange) {
+                const clientSlug = selectedClientName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const newUrl = `/dashboard?client=${clientSlug}&case=${caseType}`;
+                window.history.pushState({}, '', newUrl);
+              }
+            }}
             viewingCaseIdx={viewingCaseIdx}
             setViewingCaseIdx={setViewingCaseIdx}
           />

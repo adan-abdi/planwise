@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { TransferFolderItem } from "./FileExplorer";
 import type { ClientItem as OriginalClientItem } from "./ClientListItem";
+import { getClientCases, Case as ApiCase } from "../../../api/services/cases";
+import { updateClient, UpdateClientRequest } from "../../../api/services/clients";
 import {
   Users,
   UserCircle,
@@ -78,16 +80,18 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<ClientItem>(client);
   const [localChecklist, setLocalChecklist] = useState<boolean[]>(checklist || Array(4).fill(false));
+  // Restore client data synchronization with stable dependencies
   useEffect(() => {
     setEditValues(client);
     setLocalChecklist(checklist || Array(4).fill(false));
-  }, [client, checklist]);
+  }, [client.client, client.email, client.phone, client.retirementAge, client.atr, checklist]); // Only depend on specific fields
 
+  // Restore tab change functionality with stable dependencies
   useEffect(() => {
     if (openedTransfer === null && onTabChange) {
       onTabChange(activeTab);
     }
-  }, [activeTab, onTabChange, openedTransfer]);
+  }, [activeTab, openedTransfer]); // Remove onTabChange from dependencies to prevent loops
 
   const handleEdit = (field: string) => setEditingField(field);
   const handleChange = (field: keyof ClientItem, value: string) => {
@@ -95,9 +99,48 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   };
   const handleBlur = () => setEditingField(null);
   const handleKeyDown = (e: React.KeyboardEvent) => { if (e.key === 'Enter') setEditingField(null); };
-  const handleSave = () => {
-    onClientUpdate(editValues);
-    if (onChecklistChange) onChecklistChange(localChecklist);
+  const handleSave = async () => {
+    if (!client.apiClientId) {
+      console.error('No client ID available for updating client');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Prepare the API request data
+      const updateData: UpdateClientRequest = {
+        personalDetails: {
+          fullName: editValues.client,
+          // Add other fields if they exist in editValues
+          email: editValues.email || undefined,
+          phone: editValues.phone || undefined,
+          retirementAge: editValues.retirementAge ? parseInt(editValues.retirementAge) : undefined,
+          attitudeToRisk: editValues.atr || undefined,
+        },
+      };
+
+      const response = await updateClient(client.apiClientId, updateData);
+      
+      if (response.status) {
+        // Update the local client data with the response
+        const updatedClient = {
+          ...client,
+          client: response.data.name,
+          email: response.data.email || undefined,
+          phone: response.data.phone || undefined,
+          retirementAge: response.data.retirementAge?.toString() || '',
+          atr: response.data.attitudeToRisk || '',
+        };
+        
+        onClientUpdate(updatedClient);
+        if (onChecklistChange) onChecklistChange(localChecklist);
+      }
+    } catch (error) {
+      console.error('Error updating client:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSaving(false);
+    }
   };
   const handleCancel = () => {
     setEditValues(client);
@@ -108,38 +151,63 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
     JSON.stringify(localChecklist) !== JSON.stringify(checklist || Array(4).fill(false));
 
   const [selectedDocument, setSelectedDocument] = useState<TransferFolderItem | null>(null);
-  useEffect(() => {
-    setSelectedDocument(null);
-  }, [transferPath]);
-  useEffect(() => {
-    if (onDocumentOpen) onDocumentOpen(!!selectedDocument);
-  }, [selectedDocument, onDocumentOpen]);
+  // Temporarily disable document-related useEffect hooks
+  // useEffect(() => {
+  //   setSelectedDocument(null);
+  // }, [transferPath]);
+  // useEffect(() => {
+  //   if (onDocumentOpen) onDocumentOpen(!!selectedDocument);
+  // }, [selectedDocument, onDocumentOpen]);
 
   const [createCaseModalOpen, setCreateCaseModalOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const handleCloseUploadModal = () => setUploadModalOpen(false);
 
   // 2. Add state for cases (replace allCases logic)
-  const [cases, setCases] = useState<Case[]>(() => {
-    // If client.cases exists, use it, else empty array
-    // @ts-expect-error: client.cases may be undefined or not typed correctly from backend
-    return client.cases || [];
-  });
+  const [cases, setCases] = useState<Case[]>([]);
+  const [isLoadingCases, setIsLoadingCases] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // 3. Update cases when client changes
-  useEffect(() => {
-    // @ts-expect-error: client.cases may be undefined or not typed correctly from backend
-    setCases(client.cases || []);
-  }, [client]);
+  // Convert API case to internal Case format
+  const convertApiCaseToCase = (apiCase: ApiCase): Case => {
+    return {
+      id: apiCase.id,
+      createdAt: apiCase.createdAt,
+      caseType: apiCase.type,
+      transfers: [], // API doesn't provide transfers in this format, so we'll use empty array
+      ess: apiCase.ess,
+      essPartial: apiCase.essPartial,
+    };
+  };
 
-  // Add a loading state for case hydration
-  const [, setIsCasesLoading] = useState(false);
-  // Simulate loading when cases change (for demo)
+  // Fetch cases from API
+  const fetchCases = useCallback(async () => {
+    const clientId = client.apiClientId;
+    if (!clientId) {
+      console.error('No client ID available for fetching cases');
+      return;
+    }
+
+    setIsLoadingCases(true);
+    try {
+      const response = await getClientCases(clientId);
+      if (response.status && response.data) {
+        const convertedCases = response.data.map(convertApiCaseToCase);
+        setCases(convertedCases);
+      }
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+    } finally {
+      setIsLoadingCases(false);
+    }
+  }, [client.apiClientId]);
+
+  // 3. Restore case fetching with stable dependency
   useEffect(() => {
-    setIsCasesLoading(true);
-    const timeout = setTimeout(() => setIsCasesLoading(false), 800);
-    return () => clearTimeout(timeout);
-  }, [cases]);
+    if (client.apiClientId) {
+      fetchCases();
+    }
+  }, [client.apiClientId]); // Only depend on the client ID, not the entire client object
 
   // 4. Pagination and sorting for cases
   const pageSize = 16;
@@ -150,6 +218,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
 
 
 
+  // Restore sorting functionality with stable dependencies
   useEffect(() => {
     const sorted = [...cases];
     if (sortState.column && sortState.order) {
@@ -163,37 +232,37 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
       });
     }
     setSortedCases(sorted);
-  }, [cases, sortState]);
+  }, [cases.length, sortState.column, sortState.order]); // Use specific fields instead of entire objects
 
   const totalPages = Math.max(1, Math.ceil(sortedCases.length / pageSize));
-  useEffect(() => {
-    if (casesCurrentPage > totalPages) {
-      setCasesCurrentPage(1);
-    }
-  }, [sortedCases, totalPages, casesCurrentPage, setCasesCurrentPage]);
+  // useEffect(() => {
+  //   if (casesCurrentPage > totalPages) {
+  //     setCasesCurrentPage(1);
+  //   }
+  // }, [sortedCases, totalPages, casesCurrentPage, setCasesCurrentPage]);
 
   // Filtered cases for search
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [activeCaseTypeFilters, setActiveCaseTypeFilters] = useState<string[]>(['All']);
 
-  // Close filter modal on outside click
-  React.useEffect(() => {
-    if (!filterModalOpen) return;
-    function handleClick(e: MouseEvent) {
-      // Check if click is outside the filter dropdown
-      const filterDropdown = document.querySelector('[data-filter-dropdown]');
-      if (filterDropdown && !filterDropdown.contains(e.target as Node)) {
-        setFilterModalOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [filterModalOpen]);
+  // Temporarily disable filter modal useEffect hooks
+  // React.useEffect(() => {
+  //   if (!filterModalOpen) return;
+  //   function handleClick(e: MouseEvent) {
+  //     // Check if click is outside the filter dropdown
+  //     const filterDropdown = document.querySelector('[data-filter-dropdown]');
+  //     if (filterDropdown && !filterDropdown.contains(e.target as Node)) {
+  //       setFilterModalOpen(false);
+  //     }
+  //   }
+  //   document.addEventListener('mousedown', handleClick);
+  //   return () => document.removeEventListener('mousedown', handleClick);
+  // }, [filterModalOpen]);
 
-  // Reset filter to 'All' whenever pagination changes
-  useEffect(() => {
-    setActiveCaseTypeFilters(['All']);
-  }, [casesCurrentPage]);
+  // Temporarily disable filter reset useEffect
+  // useEffect(() => {
+  //   setActiveCaseTypeFilters(['All']);
+  // }, [casesCurrentPage]);
 
   // Update filteredCases to filter by both filter and search
   const filteredCases = cases.filter((c) => {
@@ -225,22 +294,23 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [actionRowIdx, setActionRowIdx] = useState<number | null>(null);
   const [actionModalPos, setActionModalPos] = useState<{ top: number; left: number } | null>(null);
-  useEffect(() => {
-    setSelectedRows(cases.map(() => false));
-  }, [cases]);
+  // Temporarily disable selected rows and action modal useEffect hooks
+  // useEffect(() => {
+  //   setSelectedRows(cases.map(() => false));
+  // }, [cases]);
 
-  // Close action modal on outside click
-  useEffect(() => {
-    if (!actionModalOpen) return;
-    function handleClick(e: MouseEvent) {
-      const modal = document.getElementById('case-action-modal');
-      if (modal && !modal.contains(e.target as Node)) {
-        setActionModalOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [actionModalOpen]);
+  // Temporarily disable action modal useEffect
+  // useEffect(() => {
+  //   if (!actionModalOpen) return;
+  //   function handleClick(e: MouseEvent) {
+  //     const modal = document.getElementById('case-action-modal');
+  //     if (modal && !modal.contains(e.target as Node)) {
+  //       setActionModalOpen(false);
+  //     }
+  //   }
+  //   document.addEventListener('mousedown', handleClick);
+  //   return () => document.removeEventListener('mousedown', handleClick);
+  // }, [actionModalOpen]);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pendingDeleteIdx, setPendingDeleteIdx] = useState<number | null>(null);
@@ -763,7 +833,8 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     </button>
                     <button 
                       onClick={handleSave} 
-                      className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition" 
+                      disabled={isSaving}
+                      className="flex items-center gap-1 p-1 px-2 rounded-md text-[11px] font-medium text-zinc-700 dark:text-[var(--foreground)] transition disabled:opacity-60 disabled:cursor-not-allowed" 
                       aria-label="Save changes"
                       style={{
                         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
@@ -776,12 +847,14 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
-                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
-                        e.currentTarget.style.boxShadow = darkMode 
-                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
-                          : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        if (!isSaving) {
+                          e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                          e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                          e.currentTarget.style.boxShadow = darkMode 
+                            ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                            : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
@@ -793,7 +866,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                       }}
                     >
                       <Check className="w-4 h-4 text-zinc-500 dark:text-[var(--foreground)]" />
-                      <span className="dark:text-[var(--foreground)]">Save</span>
+                      <span className="dark:text-[var(--foreground)]">{isSaving ? 'Saving...' : 'Save'}</span>
                     </button>
                   </>
                 )}
@@ -1220,7 +1293,8 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                     </button>
                     <button 
                       onClick={handleSave} 
-                      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition"
+                      disabled={isSaving}
+                      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-normal text-zinc-700 dark:text-[var(--foreground)] transition disabled:opacity-60 disabled:cursor-not-allowed"
                       style={{
                         background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                         backdropFilter: 'blur(15px) saturate(180%)',
@@ -1232,12 +1306,14 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
-                        e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
-                        e.currentTarget.style.boxShadow = darkMode 
-                          ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
-                          : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        if (!isSaving) {
+                          e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 1)' : 'rgba(255, 255, 255, 1)';
+                          e.currentTarget.style.border = `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.4)'}`;
+                          e.currentTarget.style.boxShadow = darkMode 
+                            ? '0 2px 6px 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                            : '0 2px 6px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)';
@@ -1249,7 +1325,7 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
                       }}
                     >
                       <Check className="w-4 h-4" />
-                      Save
+                      {isSaving ? 'Saving...' : 'Save'}
                     </button>
                   </>
                 )}
@@ -1317,7 +1393,11 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
             />
           </div>
         ) : (
-          filteredCases.length === 0 ? (
+          isLoadingCases ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-zinc-500 dark:text-zinc-400">Loading cases...</div>
+            </div>
+          ) : filteredCases.length === 0 ? (
             <EmptyCasesState onAddNewCase={() => setCreateCaseModalOpen(true)} />
           ) : (
             <div className="flex flex-col h-full min-h-0">
@@ -1384,14 +1464,13 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         onNoPersonalisedChecklist={onShowChecklistReviewTest}
         onShowReviewChecklist={onShowChecklistReviewTest}
       />
-      {/* TODO: Update CreateNewCase to add a new Case object to cases array and call onClientUpdate with updated cases */}
       <CreateNewCase
         open={createCaseModalOpen}
         onClose={() => setCreateCaseModalOpen(false)}
+        clientId={client.apiClientId}
         onSubmit={(newCase) => {
-          const updatedCases = [newCase, ...cases];
-          setCases(updatedCases);
-          onClientUpdate({ ...((editValues as object)), cases: updatedCases } as ClientItem);
+          // Refresh the cases list to include the newly created case
+          fetchCases();
           setCreateCaseModalOpen(false);
         }}
       />
@@ -1400,13 +1479,11 @@ export default function ClientDetails({ client, onClientUpdate, checklist, onChe
         <DeleteCaseModal
           open={showDeleteConfirm}
           onCancel={() => { setShowDeleteConfirm(false); setPendingDeleteIdx(null); }}
+          clientId={client.apiClientId}
+          caseId={cases[pendingDeleteIdx]?.id}
           onConfirm={() => {
-            // Actually delete the case
-            if (pendingDeleteIdx !== null) {
-              const filtered = cases.filter((_, idx) => idx !== pendingDeleteIdx);
-              setCases(filtered);
-              onClientUpdate({ ...((editValues as object)), cases: filtered } as ClientItem);
-            }
+            // Refresh the cases list to reflect the deletion
+            fetchCases();
             setShowDeleteConfirm(false);
             setPendingDeleteIdx(null);
           }}

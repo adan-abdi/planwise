@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
 import { ChevronDown } from 'lucide-react'
 import { updateUserProfile, UpdateProfileResponse, getProfile } from '../../../api/services/auth';
+import { ProtectedRoute } from '../../../components/ProtectedRoute';
 
 export default function ProfilePage() {
   const [name, setName] = useState('')
@@ -41,340 +42,253 @@ export default function ProfilePage() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
-    }
-    if (dropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownOpen]);
+    };
 
-  // Load existing profile data
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Load user profile on component mount
   useEffect(() => {
     const loadProfile = async () => {
-      console.log('Loading profile...');
       try {
-        // Add a timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile loading timeout')), 10000)
-        );
-        
-        const response = await Promise.race([
-          getProfile() as Promise<UpdateProfileResponse>,
-          timeoutPromise
-        ]) as UpdateProfileResponse;
-        
+        // Check if user is authenticated
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No authentication token found');
+          setError('Authentication required. Please log in again.');
+          setIsLoadingProfile(false);
+          return;
+        }
+
+        console.log('Loading profile...');
+        const response = await getProfile() as UpdateProfileResponse;
         console.log('Profile response:', response);
+        
         if (response.status && response.data) {
-          const fullName = response.data.fullName || '';
-          const profileUrl = response.data.profilePictureUrl;
-          
-          setName(fullName);
-          setOriginalName(fullName);
-          
-          if (profileUrl) {
-            setProfilePreview(profileUrl);
-            setOriginalProfileUrl(profileUrl);
-          }
+          const userData = response.data;
+          setName(userData.fullName || '');
+          setOriginalName(userData.fullName || '');
+          setProfilePreview(userData.profilePictureUrl);
+          setOriginalProfileUrl(userData.profilePictureUrl);
+          console.log('Profile loaded successfully:', userData);
+        } else {
+          console.error('Profile response indicates failure:', response);
+          setError(response.message || 'Failed to load profile data');
         }
-      } catch (err) {
-        console.error('Failed to load profile:', err);
-        // If profile loading fails, try to get data from localStorage as fallback
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.full_name) {
-          setName(user.full_name);
-          setOriginalName(user.full_name);
-        }
-        if (user.profilePictureUrl) {
-          setProfilePreview(user.profilePictureUrl);
-          setOriginalProfileUrl(user.profilePictureUrl);
-        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        setError('Failed to load profile data. Please check your authentication.');
       } finally {
-        console.log('Setting isLoadingProfile to false');
         setIsLoadingProfile(false);
       }
     };
 
     loadProfile();
   }, []);
-  
 
-  
-  // Fallback to ensure loading state is resolved
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoadingProfile) {
-        console.log('Force setting isLoadingProfile to false due to timeout');
-        setIsLoadingProfile(false);
-      }
-    }, 15000); // 15 second fallback
-    
-    return () => clearTimeout(timer);
-  }, [isLoadingProfile]);
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
-      setProfileFile(file)
-      const reader = new FileReader()
-      reader.onload = () => setProfilePreview(reader.result as string)
-      reader.readAsDataURL(file)
-    }
-  }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('File size must be less than 5MB');
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file');
+        return;
+      }
 
-  const handleRemoveProfile = () => {
-    setProfilePreview(null)
-    setProfileFile(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      setProfileFile(file);
+      setError('');
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfilePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setSuccess('')
-    
-    // Check if any profile data has actually changed
-    const nameChanged = name !== originalName;
-    const profileChanged = profileFile !== null || (originalProfileUrl && !profilePreview) || (!originalProfileUrl && profilePreview);
-    
-    // If only theme changed or nothing changed, just redirect to dashboard
-    if (!nameChanged && !profileChanged) {
-      setLoading(false);
-      router.push('/dashboard');
-      return;
-    }
-    
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
     try {
-      const result: UpdateProfileResponse = await updateUserProfile(name, profileFile || undefined)
-      if (result.status && result.data) {
-        setSuccess('Profile updated successfully!')
-        
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
-        user.full_name = result.data.fullName
-        user.profilePictureUrl = result.data.profilePictureUrl
-        localStorage.setItem('user', JSON.stringify(user))
-        setTimeout(() => router.push('/dashboard'), 1000)
+      const response = await updateUserProfile(name, profileFile || undefined);
+      if (response.status && response.data) {
+        setSuccess('Profile updated successfully!');
+        setOriginalName(name);
+        if (profileFile) {
+          setOriginalProfileUrl(response.data.profilePictureUrl);
+        }
+        setProfileFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
-        setError(result.message || 'Failed to update profile.')
+        setError(response.message || 'Failed to update profile');
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && err !== null && 'message' in err && typeof (err as { message?: string }).message === 'string') {
         setError((err as { message: string }).message);
       } else {
-        setError('Failed to update profile.');
+        setError('Failed to update profile');
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const hasChanges = () => {
+    return name !== originalName || profileFile !== null;
+  };
+
+  const canSubmit = () => {
+    return name.trim().length > 0 && hasChanges() && !loading;
+  };
 
   return (
-    <AuthShell
-      showBackButton={true}
-      onBack={() => router.back()}
-      title="Customize your account"
-      subtitle="Add your profile picture and name"
-      headerNode={
-        <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
-          <User className="w-5 h-5" />
-        </div>
-      }
-    >
-      <form onSubmit={handleSubmit} className="space-y-6 w-full">
-        <div
-          className="w-full border rounded-xl px-6 py-5"
-          style={{
-            background: darkMode ? 'var(--muted)' : 'white',
-            borderColor: darkMode ? 'var(--border)' : '#e4e4e7',
-            transition: 'background 0.2s, border 0.2s',
-          }}
-        >
-          <div className="flex justify-center relative">
-            <div
-              className={`w-24 h-24 rounded-full flex items-center justify-center cursor-pointer relative overflow-hidden ${
-                profilePreview
-                  ? 'shadow-inner'
-                  : 'hover:ring-2 hover:ring-blue-200'
-              }`}
-              style={{
-                background: profilePreview
-                  ? (darkMode ? 'var(--background)' : '#f4f4f5')
-                  : (darkMode ? 'var(--muted)' : '#e0e7ef'),
-                border: profilePreview
-                  ? 'none'
-                  : `2px dashed ${darkMode ? 'var(--border)' : '#60a5fa'}`,
-                boxShadow: profilePreview ? (darkMode ? '0 2px 8px 0 #1112' : '0 2px 8px 0 #e0e7ef') : undefined,
-                transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
-              }}
-              onClick={() => !isLoadingProfile && fileInputRef.current?.click()}
-            >
-              {isLoadingProfile ? (
-                <Loader2 className="text-blue-400 w-9 h-9 animate-spin" />
-              ) : profilePreview ? (
-                <Image
-                  src={profilePreview}
-                  alt="Profile Preview"
-                  fill
-                  className="object-cover rounded-full"
+    <ProtectedRoute>
+      <AuthShell>
+        <div className="w-full max-w-md mx-auto">
+          {isLoadingProfile ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: darkMode ? '#60a5fa' : '#2563eb' }} />
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Profile Picture */}
+              <div className="text-center">
+                <div className="relative inline-block">
+                  <div 
+                    className="w-24 h-24 rounded-full overflow-hidden border-4 flex items-center justify-center"
+                    style={{ 
+                      borderColor: darkMode ? '#374151' : '#e5e7eb',
+                      backgroundColor: darkMode ? '#374151' : '#f3f4f6'
+                    }}
+                  >
+                    {profilePreview ? (
+                      <Image
+                        src={profilePreview}
+                        alt="Profile"
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-12 h-12" style={{ color: darkMode ? '#9ca3af' : '#6b7280' }} />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+                    style={{
+                      backgroundColor: darkMode ? '#2563eb' : '#2563eb',
+                      color: '#ffffff',
+                      boxShadow: darkMode 
+                        ? '0 4px 12px rgba(37, 99, 235, 0.3)' 
+                        : '0 4px 12px rgba(37, 99, 235, 0.2)'
+                    }}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
                 />
-              ) : (
-                <User className="text-blue-400 w-9 h-9" />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={handleImageSelect}
-              />
-            </div>
+                <p className="text-xs mt-2" style={{ color: darkMode ? 'var(--muted-foreground)' : '#71717a' }}>
+                  Click to upload a new photo
+                </p>
+              </div>
 
-            <div
-              onClick={() => !isLoadingProfile && fileInputRef.current?.click()}
-              className={`absolute bottom-0 right-[calc(50%-48px)] border rounded-full p-1 shadow ${
-                isLoadingProfile ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-              }`}
-              style={{
-                background: darkMode ? 'var(--background)' : '#fff',
-                borderColor: darkMode ? 'var(--border)' : '#e4e4e7',
-                boxShadow: darkMode ? '0 1px 4px 0 #1112' : '0 1px 4px 0 #e0e7ef',
-                transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
-              }}
-            >
-              <Pencil className="w-3.5 h-3.5" style={{ color: darkMode ? '#bbb' : '#666' }} />
-            </div>
-
-            {/* Remove Profile Button - only show when there's a profile image and not loading */}
-            {!isLoadingProfile && profilePreview && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveProfile();
-                }}
-                className="absolute top-0 right-[calc(50%-48px)] border rounded-full p-1 shadow cursor-pointer"
-                style={{
-                  background: darkMode ? 'var(--background)' : '#fff',
-                  borderColor: darkMode ? 'var(--border)' : '#e4e4e7',
-                  boxShadow: darkMode ? '0 1px 4px 0 #1112' : '0 1px 4px 0 #e0e7ef',
-                  transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
-                }}
-                title="Remove profile picture"
-              >
-                <Trash className="w-3.5 h-3.5" style={{ color: darkMode ? '#dc2626' : '#dc2626' }} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out placeholder:text-gray-400"
-          style={{
-            background: darkMode ? 'var(--muted)' : 'white',
-            color: darkMode ? 'var(--foreground)' : '#18181b',
-            borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-          }}
-          required
-        />
-
-        {/* Theme Preferences Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <label className="block text-sm font-medium mb-2" style={{ color: darkMode ? 'var(--foreground)' : '#374151' }}>
-            Theme Preferences {isLoadingProfile && <span className="text-blue-500">(Loading...)</span>}
-          </label>
-          <button
-            type="button"
-            onClick={() => {
-              console.log('Theme dropdown clicked, current state:', dropdownOpen, 'isLoadingProfile:', isLoadingProfile);
-              if (!isLoadingProfile) {
-                setDropdownOpen(!dropdownOpen);
-              }
-            }}
-            disabled={isLoadingProfile}
-            className={`w-full px-4 py-2 rounded-[10px] text-sm shadow-inner border focus:border-blue-500 focus:outline-none transition duration-150 ease-in-out flex items-center justify-between ${
-              isLoadingProfile ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            style={{
-              background: darkMode ? 'var(--muted)' : 'white',
-              color: darkMode ? 'var(--foreground)' : '#18181b',
-              borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-            }}
-          >
-            <span className="capitalize">{themePreference}</span>
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-          
-          {dropdownOpen && (
-            <div
-              className="absolute top-full left-0 right-0 mt-1 rounded-[10px] border shadow-lg z-10"
-              style={{
-                background: darkMode ? 'var(--muted)' : 'white',
-                borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
-                boxShadow: darkMode ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              {(['system', 'light', 'dark'] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    setThemePreference(option);
-                    setDropdownOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 first:rounded-t-[10px] last:rounded-b-[10px]"
+              {/* Name Input */}
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{ color: darkMode ? 'var(--foreground)' : '#18181b' }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border transition-colors duration-200"
                   style={{
+                    backgroundColor: darkMode ? 'var(--muted)' : '#ffffff',
                     color: darkMode ? 'var(--foreground)' : '#18181b',
-                    backgroundColor: themePreference === option ? (darkMode ? '#374151' : '#f3f4f6') : 'transparent',
+                    borderColor: darkMode ? 'var(--border)' : '#e5e7eb',
+                  }}
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              {/* Error and Success Messages */}
+              {error && (
+                <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: darkMode ? '#dc2626' : '#fef2f2', color: darkMode ? '#fca5a5' : '#dc2626' }}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: darkMode ? '#059669' : '#f0fdf4', color: darkMode ? '#6ee7b7' : '#059669' }}>
+                  {success}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={!canSubmit()}
+                className="w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: canSubmit() ? (darkMode ? '#2563eb' : '#2563eb') : (darkMode ? '#374151' : '#e5e7eb'),
+                  color: canSubmit() ? '#ffffff' : (darkMode ? '#9ca3af' : '#6b7280'),
+                  boxShadow: canSubmit() ? (darkMode ? '0 4px 12px rgba(37, 99, 235, 0.3)' : '0 4px 12px rgba(37, 99, 235, 0.2)') : 'none'
+                }}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Updating...
+                  </div>
+                ) : (
+                  'Update Profile'
+                )}
+              </button>
+
+              {/* Skip for now button */}
+              <p className="text-center text-sm pt-2" style={{ color: darkMode ? '#bbb' : '#666' }}>
+                Don't want to customize your account yet?{' '}
+                <button
+                  type="button"
+                  className="font-semibold"
+                  style={{ color: darkMode ? '#fff' : '#000' }}
+                  onClick={() => {
+                    console.log('Skip for now clicked')
+                    router.push('/dashboard')
                   }}
                 >
-                  <span className="capitalize">{option}</span>
+                  Skip for now
                 </button>
-              ))}
-            </div>
+              </p>
+            </form>
           )}
         </div>
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-        {success && <p className="text-sm text-green-500 text-center">{success}</p>}
-        <button
-          type="submit"
-          className="w-full px-4 py-2 text-sm font-medium rounded-[10px] shadow transition duration-150 ease-in-out focus:outline-none focus:ring-2"
-          style={{
-            background: darkMode ? '#2563eb' : '#2563eb',
-            color: '#fff',
-            boxShadow: darkMode ? '0 2px 8px 0 #1112' : '0 2px 8px 0 #e0e7ef',
-          }}
-          disabled={loading}
-        >
-          {loading ? 'Saving...' : 'Continue'}
-        </button>
-
-        <p className="text-center text-sm pt-2" style={{ color: darkMode ? '#bbb' : '#666' }}>
-          Don’t want to customize your account yet?{' '}
-          <button
-            type="button"
-            className="font-semibold"
-            style={{ color: darkMode ? '#fff' : '#000' }}
-            onClick={() => {
-              console.log('Skip for now clicked')
-              router.push('/dashboard')
-            }}
-          >
-            Skip for now
-          </button>
-        </p>
-      </form>
-    </AuthShell>
-  )
+      </AuthShell>
+    </ProtectedRoute>
+  );
 }

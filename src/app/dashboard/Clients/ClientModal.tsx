@@ -2,6 +2,8 @@ import React from "react";
 import 'react-datepicker/dist/react-datepicker.css';
 import { ChevronDown } from 'lucide-react';
 import { useTheme } from '../../../theme-context';
+import { getPartners, Partner } from '../../../api/services/partners';
+import { createClient, CreateClientRequest } from '../../../api/services/clients';
 
 export interface ClientFormData {
   clientName: string;
@@ -21,6 +23,9 @@ interface ClientModalProps {
 export default function ClientModal({ open, onClose, onSubmit }: ClientModalProps) {
   const [clientName, setClientName] = React.useState("");
   const [advisorName, setAdvisorName] = React.useState("");
+  const [advisors, setAdvisors] = React.useState<Partner[]>([]);
+  const [isLoadingAdvisors, setIsLoadingAdvisors] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { darkMode } = useTheme();
 
   const resetForm = () => {
@@ -28,22 +33,69 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
     setAdvisorName("");
   };
 
+  // Restore advisor fetching with proper safeguards
+  React.useEffect(() => {
+    if (open && advisors.length === 0) {
+      const fetchAdvisors = async () => {
+        setIsLoadingAdvisors(true);
+        try {
+          const response = await getPartners(1, 50); // Get up to 50 advisors
+          if (response.status && response.data) {
+            setAdvisors(response.data);
+          }
+        } catch (error) {
+          console.error('Error fetching advisors:', error);
+        } finally {
+          setIsLoadingAdvisors(false);
+        }
+      };
+
+      fetchAdvisors();
+    }
+  }, [open, advisors.length]);
+
   if (!open) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit({
-        clientName,
-        advisorName,
-        pensionTransfer: 0, // removed from form, set to 0
-        isaTransfer: 0,    // removed from form, set to 0
-        pensionNewMoney: 0, // removed from form, set to 0
-        isaNewMoney: 0,     // removed from form, set to 0
-      });
+    
+    // Find the selected advisor to get their ID
+    const selectedAdvisor = advisors.find(advisor => advisor.name === advisorName);
+    if (!selectedAdvisor) {
+      console.error('No advisor selected');
+      return;
     }
-    resetForm();
-    onClose();
+
+    setIsSubmitting(true);
+    try {
+      const clientData: CreateClientRequest = {
+        name: clientName,
+        partnerId: selectedAdvisor.id
+      };
+
+      const response = await createClient(clientData);
+      
+      if (response.status) {
+        // Call the onSubmit callback with the created client data
+        if (onSubmit) {
+          onSubmit({
+            clientName,
+            advisorName,
+            pensionTransfer: 0, // removed from form, set to 0
+            isaTransfer: 0,    // removed from form, set to 0
+            pensionNewMoney: 0, // removed from form, set to 0
+            isaNewMoney: 0,     // removed from form, set to 0
+          });
+        }
+        resetForm();
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error creating client:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -55,13 +107,7 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
     clientName.trim() !== '' &&
     advisorName.trim() !== '';
 
-  const mockAdvisorNames = [
-    "Alice Smith",
-    "Bob Johnson",
-    "Charlie Lee",
-    "Dana White",
-    "Evelyn Brown"
-  ];
+
 
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-0 overflow-y-auto backdrop-blur-lg transition-all ${darkMode ? 'bg-zinc-900/30' : 'bg-white/20'}`}>
@@ -88,10 +134,13 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
                 onChange={e => setAdvisorName(e.target.value)}
                 className="appearance-none w-full border border-[var(--border)] rounded-lg px-4 py-2 pr-12 text-base bg-[var(--background)] dark:bg-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-[var(--foreground)] placeholder-zinc-400 text-left cursor-pointer transition hover:border-blue-400"
                 style={{ minHeight: '44px' }}
+                disabled={isLoadingAdvisors}
               >
-                <option value="" disabled>Select an advisor</option>
-                {mockAdvisorNames.map(name => (
-                  <option key={name} value={name}>{name}</option>
+                <option value="" disabled>
+                  {isLoadingAdvisors ? 'Loading advisors...' : 'Select an advisor'}
+                </option>
+                {advisors.map(advisor => (
+                  <option key={advisor.id} value={advisor.name}>{advisor.name}</option>
                 ))}
               </select>
               <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 flex items-center h-full">
@@ -114,10 +163,10 @@ export default function ClientModal({ open, onClose, onSubmit }: ClientModalProp
             </button>
             <button
               type="submit"
-              className={`px-4 py-2 rounded-lg text-base font-medium transition w-full sm:w-auto ${isFormValid ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-zinc-300 text-zinc-500 cursor-not-allowed'}`}
-              disabled={!isFormValid}
+              className={`px-4 py-2 rounded-lg text-base font-medium transition w-full sm:w-auto ${isFormValid && !isSubmitting ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-zinc-300 text-zinc-500 cursor-not-allowed'}`}
+              disabled={!isFormValid || isSubmitting}
             >
-              Create new client
+              {isSubmitting ? 'Creating...' : 'Create new client'}
             </button>
           </div>
         </form>

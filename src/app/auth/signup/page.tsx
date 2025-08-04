@@ -1,15 +1,14 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { Eye, EyeOff, Lock } from 'lucide-react'
 import AuthShell from '../authShell'
-import { Lock, Eye, EyeOff, KeyRound } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from '../../../theme-context'
+import { useAuth } from '../../../contexts/AuthContext'
+import { requestSignupOtp, validateSignupOtp, registerUser, RegisterResponse } from '../../../api/services/auth'
 import EmailInput from '../EmailInput';
-import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { validateSignupOtp } from '../../../api/services/auth';
-import { registerUser, RegisterResponse, requestSignupOtp } from '../../../api/services/auth';
 
 function EmailFromQuerySignup({ setEmail, setStep, isValidEmail, step }: { setEmail: (email: string) => void, setStep: (step: 'email' | 'otp' | 'password') => void, isValidEmail: (email: string) => boolean, step: 'email' | 'otp' | 'password' }) {
   const searchParams = useSearchParams();
@@ -25,22 +24,23 @@ function EmailFromQuerySignup({ setEmail, setStep, isValidEmail, step }: { setEm
 }
 
 export default function SignupPage() {
+  const { darkMode } = useTheme();
+  const { login: authLogin } = useAuth();
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email')
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
-  const [otpError, setOtpError] = useState('')
+  const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [otpError, setOtpError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendMessage, setResendMessage] = useState('');
-
-  const otpRefs = useRef<HTMLInputElement[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
+  const [resendCountdown, setResendCountdown] = useState(0)
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([])
   const router = useRouter()
-  const { darkMode } = useTheme();
 
   // useSearchParams must be wrapped in Suspense
 
@@ -126,9 +126,11 @@ export default function SignupPage() {
     try {
       const result: RegisterResponse = await registerUser(email.trim(), password);
       if (result.status && result.data) {
-        localStorage.setItem('token', result.data.token);
+        // Use AuthContext to manage authentication
+        authLogin(result.data.token, result.data.user);
+        
+        // Store additional data
         localStorage.setItem('refresh_token', result.data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
         localStorage.setItem('organization', JSON.stringify(result.data.organization));
         router.push('/auth/profile');
       } else {
@@ -148,7 +150,7 @@ export default function SignupPage() {
   }
 
   const handleResendOtp = async () => {
-    setResendLoading(true);
+    setIsLoading(true);
     setResendMessage('');
     try {
       const result = await requestSignupOtp(email.trim()) as { status: boolean; message?: string };
@@ -164,7 +166,7 @@ export default function SignupPage() {
         setResendMessage('Failed to resend code.');
       }
     } finally {
-      setResendLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -236,10 +238,10 @@ export default function SignupPage() {
         type="button"
         className="w-full text-xs text-blue-600 hover:underline mb-2 disabled:opacity-50"
         onClick={handleResendOtp}
-        disabled={resendLoading}
+        disabled={isLoading}
         style={{ marginTop: '-8px' }}
       >
-        {resendLoading ? 'Resending...' : 'Resend code'}
+        {isLoading ? 'Resending...' : 'Resend code'}
       </button>
       {otp.join('').length === 6 ? (
         <button
@@ -346,7 +348,7 @@ export default function SignupPage() {
     if (step === 'otp') {
       return (
         <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
-          <KeyRound className="w-5 h-5" />
+          <Lock className="w-5 h-5" />
         </div>
       )
     }

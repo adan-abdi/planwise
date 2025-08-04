@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown } from 'lucide-react';
 import { generatePensionNewMoneyStructure, FolderOrFile, generateIsaNewMoneyStructure } from './ClientDetails/pensionNewMoneyStructure';
+import { createCase, CreateCaseRequest } from '../../../api/services/cases';
 
 // Types should match those in ClientDetails
 type Transfer = {
@@ -32,6 +33,7 @@ interface CreateNewCaseProps {
   open: boolean;
   onClose: () => void;
   onSubmit?: (newCase: Case) => void;
+  clientId?: string;
 }
 
 const caseTypes = [
@@ -75,8 +77,9 @@ function TickCheckbox({ checked, onChange, label, ...props }: { checked: boolean
   );
 }
 
-export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCaseProps) {
+export default function CreateNewCase({ open, onClose, onSubmit, clientId }: CreateNewCaseProps) {
   const [caseType, setCaseType] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Common transfer state
   const [transfers, setTransfers] = useState<Transfer[]>([
@@ -178,70 +181,72 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
     setTransfers(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-      const newCase: Case = {
-        id: `case-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        caseType,
-        transfers: [],
-      };
-      if (caseType === 'Pension Transfer') {
-        newCase.transfers = transfers.map(t => ({ ...t, transferType: 'pensionTransfer' }));
-        newCase.ess = ess ?? undefined;
-        newCase.essPartial = essPartial ?? undefined;
-      } else if (caseType === 'ISA Transfer') {
-        // Build transfers: one per stocks & shares provider, one per cash ISA provider
-        const stocksTransfers = transfers.slice(0, numStocksAndShares).map((t) => ({
-          ...t,
-          transferType: 'isaTransfer' as const,
-          stocksOrShares: { stocks, shares },
-          numStocksAndShares,
-          cashIsa,
-          provider: t.provider,
-          isaType: 'stocksAndShares' as const,
-        }));
-        const cashTransfers = (cashIsaProviders || []).slice(0, cashIsa).map((provider) => ({
-          transferType: 'isaTransfer' as const,
-          provider: provider,
-          isaType: 'cashIsa' as const,
-        }));
-        newCase.transfers = [...stocksTransfers, ...cashTransfers];
-      } else if (caseType === 'Pension New Money') {
-        newCase.transfers = transfers.map(t => ({ ...t, transferType: 'pensionNewMoney' }));
-        newCase.ess = essNewMoney ?? undefined;
-        newCase.single = single;
-        newCase.regular = regular;
-        newCase.carryForward = carryForward ?? undefined;
-        // Attach folder structure
-        newCase.documents = generatePensionNewMoneyStructure(newCase);
-      } else if (caseType === 'ISA New Money') {
-        newCase.transfers = transfers.map(t => ({ ...t, transferType: 'isaNewMoney' }));
-        newCase.documents = generateIsaNewMoneyStructure(newCase);
-      }
-      onSubmit(newCase);
+    
+    if (!clientId) {
+      console.error('No client ID available for creating case');
+      return;
     }
-    resetForm();
-    onClose();
+
+    setIsSubmitting(true);
+    try {
+      // Prepare the API request data
+      const caseData: CreateCaseRequest = {
+        type: caseType,
+        numberOfTransfers: numTransfers,
+      };
+
+      // Add case-specific data
+      if (caseType === 'Pension Transfer') {
+        caseData.ess = ess ?? undefined;
+        caseData.essPartial = essPartial ?? undefined;
+        caseData.transferProviders = transfers.map(t => t.provider);
+      } else if (caseType === 'ISA Transfer') {
+        // For ISA Transfer, we need to handle stocks & shares and cash ISA providers
+        const allProviders = [
+          ...transfers.slice(0, numStocksAndShares).map(t => t.provider),
+          ...cashIsaProviders
+        ].filter(Boolean);
+        caseData.transferProviders = allProviders;
+      } else if (caseType === 'Pension New Money') {
+        caseData.ess = essNewMoney ?? undefined;
+        caseData.transferProviders = transfers.map(t => t.provider);
+      } else if (caseType === 'ISA New Money') {
+        caseData.transferProviders = transfers.map(t => t.provider);
+      }
+
+      const response = await createCase(clientId, caseData);
+      
+      if (response.status) {
+        // Convert the API response to the internal Case format
+        const newCase: Case = {
+          id: response.data.id,
+          createdAt: response.data.createdAt,
+          caseType: response.data.type,
+          transfers: [], // API doesn't provide transfers in this format
+          ess: response.data.ess,
+          essPartial: response.data.essPartial,
+        };
+
+        if (onSubmit) {
+          onSubmit(newCase);
+        }
+        resetForm();
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error creating case:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
     resetForm();
     onClose();
   };
-
-  // // Form validation
-  // let isFormValid = false;
-  // if (caseType === 'Pension Transfer') {
-  //   isFormValid = ess !== null && essPartial !== null;
-  // } else if (caseType === 'ISA Transfer') {
-  //   isFormValid = (stocks || shares || cashIsa > 0) && (numStocksAndShares > 0 || cashIsa > 0);
-  // } else if (caseType === 'Pension New Money') {
-  //   isFormValid = essNewMoney !== null && (single.checked || regular.checked);
-  // } else if (caseType === 'ISA New Money') {
-  //   isFormValid = transfers.some(t => t.provider && t.provider.trim() !== '');
-  // }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--background)]/60 dark:bg-black/60 backdrop-blur-sm transition-all px-2 sm:px-0 overflow-y-auto">
@@ -516,10 +521,10 @@ export default function CreateNewCase({ open, onClose, onSubmit }: CreateNewCase
             </button>
             <button
               type="submit"
-              disabled={false}
+              disabled={isSubmitting}
               className={`px-4 py-2 rounded-lg border border-blue-600 bg-blue-600 text-white font-medium transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed`}
             >
-              Create
+              {isSubmitting ? 'Creating...' : 'Create'}
             </button>
           </div>
         </form>
